@@ -1,0 +1,41 @@
+{
+    "name": "uccello/calendar",
+    "description": "Calendar for Uccello. test",
+    "type": "library",
+    "require": {
+        "league/oauth2-client": "^2.0",
+        "microsoft/microsoft-graph": "1.0.*",
+        "uccello/uccello": "^1.0@dev"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jonathan SARDO",
+            "email": "jonathan@uccellolabs.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Uccello\\Calendar\\": "app/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Uccello\\Calendar\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        },
+        "laravel": {
+            "providers": [
+                "Uccello\\Calendar\\Providers\\AppServiceProvider",
+                "Uccello\\Calendar\\Providers\\RouteServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

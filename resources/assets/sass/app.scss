@@ -1,0 +1,8 @@
+@import '~fullcalendar/dist/fullcalendar.min.css';
+// @import '~fullcalendar/dist/fullcalendar.print.css';
+@import 'material-full-calendar.scss';
+
+
+.fc-unthemed td.fc-today {
+    background: #F1F2F8;
+}
