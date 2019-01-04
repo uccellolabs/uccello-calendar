@@ -38,20 +38,48 @@ var calendar = $('#calendar').fullCalendar({
         calendar.fullCalendar('unselect');
     },
 
-    events: function(start, end, timezone, callback) {
-        $.ajax({
-          url: '/default/calendar/events',
-          dataType: 'json',
-          data: {
-            // our hypothetical feed requires UNIX timestamps
-            start: start.unix(),
-            end: end.unix()
-          },
-          success: function(response) {
-            callback(response);
-          }
-        });
-    }
+    // events: function(start, end, callback){
+      
+    //   var allEvents = [];
+    //   var googleEvents = function(start, end, timezone, callback) {
+    //       console.log(start);
+    //       $.ajax({
+    //         url: '/default/calendar/google/events',
+    //         dataType: 'json',
+    //         data: {
+    //           // our hypothetical feed requires UNIX timestamps
+    //           start: start.unix(),
+    //           end: end.unix()
+    //         },
+    //         success: function(response) {
+    //           callback(response);
+    //         }
+    //       });
+    //   };
+    //   var microsoftEvents = function(start, end, timezone, callback) {
+    //       $.ajax({
+    //         url: '/default/calendar/google/events',
+    //         dataType: 'json',
+    //         data: {
+    //           // our hypothetical feed requires UNIX timestamps
+    //           start: start.unix(),
+    //           end: end.unix()
+    //         },
+    //         success: function(response) {
+    //           callback(response);
+    //         }
+    //       });
+    //   };
+    //   //allEvents.concat(googleEvents).concat(microsoftEvents);
+      
+    // }
+
+    eventSources : [
+      '/default/calendar/google/events',
+      '/default/calendar/microsoft/events'
+    ]
+    
+    
 
     // header: {
     //     left: 'title',

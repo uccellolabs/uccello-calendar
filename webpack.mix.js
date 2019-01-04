@@ -11,9 +11,9 @@ mix.setPublicPath('public');
 
 mix.js('./resources/assets/js/app.js', 'public/js')
 
-mix.sass('resources/assets/sass/app.scss', 'public/css', {
-   implementation: require('node-sass')
-});
+//mix.sass('resources/assets/sass/app.scss', 'public/css', {
+//   implementation: require('node-sass')
+//});
 
 mix.version();
 
