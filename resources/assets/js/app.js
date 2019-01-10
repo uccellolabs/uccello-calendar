@@ -1,6 +1,8 @@
 import 'bootstrap'; // Mandatory to user $.modal()
 import 'fullcalendar'
 
+console.log("TOTO");
+
 var calendar = $('#calendar').fullCalendar({
     header: {
         left:   'title',

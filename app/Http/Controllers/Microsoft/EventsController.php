@@ -17,10 +17,6 @@ class EventsController extends Controller
     public function index(Domain $domain, Module $module, Request $request)
     {
 
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
-
         $tokenDb = \Uccello\Calendar\CalendarToken::where([
             'service_name'  => 'microsoft',
             'user_id'       => auth()->id(),

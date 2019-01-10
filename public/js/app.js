@@ -45205,6 +45205,7 @@ __webpack_require__.r(__webpack_exports__);
  // Mandatory to user $.modal()
 
 
+console.log("TOTO");
 var calendar = $('#calendar').fullCalendar({
   header: {
     left: 'title',

@@ -13,10 +13,6 @@ class AuthController extends Controller
 {
     public function signin()
     {
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
-
         // Initialize the OAuth client
         $oauthClient = new \Google_Client([
             'application_name'          => env('APP_NAME'),
@@ -27,6 +23,7 @@ class AuthController extends Controller
 
         $oauthClient->addScope(\Google_Service_Calendar::CALENDAR);
         $oauthClient->setAccessType('offline');
+        $oauthClient->setApprovalPrompt('force');
 
         $oauthClient->setRedirectUri('http://localhost:8000');
 
@@ -46,10 +43,6 @@ class AuthController extends Controller
   {
         // Authorization code should be in the "code" query param
         if (isset($_GET['code'])) {
-
-            if (session_status() == PHP_SESSION_NONE) {
-                session_start();
-            }
 
             // Initialize the OAuth client
             $oauthClient = new \Google_Client([
@@ -71,7 +64,7 @@ class AuthController extends Controller
                 'service_name' => 'google',
                 'token' => $oauthClient->getAccessToken()['access_token'],
                 'refresh_token' => $oauthClient->getRefreshToken(),
-                'expiration'  => intval($oauthClient->getAccessToken()['created'])+intval($oauthClient->getAccessToken()['expires_in'])
+                'expiration'  => $oauthClient->getAccessToken()['created'].','.$oauthClient->getAccessToken()['expires_in']
             ]);
 
             $tokenDb->save();
@@ -82,5 +75,38 @@ class AuthController extends Controller
         elseif (isset($_GET['error'])) {
             exit('ERROR: '.$_GET['error'].' - '.$_GET['error_description']);
         }
+    }
+
+    public static function getAccessToken(CalendarToken $calendarToken){
+
+        // Initialize the OAuth client
+        $oauthClient = new \Google_Client([
+            'application_name'          => env('APP_NAME'),
+            'client_id'                 => env('GOOGLE_CLIENT_ID'),
+            'client_secret'             => env('GOOGLE_CLIENT_SECRET'),
+            'redirect_uri'              => env('GOOGLE_REDIRECT_URI'),
+        ]);
+        $oauthClient->addScope(\Google_Service_Calendar::CALENDAR);
+        $oauthClient->setAccessType('offline');
+        $oauthClient->setAccessToken($calendarToken->token);
+        $oauthClient->setRefreshToken($calendarToken->refresh_token);
+        // $t = $oauthClient->getAccessToken();
+        // $t['expires_in'] = '10';
+        // $oauthClient->setAccessToken($t);
+
+        //dd($oauthClient);
+        
+
+        if($oauthClient->isAccessTokenExpired())
+        {
+            dd($oauthClient->getRefreshToken());
+            $oauthClient->fetchAccessTokenWithRefreshToken($oauthClient->getRefreshToken());
+            dd('1');
+            $calendarToken->token = $oauthClient->getAccessToken();
+            $calendarToken->expiration = intval($oauthClient->getAccessToken()['created'])+intval($oauthClient->getAccessToken()['expires_in']);
+            $calendarToken->save();
+        }
+
+        return $calendarToken->token;
     }
 }

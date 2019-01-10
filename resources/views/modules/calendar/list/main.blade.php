@@ -8,7 +8,7 @@
         <div class="card">
             <div class="body">
                 <div id="calendar">
-
+                    
                 </div>
             </div>
         </div>
@@ -40,11 +40,11 @@
 @endsection
 
 @section('extra-css')
-    {{ Html::style(ucasset('css/app.css', 'calendar')) }}
+    {{ Html::style(ucasset('css/app.css', 'uccello/calendar')) }}
 @show
 
 @section('autoloader-script') @endsection
 
 @section('extra-script')
-    {{ Html::script(ucasset('js/app.js', 'calendar')) }}
+    {{ Html::script(ucasset('js/app.js', 'uccello/calendar')) }}
 @endsection

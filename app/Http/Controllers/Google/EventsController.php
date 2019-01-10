@@ -33,7 +33,9 @@ class EventsController extends Controller
             'user_id'       => auth()->id(),
         ])->first();
 
-        $oauthClient->setAccessToken($tokenDb->token);
+        $oauthClient->setAccessToken(
+            AuthController::getAccessToken($tokenDb)
+        );
 
         
 
