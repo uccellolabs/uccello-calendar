@@ -1,6 +1,6 @@
 <?php
 
-namespace Uccello\Calendar\Http\Controllers;
+namespace Uccello\Calendar\Http\Controllers\Generic;
 
 use Uccello\Core\Http\Controllers\Core\Controller;
 use Uccello\Core\Models\Domain;

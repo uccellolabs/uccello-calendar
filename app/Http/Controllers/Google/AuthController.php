@@ -13,7 +13,7 @@ class AuthController extends Controller
 {
     public function signin()
     {
-        // Initialize the OAuth client
+        // Initialize the Google Client
         $oauthClient = new \Google_Client([
             'application_name'          => env('APP_NAME'),
             'client_id'                 => env('GOOGLE_CLIENT_ID'),
@@ -21,17 +21,13 @@ class AuthController extends Controller
             'redirect_uri'              => env('GOOGLE_REDIRECT_URI'),
         ]);
 
+        //Add authorizations needed : Calendar for Events and USERINFO to get username
         $oauthClient->addScope(\Google_Service_Calendar::CALENDAR);
+        $oauthClient->addScope(\Google_Service_Oauth2::USERINFO_EMAIL);
+        
+        //Next two lines needed to get refresh token
         $oauthClient->setAccessType('offline');
         $oauthClient->setApprovalPrompt('force');
-
-        $oauthClient->setRedirectUri('http://localhost:8000');
-
-        // // Generate the auth URL
-        // $authorizationUrl = $oauthClient->getAuthorizationUrl();
-
-        // // Save client state so we can validate in response
-        // $_SESSION['oauth_state'] = $oauthClient->getState();
 
         // Redirect to authorization endpoint
         return redirect(
@@ -44,32 +40,40 @@ class AuthController extends Controller
         // Authorization code should be in the "code" query param
         if (isset($_GET['code'])) {
 
-            // Initialize the OAuth client
+            // Initialize the Google Client
             $oauthClient = new \Google_Client([
                 'application_name'          => env('APP_NAME'),
                 'client_id'                 => env('GOOGLE_CLIENT_ID'),
                 'client_secret'             => env('GOOGLE_CLIENT_SECRET'),
                 'redirect_uri'              => env('GOOGLE_REDIRECT_URI'),
             ]);
+
+            //Theses 2 scopes are needed to retrieve Calendar Events and user email
             $oauthClient->addScope(\Google_Service_Calendar::CALENDAR);
+            $oauthClient->addScope(\Google_Service_Oauth2::USERINFO_EMAIL);
             $oauthClient->setAccessType('offline');
 
             $oauthClient->authenticate($_GET['code']);
 
-            // Save the access token and refresh tokens in session
-            // This is for demo purposes only. A better method would
-            // be to store the refresh token in a secured database
-            $tokenDb = new \Uccello\Calendar\CalendarToken([
-                'user_id' => 1, //TODO : Change this
-                'service_name' => 'google',
-                'token' => $oauthClient->getAccessToken()['access_token'],
-                'refresh_token' => $oauthClient->getRefreshToken(),
-                'expiration'  => $oauthClient->getAccessToken()['created'].','.$oauthClient->getAccessToken()['expires_in']
+            //Objects instanciation needed to retrieve email addresse
+            $service = new \Google_Service_Oauth2($oauthClient);
+            $tokeninfo = $service->tokeninfo(array("access_token" => $oauthClient->getAccessToken()['access_token']));
+
+            //Create or retrieve token from database
+            $tokenDb = \Uccello\Calendar\CalendarToken::firstOrNew([
+                'service_name'  => 'google',
+                'user_id'       => \Auth::id(),
+                'username'      => $tokeninfo->email,
             ]);
 
+            
+            $tokenDb->token = $oauthClient->getAccessToken()['access_token'];
+            $tokenDb->refresh_token = $oauthClient->getRefreshToken();
+            $tokenDb->expiration = $oauthClient->getAccessToken()['created'].','.$oauthClient->getAccessToken()['expires_in'];
+            
             $tokenDb->save();
 
-            return redirect()->route('uccello.list', ['domain' => 'default', 'module' => 'calendar']);
+            return redirect()->route('uccello.calendar.manage', ['domain' => 'default', 'module' => 'calendar']);
         
         }
         elseif (isset($_GET['error'])) {
@@ -79,7 +83,7 @@ class AuthController extends Controller
 
     public static function getAccessToken(CalendarToken $calendarToken){
 
-        // Initialize the OAuth client
+        // Initialize the Google_Client
         $oauthClient = new \Google_Client([
             'application_name'          => env('APP_NAME'),
             'client_id'                 => env('GOOGLE_CLIENT_ID'),
@@ -87,23 +91,25 @@ class AuthController extends Controller
             'redirect_uri'              => env('GOOGLE_REDIRECT_URI'),
         ]);
         $oauthClient->addScope(\Google_Service_Calendar::CALENDAR);
+        $oauthClient->addScope(\Google_Service_Oauth2::USERINFO_EMAIL);
         $oauthClient->setAccessType('offline');
         $oauthClient->setAccessToken($calendarToken->token);
-        $oauthClient->setRefreshToken($calendarToken->refresh_token);
-        // $t = $oauthClient->getAccessToken();
-        // $t['expires_in'] = '10';
-        // $oauthClient->setAccessToken($t);
 
-        //dd($oauthClient);
+        //Retrieve and fill in token datas from database
+        $t = $oauthClient->getAccessToken();
+        $t['created'] = explode(',', $calendarToken->expiration)[0];
+        $t['expires_in'] = explode(',', $calendarToken->expiration)[1];
+        $t['refresh_token'] = $calendarToken->refresh_token;
+        $oauthClient->setAccessToken($t);
         
 
+        //If token is expired, refresh it and store new token
         if($oauthClient->isAccessTokenExpired())
         {
-            dd($oauthClient->getRefreshToken());
             $oauthClient->fetchAccessTokenWithRefreshToken($oauthClient->getRefreshToken());
-            dd('1');
-            $calendarToken->token = $oauthClient->getAccessToken();
-            $calendarToken->expiration = intval($oauthClient->getAccessToken()['created'])+intval($oauthClient->getAccessToken()['expires_in']);
+            $calendarToken->token = $oauthClient->getAccessToken()['access_token'];
+            $calendarToken->expiration = $oauthClient->getAccessToken()['created'].','.$oauthClient->getAccessToken()['expires_in'];
+
             $calendarToken->save();
         }
 

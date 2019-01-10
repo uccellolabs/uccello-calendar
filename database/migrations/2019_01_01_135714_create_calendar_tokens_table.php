@@ -17,6 +17,7 @@ class CreateCalendarTokensTable extends Migration
             $table->increments('id');
             $table->unsignedInteger('user_id');
             $table->string('service_name');
+            $table->string('username');
             $table->text('token');
             $table->text('refresh_token')->nullable();
             $table->string('expiration')->nullable();

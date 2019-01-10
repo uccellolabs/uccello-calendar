@@ -1,14 +1,13 @@
 import 'bootstrap'; // Mandatory to user $.modal()
 import 'fullcalendar'
 
-console.log("TOTO");
-
 var calendar = $('#calendar').fullCalendar({
     header: {
         left:   'title',
         center: '',
         right:  'month,agendaWeek,agendaDay,today prev,next',
     },
+     height: "auto",
     locale: 'fr',
     groupByResource: true,
     editable: true,
@@ -81,8 +80,6 @@ var calendar = $('#calendar').fullCalendar({
       '/default/calendar/microsoft/events'
     ]
     
-    
-
     // header: {
     //     left: 'title',
     //     center: 'agendaDay,agendaWeek,month',

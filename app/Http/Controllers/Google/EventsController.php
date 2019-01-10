@@ -18,26 +18,7 @@ class EventsController extends Controller
 {
     public function index(Domain $domain, Module $module, Request $request)
     {
-        // Initialize the OAuth client
-        $oauthClient = new \Google_Client([
-            'application_name'          => env('APP_NAME'),
-            'client_id'                 => env('GOOGLE_CLIENT_ID'),
-            'client_secret'             => env('GOOGLE_CLIENT_SECRET'),
-            'redirect_uri'              => env('GOOGLE_REDIRECT_URI'),
-        ]);
-        $oauthClient->addScope(\Google_Service_Calendar::CALENDAR);
-        $oauthClient->setAccessType('offline');
-
-        $tokenDb = \Uccello\Calendar\CalendarToken::where([
-            'service_name'  => 'google',
-            'user_id'       => auth()->id(),
-        ])->first();
-
-        $oauthClient->setAccessToken(
-            AuthController::getAccessToken($tokenDb)
-        );
-
-        
+        $oauthClient = $this->initClient();
 
         $service = new \Google_Service_Calendar($oauthClient);
 
@@ -52,9 +33,6 @@ class EventsController extends Controller
 
         $events = [];
         $items = $results->getItems();
-
-
-        
 
         foreach ($items as $event) {
 
@@ -84,5 +62,67 @@ class EventsController extends Controller
         }
 
         return $events;
+    }
+
+    public function getCalendars(Domain $domain, Module $module, Request $request, $accountId)
+    {
+        $oauthClient = $this->initClient();
+
+        $service = new \Google_Service_Calendar($oauthClient);
+
+        $calendarList = $service->calendarList->listCalendarList();
+
+        $colors = $service->colors->get();
+
+        $calendars = [];
+
+        foreach($calendarList->getItems() as $calendarListEntry)
+        {
+            $calendar = [
+                'name' => $calendarListEntry->getSummary(),
+                'id' => $calendarListEntry->getId(),
+                'service' => 'google',
+                'color' => $colors->getCalendar()[$calendarListEntry->colorId]->background,
+                'accountId' => $accountId
+            ];
+            array_push($calendars, $calendar);
+        }
+
+        return $calendars;
+    }
+
+    public function addCalendar(Domain $domain, Module $module, Request $request, $accountId)
+    {
+        $oauthClient = $this->initClient();
+        $service = new \Google_Service_Calendar($oauthClient);
+
+        $calendar = new \Google_Service_Calendar_Calendar();
+        $calendar->setSummary($request['calendarName']);
+        $calendar->setTimeZone('America/Los_Angeles');
+        $createdCalendar = $service->calendars->insert($calendar);
+    }
+
+    private function initClient()
+    {
+        // Initialize the OAuth client
+        $oauthClient = new \Google_Client([
+            'application_name'          => env('APP_NAME'),
+            'client_id'                 => env('GOOGLE_CLIENT_ID'),
+            'client_secret'             => env('GOOGLE_CLIENT_SECRET'),
+            'redirect_uri'              => env('GOOGLE_REDIRECT_URI'),
+        ]);
+        $oauthClient->addScope(\Google_Service_Calendar::CALENDAR);
+        $oauthClient->setAccessType('offline');
+
+        $tokenDb = \Uccello\Calendar\CalendarToken::where([
+            'service_name'  => 'google',
+            'user_id'       => auth()->id(),
+        ])->first();
+
+        $oauthClient->setAccessToken(
+            AuthController::getAccessToken($tokenDb)
+        );
+
+        return $oauthClient;
     }
 }

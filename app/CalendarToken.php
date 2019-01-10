@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class CalendarToken extends Model
 {
     public $fillable = [
-        'user_id', 'service_name', 'token', 'refresh_token', 'expiration'
+        'user_id', 'service_name', 'username', 'token', 'refresh_token', 'expiration'
     ];
 
     public function user()

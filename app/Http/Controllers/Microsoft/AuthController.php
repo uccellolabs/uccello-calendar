@@ -4,6 +4,8 @@ namespace Uccello\Calendar\Http\Controllers\Microsoft;
 
 use Uccello\Core\Http\Controllers\Core\Controller;
 use Uccello\Calendar\CalendarToken;
+use Microsoft\Graph\Graph;
+use Microsoft\Graph\Model;
 
 class AuthController extends Controller
 {
@@ -61,12 +63,19 @@ class AuthController extends Controller
                     'code' => $_GET['code']
                 ]);
 
-                // Save the access token and refresh tokens in session
-                // This is for demo purposes only. A better method would
-                // be to store the refresh token in a secured database
+
+                //Graph instanciation to retrieve user email
+                $graph = new Graph();
+                $graph->setAccessToken($accessToken->getToken());
+                $user = $graph->createRequest('GET', '/me')
+                                ->setReturnType(Model\User::class)
+                                ->execute();
+
+                // Create or retrieve token from database
                 $tokenDb = \Uccello\Calendar\CalendarToken::firstOrNew([
                     'service_name'  => 'microsoft',
                     'user_id'       => \Auth::id(),
+                    'username'      => $user->getUserPrincipalName(),
                 ]);
 
                 
@@ -76,8 +85,8 @@ class AuthController extends Controller
                 
                 $tokenDb->save();
 
-                // Redirect back to mail page
-                return redirect()->route('uccello.list', ['domain' => 'default', 'module' => 'calendar']);
+                // Redirect back to home page
+                return redirect()->route('uccello.calendar.manage', ['domain' => 'default', 'module' => 'calendar']);
             }
             catch (League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
                 exit('ERROR getting tokens: '.$e->getMessage());
@@ -94,8 +103,7 @@ class AuthController extends Controller
         $now = time() + 300;
 
         if($calendarToken->expiration <= $now)
-        // Token is expired (or very close to it)
-        // so let's refresh
+        // Token is expired (or very close to it) so let's refresh
         {
             // Initialize the OAuth client
             $oauthClient = new \League\OAuth2\Client\Provider\GenericProvider([

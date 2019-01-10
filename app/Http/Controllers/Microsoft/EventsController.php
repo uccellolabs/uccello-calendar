@@ -78,4 +78,44 @@ class EventsController extends Controller
         }
         return $events;
     }
+
+    public function getCalendars(Domain $domain, Module $module, Request $request, $accountId)
+    {
+        $tokenDb = \Uccello\Calendar\CalendarToken::where([
+            'service_name'  => 'microsoft',
+            'user_id'       => auth()->id(),
+        ])->first();
+
+        $graph = new Graph();
+        $graph->setAccessToken(
+            AuthController::getAccessToken($tokenDb)
+        );
+
+        $calendarList = $graph->createRequest('GET', '/me/calendars')
+                        ->setReturnType(Model\Calendar::class)
+                        ->execute();
+
+        $calendars = [];
+
+        foreach($calendarList as $calendarListEntry)
+        {
+            $calendar = [
+                'name' => $calendarListEntry->getName(),
+                'id' => $calendarListEntry->getProperties()['id'],
+                'service' => 'microsoft',
+                'color' => $calendarListEntry->getProperties()['color'],
+                'accountId' => $accountId
+            ];
+            if($calendar['color']=='auto')
+                $calendar['color'] = '#03A9F4';
+            array_push($calendars, $calendar);
+        }
+
+        return $calendars;
+    }
+
+    public function addCalendar(Domain $domain, Module $module, Request $request, $accountId)
+    {
+        
+    }
 }
