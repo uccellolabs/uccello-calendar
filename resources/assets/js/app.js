@@ -7,7 +7,7 @@ var calendar = $('#calendar').fullCalendar({
         center: '',
         right:  'month,agendaWeek,agendaDay,today prev,next',
     },
-     height: "auto",
+    height: "auto",
     locale: 'fr',
     groupByResource: true,
     editable: true,

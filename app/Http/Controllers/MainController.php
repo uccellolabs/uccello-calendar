@@ -117,7 +117,7 @@ class MainController extends Controller
 
         $account = \Uccello\Calendar\CalendarToken::find(request(['account']))->first();
 
-        EventsController::addCalendar($domain, $account->service_name, $account->id, $module, $request);
+        Generic\EventsController::addCalendar($domain, $account->service_name, $account->id, $module, $request);
         
         return redirect(route('uccello.calendar.manage', ['domain' => $domain->slug]));
     }
@@ -128,7 +128,7 @@ class MainController extends Controller
 
         $account = \Uccello\Calendar\CalendarToken::find(request(['account']))->first();
 
-        EventsController::removeCalendar($domain, $account->service_name, $account->id, $module, $request);
+        Generic\EventsController::removeCalendar($domain, $account->service_name, $account->id, $module, $request);
         
         return redirect(route('uccello.calendar.manage', ['domain' => $domain->slug]));
     }
