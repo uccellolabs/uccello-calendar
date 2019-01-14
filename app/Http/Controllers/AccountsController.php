@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Uccello\Core\Http\Controllers\Core\Controller;
 use Uccello\Core\Models\Domain;
 use Uccello\Core\Models\Module;
-use Uccello\Calendar\CalendarToken;
+use Uccello\Calendar\CalendarAccount;
 
 class AccountsController extends Controller
 {
@@ -37,7 +37,7 @@ class AccountsController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function retrieve(CalendarToken $calendarToken)
+    public function retrieve()
     {
         //
     }
@@ -49,7 +49,7 @@ class AccountsController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, CalendarToken $calendarToken)
+    public function update()
     {
         //
     }
@@ -60,8 +60,14 @@ class AccountsController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(CalendarToken $calendarToken)
+    public function destroy(?Domain $domain, Module $module, Request $request)
     {
-        //
+        $this->preProcess($domain, $module, $request);
+
+        $account = \Uccello\Calendar\CalendarAccount::find(request(['id']))->first();
+
+        $account->delete();
+
+        return redirect(route('uccello.calendar.manage', ['domain' => $domain->slug]));
     }
 }

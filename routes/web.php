@@ -11,8 +11,7 @@ Route::name('uccello.calendar.')->group(function () {
         $domainParam = '{domain}';
     }
 
-    Route::resource('/calendars', "CalendarsController");
-
+    //GenericController
     Route::get($domainParam.'/calendar/{type}/events', 'Generic\EventsController@index')
         ->defaults('module', 'calendar')
         ->name('events.index');
@@ -29,19 +28,29 @@ Route::name('uccello.calendar.')->group(function () {
         ->defaults('module', 'calendar')
         ->name('gettoken');
     
-    Route::get($domainParam.'/calendar/manage', 'MainController@index')
+
+    //MainController
+    Route::get($domainParam.'/calendar/manage', 'MainController@manageAccounts')
         ->defaults('module', 'calendar')
         ->name('manage');
 
-    Route::get($domainParam.'/calendar/delete', 'MainController@removeAccount')
+    Route::get($domainParam.'/calendar', 'MainController@list')
+        ->defaults('module', 'calendar')
+        ->name('list');
+
+
+    //AccountsController
+    Route::get($domainParam.'/calendar/remove', 'AccountsController@destroy')
         ->defaults('module', 'calendar')
         ->name('removeAccount');
 
-    Route::post($domainParam.'/calendar/add', 'MainController@addCalendar')
+
+    //CalendarsController
+    Route::post($domainParam.'/calendar/add', 'CalendarsController@create')
         ->defaults('module', 'calendar')
         ->name('addCalendar');
 
-    Route::post($domainParam.'/calendar/remove/{type}/{id}', 'MainController@removeCalendar')
+    Route::get($domainParam.'/calendar/remove/{accountId}/{id}', 'CalendarsController@destroy')
         ->defaults('module', 'calendar')
         ->name('removeCalendar');
 

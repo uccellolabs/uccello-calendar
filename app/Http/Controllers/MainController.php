@@ -9,18 +9,14 @@ use Uccello\Core\Models\Module;
 
 class MainController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index(?Domain $domain, Module $module, Request $request)
+    
+    public function manageAccounts(?Domain $domain, Module $module, Request $request)
     {
         // Pre-process
         $this->preProcess($domain, $module, $request);
 
         $calendarsType = \Uccello\Calendar\CalendarTypes::all();
-        $accounts = \Uccello\Calendar\CalendarToken::all();
+        $accounts = \Uccello\Calendar\CalendarAccount::all();
 
         $calendars = [];
 
@@ -39,97 +35,28 @@ class MainController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function list(?Domain $domain, Module $module, Request $request)
     {
-        //
-    }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function removeAccount(?Domain $domain, Module $module, Request $request)
-    {
+        // Pre-process
         $this->preProcess($domain, $module, $request);
 
-        $account = \Uccello\Calendar\CalendarToken::find(request(['id']))->first();
+        $calendarsType = \Uccello\Calendar\CalendarTypes::all();
+        $accounts = \Uccello\Calendar\CalendarAccount::all();
 
-        $account->delete();
+        $calendars = [];
 
-        return redirect(route('uccello.calendar.manage', ['domain' => $domain->slug]));
-    }
+        foreach($accounts as $account){
+            $currentCalendars = Generic\EventsController::getCalendars($domain, $account->service_name, $account->id, $module, $request);
+            // $calendars = array_merge($calendars, $currentCalendars);
+            array_push($calendars, $currentCalendars);
+        }
 
-    public function addCalendar(?Domain $domain, Module $module, Request $request)
-    {
-        $this->preProcess($domain, $module, $request);
+        $this->viewName = 'index.main';
 
-        $account = \Uccello\Calendar\CalendarToken::find(request(['account']))->first();
-
-        Generic\EventsController::addCalendar($domain, $account->service_name, $account->id, $module, $request);
-        
-        return redirect(route('uccello.calendar.manage', ['domain' => $domain->slug]));
-    }
-
-    public function removeCalendar(Domain $domain, $calendarId, Module $module,  Request $request)
-    {
-        $this->preProcess($domain, $module, $request);
-
-        $account = \Uccello\Calendar\CalendarToken::find(request(['account']))->first();
-
-        Generic\EventsController::removeCalendar($domain, $account->service_name, $account->id, $module, $request);
-        
-        return redirect(route('uccello.calendar.manage', ['domain' => $domain->slug]));
+        return $this->autoView([
+            'accounts' => $accounts,
+            'calendars' => $calendars,
+        ]);
     }
 }

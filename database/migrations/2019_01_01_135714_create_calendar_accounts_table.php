@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateCalendarTokensTable extends Migration
+class CreateCalendarAccountsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateCalendarTokensTable extends Migration
      */
     public function up()
     {
-        Schema::create('calendar_tokens', function (Blueprint $table) {
+        Schema::create('calendar_accounts', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('user_id');
             $table->string('service_name');
@@ -21,6 +21,7 @@ class CreateCalendarTokensTable extends Migration
             $table->text('token');
             $table->text('refresh_token')->nullable();
             $table->string('expiration')->nullable();
+            $table->text('disabled_calendars');
 
             $table->foreign('user_id')
                 ->references('id')
@@ -38,6 +39,6 @@ class CreateCalendarTokensTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('calendar_tokens');
+        Schema::dropIfExists('calendar_accounts');
     }
 }

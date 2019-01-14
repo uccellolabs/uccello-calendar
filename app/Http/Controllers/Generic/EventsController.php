@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Uccello\Core\Http\Controllers\Core\Controller;
 use Uccello\Core\Models\Domain;
 use Uccello\Core\Models\Module;
+use Uccello\Calendar\CalendarAccount;
 
 
 class EventsController extends Controller
@@ -43,5 +44,14 @@ class EventsController extends Controller
         
         $calendarType = new $calendarClass();
         return $calendarType->addCalendar($domain, $module, $request, $accountId);    
+    }
+
+    public static function removeCalendar(Domain $domain, CalendarAccount $account, $calendarId, Module $module, Request $request)
+    {
+        $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $account->service_name)->get()->first();
+        $calendarClass =  $calendarTypeModel->namespace.'\EventsController';
+        
+        $calendarType = new $calendarClass();
+        return $calendarType->removeCalendar($domain, $module, $request, $account, $calendarId);   
     }
 }

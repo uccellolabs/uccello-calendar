@@ -8,7 +8,7 @@ use Microsoft\Graph\Model;
 use Uccello\Core\Http\Controllers\Core\Controller;
 use Uccello\Core\Models\Domain;
 use Uccello\Core\Models\Module;
-use Uccello\Calendar\CalendarToken;
+use Uccello\Calendar\CalendarAccount;
 use Carbon\Carbon;
 
 use Google\Client;
@@ -66,7 +66,7 @@ class EventsController extends Controller
 
     public function getCalendars(Domain $domain, Module $module, Request $request, $accountId)
     {
-        $oauthClient = $this->initClient();
+        $oauthClient = $this->initClient($accountId);
 
         $service = new \Google_Service_Calendar($oauthClient);
 
@@ -88,12 +88,14 @@ class EventsController extends Controller
             array_push($calendars, $calendar);
         }
 
+
+
         return $calendars;
     }
 
     public function addCalendar(Domain $domain, Module $module, Request $request, $accountId)
     {
-        $oauthClient = $this->initClient();
+        $oauthClient = $this->initClient($accountId);
         $service = new \Google_Service_Calendar($oauthClient);
 
         $calendar = new \Google_Service_Calendar_Calendar();
@@ -102,7 +104,15 @@ class EventsController extends Controller
         $createdCalendar = $service->calendars->insert($calendar);
     }
 
-    private function initClient()
+    public function removeCalendar(Domain $domain, Module $module, Request $request, CalendarAccount $account, $calendarId)
+    {
+        $oauthClient = $this->initClient($account->id);
+        $service = new \Google_Service_Calendar($oauthClient);
+
+        $service->calendars->delete($calendarId);
+    }
+
+    private function initClient($accountId)
     {
         // Initialize the OAuth client
         $oauthClient = new \Google_Client([
@@ -114,13 +124,14 @@ class EventsController extends Controller
         $oauthClient->addScope(\Google_Service_Calendar::CALENDAR);
         $oauthClient->setAccessType('offline');
 
-        $tokenDb = \Uccello\Calendar\CalendarToken::where([
+        $account = \Uccello\Calendar\CalendarAccount::where([
             'service_name'  => 'google',
             'user_id'       => auth()->id(),
+            'id'            => $accountId,
         ])->first();
 
         $oauthClient->setAccessToken(
-            AuthController::getAccessToken($tokenDb)
+            AuthController::getAccessToken($account)
         );
 
         return $oauthClient;

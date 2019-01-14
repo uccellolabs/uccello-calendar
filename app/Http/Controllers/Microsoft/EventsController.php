@@ -8,7 +8,7 @@ use Microsoft\Graph\Model;
 use Uccello\Core\Http\Controllers\Core\Controller;
 use Uccello\Core\Models\Domain;
 use Uccello\Core\Models\Module;
-use Uccello\Calendar\CalendarToken;
+use Uccello\Calendar\CalendarAccount;
 use Carbon\Carbon;
 
 
@@ -17,7 +17,7 @@ class EventsController extends Controller
     public function index(Domain $domain, Module $module, Request $request)
     {
 
-        $tokenDb = \Uccello\Calendar\CalendarToken::where([
+        $tokenDb = \Uccello\Calendar\CalendarAccount::where([
             'service_name'  => 'microsoft',
             'user_id'       => auth()->id(),
         ])->first();
@@ -81,7 +81,7 @@ class EventsController extends Controller
 
     public function getCalendars(Domain $domain, Module $module, Request $request, $accountId)
     {
-        $tokenDb = \Uccello\Calendar\CalendarToken::where([
+        $tokenDb = \Uccello\Calendar\CalendarAccount::where([
             'service_name'  => 'microsoft',
             'user_id'       => auth()->id(),
         ])->first();
@@ -117,5 +117,10 @@ class EventsController extends Controller
     public function addCalendar(Domain $domain, Module $module, Request $request, $accountId)
     {
         
+    }
+
+    public function removeCalendar(Domain $domain, Module $module, Request $request, CalendarAccount $account, $calendarId)
+    {
+        dd('ici');    
     }
 }

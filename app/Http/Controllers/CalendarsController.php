@@ -24,9 +24,15 @@ class CalendarsController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(?Domain $domain, Module $module, Request $request)
     {
-        //
+        $this->preProcess($domain, $module, $request);
+
+        $account = \Uccello\Calendar\CalendarAccount::find(request(['account']))->first();
+
+        Generic\EventsController::addCalendar($domain, $account->service_name, $account->id, $module, $request);
+        
+        return redirect(route('uccello.calendar.manage', ['domain' => $domain->slug]));
     }
 
 
@@ -59,8 +65,14 @@ class CalendarsController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Domain $domain, $accountId, $calendarId, Module $module, Request $request)
     {
-        //
+        $this->preProcess($domain, $module, $request);
+
+        $account = \Uccello\Calendar\CalendarAccount::find($accountId);
+
+        Generic\EventsController::removeCalendar($domain, $account, $calendarId, $module, $request);
+        
+        return redirect(route('uccello.calendar.manage', ['domain' => $domain->slug]));
     }
 }

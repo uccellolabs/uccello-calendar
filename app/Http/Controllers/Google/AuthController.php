@@ -6,7 +6,7 @@ use Uccello\Core\Http\Controllers\Core\Controller;
 use Google\Auth\OAuth2;
 use Google\Client;
 
-use Uccello\Calendar\CalendarToken;
+use Uccello\Calendar\CalendarAccount;
 
 
 class AuthController extends Controller
@@ -60,7 +60,7 @@ class AuthController extends Controller
             $tokeninfo = $service->tokeninfo(array("access_token" => $oauthClient->getAccessToken()['access_token']));
 
             //Create or retrieve token from database
-            $tokenDb = \Uccello\Calendar\CalendarToken::firstOrNew([
+            $tokenDb = \Uccello\Calendar\CalendarAccount::firstOrNew([
                 'service_name'  => 'google',
                 'user_id'       => \Auth::id(),
                 'username'      => $tokeninfo->email,
@@ -81,7 +81,7 @@ class AuthController extends Controller
         }
     }
 
-    public static function getAccessToken(CalendarToken $calendarToken){
+    public static function getAccessToken(CalendarAccount $calendarAccounts){
 
         // Initialize the Google_Client
         $oauthClient = new \Google_Client([
@@ -93,13 +93,13 @@ class AuthController extends Controller
         $oauthClient->addScope(\Google_Service_Calendar::CALENDAR);
         $oauthClient->addScope(\Google_Service_Oauth2::USERINFO_EMAIL);
         $oauthClient->setAccessType('offline');
-        $oauthClient->setAccessToken($calendarToken->token);
+        $oauthClient->setAccessToken($calendarAccounts->token);
 
         //Retrieve and fill in token datas from database
         $t = $oauthClient->getAccessToken();
-        $t['created'] = explode(',', $calendarToken->expiration)[0];
-        $t['expires_in'] = explode(',', $calendarToken->expiration)[1];
-        $t['refresh_token'] = $calendarToken->refresh_token;
+        $t['created'] = explode(',', $calendarAccounts->expiration)[0];
+        $t['expires_in'] = explode(',', $calendarAccounts->expiration)[1];
+        $t['refresh_token'] = $calendarAccounts->refresh_token;
         $oauthClient->setAccessToken($t);
         
 
@@ -107,12 +107,12 @@ class AuthController extends Controller
         if($oauthClient->isAccessTokenExpired())
         {
             $oauthClient->fetchAccessTokenWithRefreshToken($oauthClient->getRefreshToken());
-            $calendarToken->token = $oauthClient->getAccessToken()['access_token'];
-            $calendarToken->expiration = $oauthClient->getAccessToken()['created'].','.$oauthClient->getAccessToken()['expires_in'];
+            $calendarAccounts->token = $oauthClient->getAccessToken()['access_token'];
+            $calendarAccounts->expiration = $oauthClient->getAccessToken()['created'].','.$oauthClient->getAccessToken()['expires_in'];
 
-            $calendarToken->save();
+            $calendarAccounts->save();
         }
 
-        return $calendarToken->token;
+        return $calendarAccounts->token;
     }
 }

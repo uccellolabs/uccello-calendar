@@ -3,7 +3,7 @@
 namespace Uccello\Calendar\Http\Controllers\Microsoft;
 
 use Uccello\Core\Http\Controllers\Core\Controller;
-use Uccello\Calendar\CalendarToken;
+use Uccello\Calendar\CalendarAccount;
 use Microsoft\Graph\Graph;
 use Microsoft\Graph\Model;
 
@@ -72,7 +72,7 @@ class AuthController extends Controller
                                 ->execute();
 
                 // Create or retrieve token from database
-                $tokenDb = \Uccello\Calendar\CalendarToken::firstOrNew([
+                $tokenDb = \Uccello\Calendar\CalendarAccount::firstOrNew([
                     'service_name'  => 'microsoft',
                     'user_id'       => \Auth::id(),
                     'username'      => $user->getUserPrincipalName(),
@@ -98,11 +98,11 @@ class AuthController extends Controller
         }
     }
 
-    public static function getAccessToken(CalendarToken $calendarToken){
+    public static function getAccessToken(CalendarAccount $calendarAccount){
 
         $now = time() + 300;
 
-        if($calendarToken->expiration <= $now)
+        if($calendarAccount->expiration <= $now)
         // Token is expired (or very close to it) so let's refresh
         {
             // Initialize the OAuth client
@@ -118,24 +118,24 @@ class AuthController extends Controller
 
             try {
                 $newToken = $oauthClient->getAccessToken('refresh_token', [
-                'refresh_token' => $calendarToken->refresh_token
+                'refresh_token' => $calendarAccount->refresh_token
                 ]);
 
                 // Store the new values
 
-                $calendarToken->token = $newToken->getToken();
-                $calendarToken->refresh_token = $newToken->getRefreshToken();
-                $calendarToken->expiration = $newToken->getExpires();
+                $calendarAccount->token = $newToken->getToken();
+                $calendarAccount->refresh_token = $newToken->getRefreshToken();
+                $calendarAccount->expiration = $newToken->getExpires();
 
-                $calendarToken->save();
+                $calendarAccount->save();
 
-                return $calendarToken->token;
+                return $calendarAccount->token;
             }
             catch (League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
                 return '';
             }   
         }
 
-        return $calendarToken->token;
+        return $calendarAccount->token;
     }
 }
