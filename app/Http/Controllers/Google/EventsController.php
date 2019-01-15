@@ -18,48 +18,54 @@ class EventsController extends Controller
 {
     public function index(Domain $domain, Module $module, Request $request)
     {
-        $oauthClient = $this->initClient();
-
-        $service = new \Google_Service_Calendar($oauthClient);
-
-        // Print the next 10 events on the user's calendar.
-        $calendarId = 'primary';
-        $optParams = array(
-        'orderBy' => 'startTime',
-        'singleEvents' => true,
-        'timeMin' => date('c'),
-        );
-        $results = $service->events->listEvents($calendarId, $optParams);
+        $accounts = \Uccello\Calendar\CalendarAccount::where([
+            'service_name'  => 'google',
+            'user_id'       => auth()->id(),
+        ])->get();
 
         $events = [];
-        $items = $results->getItems();
 
-        foreach ($items as $event) {
+        $calendarsFetched = [];
 
-            $dateStart = new Carbon($event->start->dateTime);
-            $dateEnd = new Carbon($event->end->dateTime);
+        foreach ($accounts as $account) {
 
-            if ($dateStart->toTimeString() === '00:00:00' && $dateEnd->toTimeString() === '00:00:00') {
-                $dateStartStr = $dateStart->toDateString();
-                $dateEndStr = $dateEnd->toDateString();
-                // $color = '#D32F2F';
-                $className = "bg-primary";
-            } else {
-                $dateStartStr = str_replace(' ', 'T', $dateStart->toDateTimeString());
-                $dateEndStr = str_replace(' ', 'T', $dateEnd->toDateTimeString());
-                // $color = '#7B1FA2';
-                $className = "bg-red";
+            $calendars = $this->getCalendars($domain, $module, $request, $account->id);
+            $calendarsDisabled = \Uccello\Calendar\Http\Controllers\CalendarsController::getDisabledCalendars($account->id);
+
+            foreach($calendars as $calendar)
+            {
+                if(!in_array($calendar->id, $calendarsFetched) && !property_exists($calendarsDisabled, $calendar->id))
+                {
+                    $calendarsFetched[] = $calendar->id;
+                    $oauthClient = $this->initClient($account->id);
+                    $service = new \Google_Service_Calendar($oauthClient);
+
+                    // Print the next 10 events on the user's calendar.
+                    
+                    $optParams = array(
+                    'orderBy' => 'startTime',
+                    'singleEvents' => true,
+                    'timeMin' => date('c'),
+                    );
+
+                    $results = $service->events->listEvents($calendar->id, $optParams);
+
+                    $items = $results->getItems();
+
+                    foreach ($items as $event) {
+                        
+                        $events[] = [
+                            "id" => $event->id,
+                            "title" => $event->summary ?? '(no title)',
+                            "start" => $event->start->dateTime ?? $event->start->date,
+                            "end" => $event->end->dateTime ?? $event->end->date,
+                            "color" => $calendar->color,
+                            "calendarId" => $calendar->id
+                        ];
+                    }
+                }
             }
-
-            $events[] = [
-                "id" => $event->id,
-                "title" => $event->summary ?? '(no title)',
-                "start" => $dateStartStr,
-                "end" => $dateEndStr,
-                // "color" => $color,
-                "className" => $className
-            ];
-        }
+        }   
 
         return $events;
     }
@@ -78,17 +84,15 @@ class EventsController extends Controller
 
         foreach($calendarList->getItems() as $calendarListEntry)
         {
-            $calendar = [
-                'name' => $calendarListEntry->getSummary(),
-                'id' => $calendarListEntry->getId(),
-                'service' => 'google',
-                'color' => $colors->getCalendar()[$calendarListEntry->colorId]->background,
-                'accountId' => $accountId
-            ];
-            array_push($calendars, $calendar);
+            $calendar = new \StdClass;
+            $calendar->name = $calendarListEntry->getSummary();
+            $calendar->id = $calendarListEntry->getId();
+            $calendar->service = 'google';
+            $calendar->color = $colors->getCalendar()[$calendarListEntry->colorId]->background;
+            $calendar->accountId = $accountId;
+
+            $calendars[] = $calendar;
         }
-
-
 
         return $calendars;
     }

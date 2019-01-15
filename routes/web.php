@@ -54,4 +54,8 @@ Route::name('uccello.calendar.')->group(function () {
         ->defaults('module', 'calendar')
         ->name('removeCalendar');
 
+    Route::get($domainParam.'/calendar/toggle/{accountId}/{id}', 'CalendarsController@toggle')
+        ->defaults('module', 'calendar')
+        ->name('toggleCalendar');
+
 });

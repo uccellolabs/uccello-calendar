@@ -55,10 +55,12 @@ class AccountsController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Removes specified account
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param Domain|null $domain
+     * @param Module $module
+     * @param Request $request
+     * @return void
      */
     public function destroy(?Domain $domain, Module $module, Request $request)
     {

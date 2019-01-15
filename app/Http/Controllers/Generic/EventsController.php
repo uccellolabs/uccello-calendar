@@ -34,7 +34,19 @@ class EventsController extends Controller
         $calendarClass =  $calendarTypeModel->namespace.'\EventsController';
         
         $calendarType = new $calendarClass();
-        return $calendarType->getCalendars($domain, $module, $request, $accountId);    
+        $calendars = $calendarType->getCalendars($domain, $module, $request, $accountId);    
+
+        $disabledCalendars = \Uccello\Calendar\Http\Controllers\CalendarsController::getDisabledCalendars($accountId);
+
+        foreach($calendars as $calendar)
+        {
+            if(property_exists($disabledCalendars, $calendar->id))
+                $calendar->disabled = true;
+            else
+                $calendar->disabled = false;
+        }
+        
+        return $calendars;
     }
 
     public static function addCalendar(Domain $domain, $type, $accountId, Module $module, Request $request)

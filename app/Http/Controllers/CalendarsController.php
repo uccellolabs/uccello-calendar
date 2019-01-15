@@ -35,6 +35,44 @@ class CalendarsController extends Controller
         return redirect(route('uccello.calendar.manage', ['domain' => $domain->slug]));
     }
 
+    public function toggle(Domain $domain, $accountId, $calendarId, Module $module, Request $request)
+    {
+        $this->preProcess($domain, $module, $request);
+
+        $account = \Uccello\Calendar\CalendarAccount::find($accountId);
+
+        $calendarsDisabled = json_decode($account->disabled_calendars);
+
+        if($calendarsDisabled==null)
+            $calendarsDisabled = new \StdClass;
+
+        if(property_exists($calendarsDisabled, $calendarId))
+            unset($calendarsDisabled->$calendarId);
+        else
+            $calendarsDisabled->$calendarId = 'true';
+
+        $account->disabled_calendars = json_encode($calendarsDisabled);
+
+        $account->save();
+        
+        return redirect(route('uccello.calendar.manage', ['domain' => $domain->slug]));
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param [type] $accountId
+     * @return void
+     */
+    static function getDisabledCalendars($accountId)
+    {
+        $account = \Uccello\Calendar\CalendarAccount::find($accountId);
+        $disabledCalendars = json_decode($account->disabled_calendars);
+        if($disabledCalendars==null)
+            $disabledCalendars = new \StdClass;
+        return $disabledCalendars;
+    }
+
 
     /**
      * Display the specified resource.

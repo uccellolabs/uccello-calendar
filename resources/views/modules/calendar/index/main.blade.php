@@ -14,8 +14,9 @@
                 </a>
                 @foreach ($accounts as $account)
                     @foreach ($calendars[$loop->index] as $calendar)
-                        {{-- <span style="background-color: #fa573c" class="badge">Couleur</span>     --}}
-                    <span style="background-color: {{ $calendar['color'] }}" class="badge">{{ $calendar['name'] }}</span>
+                        @if(!$calendar->disabled)
+                        <span style="background-color: {{ $calendar->color }}" class="badge">{{ $calendar->name }}</span>
+                        @endif
                     @endforeach
                 @endforeach
             </div>

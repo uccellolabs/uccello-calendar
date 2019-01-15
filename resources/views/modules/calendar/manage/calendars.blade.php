@@ -13,15 +13,18 @@
                         @forelse ($calendars[$loop->index] as $calendar)
                             
                             <li class="list-group-item">  
-                                <input type="checkbox" checked id="{{ $account->id.$calendar['id'] }}">
-                                <label for="{{ $account->id.$calendar['id'] }}">{{ $calendar['name'] }}</label>
-                                <a href="{{ ucroute('uccello.calendar.removeCalendar', $domain, $module, ['accountId'=> $account->id, 'id' => $calendar['id']]) }}" 
+                                <input type="checkbox" class="calendar-toggle"
+                                    data-accountid = {{ $account->id }} data-calendarid = {{ $calendar->id }}
+                                    @if(!$calendar->disabled)checked @endif
+                                    id="{{ $account->id.$calendar->id }}">
+                                <label for="{{ $account->id.$calendar->id }}">{{ $calendar->name }}</label>
+                                <a href="{{ ucroute('uccello.calendar.removeCalendar', $domain, $module, ['accountId'=> $account->id, 'id' => $calendar->id]) }}" 
                                     title="{{ uctrans('button.delete', $module) }}" 
                                     class="delete-btn" 
                                     data-config='{"actionType":"link","confirm":true,"dialog":{"title":"{{ uctrans('button.delete.confirm', $module) }}"}}'>
                                     <i class="material-icons">delete</i>
                                 </a>
-                                <span style="background-color: {{ $calendar['color'] }}" class="badge">{{ uctrans('color', $module) }}</span>
+                                <span style="background-color: {{ $calendar->color }}" class="badge">{{ uctrans('color', $module) }}</span>
                             </li>   
     
                         @empty

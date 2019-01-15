@@ -15,3 +15,7 @@
 @include('calendar::modules.calendar.manage.calendars')
 
 @endsection
+
+@section('extra-script')
+    {{ Html::script(ucasset('js/calendar-manager.js', 'uccello/calendar')) }}
+@endsection
