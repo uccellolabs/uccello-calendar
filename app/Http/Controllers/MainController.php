@@ -47,9 +47,21 @@ class MainController extends Controller
         $calendars = [];
 
         foreach($accounts as $account){
-            $currentCalendars = Generic\EventsController::getCalendars($domain, $account->service_name, $account->id, $module, $request);
-            // $calendars = array_merge($calendars, $currentCalendars);
-            array_push($calendars, $currentCalendars);
+            $accountCalendars=Generic\EventsController::getCalendars($domain, $account->service_name, $account->id, $module, $request);
+
+            foreach($accountCalendars as $calendar)
+            {
+                $exists = false;
+
+                foreach($calendars as $currCalendar)
+                {
+                    if($calendar->id == $currCalendar->id)
+                        $exists = true;
+                }
+
+                if(!$exists && $calendar->disabled==false)
+                    $calendars[] = $calendar;
+            }
         }
 
         $this->viewName = 'index.main';

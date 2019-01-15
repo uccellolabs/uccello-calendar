@@ -45229,6 +45229,8 @@ var calendar = $('#calendar').fullCalendar({
   selectHelper: true,
   select: function select(start, end, jsEvent) {
     // var title = prompt('Event Title:');
+    // $('#addEventModal #start_date').val(start)
+    // $('#addEventModal #end_date').val(end)
     $('#addEventModal').modal('show'); // if (title) {
     //     calendar.fullCalendar('renderEvent',
     //         {

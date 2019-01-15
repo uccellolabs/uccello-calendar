@@ -12,12 +12,10 @@
                     <i class="material-icons">settings</i>
                     <span>Manage calendars</span>
                 </a>
-                @foreach ($accounts as $account)
-                    @foreach ($calendars[$loop->index] as $calendar)
-                        @if(!$calendar->disabled)
-                        <span style="background-color: {{ $calendar->color }}" class="badge">{{ $calendar->name }}</span>
-                        @endif
-                    @endforeach
+                @foreach ($calendars as $calendar)
+                    @if(!$calendar->disabled)
+                    <span style="background-color: {{ $calendar->color }}" class="badge">{{ $calendar->name }}</span>
+                    @endif
                 @endforeach
             </div>
         </div>
@@ -39,14 +37,42 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title" id="defaultModalLabel">Modal title</h4>
+                <h4 class="modal-title" id="defaultModalLabel">Ajouter un événement</h4>
             </div>
             <div class="modal-body">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin sodales orci ante, sed ornare eros vestibulum ut. Ut accumsan
-                vitae eros sit amet tristique. Nullam scelerisque nunc enim, non dignissim nibh faucibus ullamcorper.
-                Fusce pulvinar libero vel ligula iaculis ullamcorper. Integer dapibus, mi ac tempor varius, purus
-                nibh mattis erat, vitae porta nunc nisi non tellus. Vivamus mollis ante non massa egestas fringilla.
-                Vestibulum egestas consectetur nunc at ultricies. Morbi quis consectetur nunc.
+                <div class="row clearfix">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <div class="form-line">
+                                <input type="text" class="form-control" placeholder="Sujet">
+                            </div>
+                            <div class="form-line">
+                                <input type="text" class="datepicker form-control" placeholder="Please choose a date..." data-dtp="dtp_HIVQo" id = "start_date">
+                            </div>
+                            <div class="form-line" id="bs_datepicker_container">
+                                <input type="text" class="form-control" placeholder="Please choose a date..." id="end_date">
+                            </div>
+                            <div class="form-line">
+                                <input type="text" class="form-control" placeholder="Emplacement">
+                            </div>
+                            <div class="form-line">
+                                <input type="text" class="timepicker form-control" placeholder="Début">
+                            </div>
+                            <div class="form-line">
+                                <input type="text" class="timepicker form-control" placeholder="Fin">
+                            </div>
+                            
+                        </div>
+                        <div class="demo-radio-button">
+                            @foreach ($calendars as $calendar)
+                                @if(!$calendar->disabled)
+                                    <input name="calendars" type="radio" id="{{ $calendar->id }}" class="radio-col-red">
+                                    <label for="{{ $calendar->id }}">{{ $calendar->name }}</label>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>    
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-link waves-effect">SAVE CHANGES</button>
