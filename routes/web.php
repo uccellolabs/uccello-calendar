@@ -1,5 +1,7 @@
 <?php
 
+use Uccello\Calendar\CalendarTypes;
+
 Route::name('uccello.calendar.')->group(function () {
 
     // Adapt params if we use or not multi domains
@@ -9,16 +11,51 @@ Route::name('uccello.calendar.')->group(function () {
         $domainParam = '{domain}';
     }
 
-    // Overrided routes
-    Route::get($domainParam.'/calendar/events', 'EventsController@index')
+    //GenericController
+    Route::get($domainParam.'/calendar/{type}/events', 'Generic\EventsController@index')
         ->defaults('module', 'calendar')
         ->name('events.index');
+    
+    Route::get($domainParam.'/calendar/{type}/events/{accountId}', 'Generic\EventsController@index')
+        ->defaults('module', 'calendar')
+        ->name('events.calendars');
 
-    Route::get($domainParam.'/calendar/signin', 'AuthController@signin')
+    Route::get($domainParam.'/calendar/{type}/signin', 'Generic\AuthController@signin')
         ->defaults('module', 'calendar')
         ->name('signin');
 
-    Route::get($domainParam.'/calendar/authorize', 'AuthController@gettoken')
+    Route::get($domainParam.'/calendar/{type}/authorize', 'Generic\AuthController@gettoken')
         ->defaults('module', 'calendar')
         ->name('gettoken');
+    
+
+    //MainController
+    Route::get($domainParam.'/calendar/manage', 'MainController@manageAccounts')
+        ->defaults('module', 'calendar')
+        ->name('manage');
+
+    Route::get($domainParam.'/calendar', 'MainController@list')
+        ->defaults('module', 'calendar')
+        ->name('list');
+
+
+    //AccountsController
+    Route::get($domainParam.'/calendar/remove', 'AccountsController@destroy')
+        ->defaults('module', 'calendar')
+        ->name('removeAccount');
+
+
+    //CalendarsController
+    Route::post($domainParam.'/calendar/add', 'CalendarsController@create')
+        ->defaults('module', 'calendar')
+        ->name('addCalendar');
+
+    Route::get($domainParam.'/calendar/remove/{accountId}/{id}', 'CalendarsController@destroy')
+        ->defaults('module', 'calendar')
+        ->name('removeCalendar');
+
+    Route::get($domainParam.'/calendar/toggle/{accountId}/{id}', 'CalendarsController@toggle')
+        ->defaults('module', 'calendar')
+        ->name('toggleCalendar');
+
 });
