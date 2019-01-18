@@ -44,29 +44,29 @@
                     <div class="col-sm-12">
                         <div class="form-group">
                             <div class="form-line">
-                                <input type="text" class="form-control" placeholder="Sujet">
+                                <input type="text" class="form-control" placeholder="Sujet" id="subject">
                             </div>
                             <div class="form-line">
-                                <input type="text" class="datepicker form-control" placeholder="Please choose a date..." data-dtp="dtp_HIVQo" id = "start_date">
+                                <input type="text" class="form-control" placeholder="Please choose a date..." id ="start_date">
                             </div>
                             <div class="form-line" id="bs_datepicker_container">
                                 <input type="text" class="form-control" placeholder="Please choose a date..." id="end_date">
                             </div>
                             <div class="form-line">
-                                <input type="text" class="form-control" placeholder="Emplacement">
+                                <input type="text" class="form-control" placeholder="Emplacement" id="location">
                             </div>
                             <div class="form-line">
-                                <input type="text" class="timepicker form-control" placeholder="Début">
+                                <input type="text" class="timepicker form-control" placeholder="Début" id="start_time">
                             </div>
                             <div class="form-line">
-                                <input type="text" class="timepicker form-control" placeholder="Fin">
+                                <input type="text" class="timepicker form-control" placeholder="Fin" id="end_time">
                             </div>
                             
                         </div>
-                        <div class="demo-radio-button">
+                        <div class="fd">
                             @foreach ($calendars as $calendar)
                                 @if(!$calendar->disabled)
-                                    <input name="calendars" type="radio" id="{{ $calendar->id }}" class="radio-col-red">
+                                    <input name="calendars" type="radio" id="{{ $calendar->id }}" value="{{ $calendar->id }}" class="radio-col-blue" data-calendar-type="{{ $calendar->service }}">
                                     <label for="{{ $calendar->id }}">{{ $calendar->name }}</label>
                                 @endif
                             @endforeach
@@ -75,7 +75,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-link waves-effect">SAVE CHANGES</button>
+                <button type="button" class="btn btn-link waves-effect save">SAVE CHANGES</button>
                 <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">CLOSE</button>
             </div>
         </div>

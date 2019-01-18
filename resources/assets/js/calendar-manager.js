@@ -8,7 +8,7 @@ export class CalendarManager {
 
         $("input[type='checkbox'].calendar-toggle").on('click', (event) => {
             let element = event.currentTarget
-            let url = laroute.route('uccello.calendar.toggleCalendar', { 
+            let url = laroute.route('uccello.calendar.toggle', { 
                 domain: domainSlug, 
                 accountId: $(element).data('accountid'), 
                 id: escape($(element).data('calendarid'))
@@ -22,8 +22,9 @@ export class CalendarManager {
             }).fail((error) => {
                 swal('Error', null, 'error')
             })
-        })
+        })        
     }
 }
+
 
 new CalendarManager();

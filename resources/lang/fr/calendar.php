@@ -6,10 +6,12 @@ return [
     'calendar.create' => 'Créer un calendrier',
     'calendar.name' => 'Nom du calendrier',
     'accounts' => 'COMPTES',
+    'calendars' => 'CALENDRIERS',
     'none' => 'Aucun compte',
     'delete_account' => 'Supprimer ce compte',
     'confirm' => 'Etes-vous sûrs de vouloir supprimer ce compte ?',
     'color' => 'Couleur',
     'accounts.stored' => 'Comptes enregistrés',
-    'create' => 'Créer'
+    'create' => 'Créer',
+    'calendars.manage' => 'Gérer les calendriers',
 ];

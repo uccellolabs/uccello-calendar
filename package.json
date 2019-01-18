@@ -16,6 +16,7 @@
         "vue-template-compiler": "^2.5.21"
     },
     "dependencies": {
+        "bootstrap-material-datetimepicker": "^2.7.3",
         "fullcalendar": "^3.9.0"
     }
 }

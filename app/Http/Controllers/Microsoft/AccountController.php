@@ -7,7 +7,7 @@ use Uccello\Calendar\CalendarAccount;
 use Microsoft\Graph\Graph;
 use Microsoft\Graph\Model;
 
-class AuthController extends Controller
+class AccountController extends Controller
 {
     public function signin()
     {
@@ -137,5 +137,21 @@ class AuthController extends Controller
         }
 
         return $calendarAccount->token;
+    }
+
+    public function initClient($accountId)
+    {
+        $tokenDb = \Uccello\Calendar\CalendarAccount::where([
+            'service_name'  => 'microsoft',
+            'user_id'       => auth()->id(),
+            'id'            => $accountId,
+        ])->first();
+
+        $graph = new Graph();
+        $graph->setAccessToken(
+            AccountController::getAccessToken($tokenDb)
+        );
+
+        return $graph;
     }
 }

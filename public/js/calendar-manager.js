@@ -10493,7 +10493,7 @@ function () {
       var domainSlug = $('meta[name="domain"]').attr('content');
       $("input[type='checkbox'].calendar-toggle").on('click', function (event) {
         var element = event.currentTarget;
-        var url = laroute.route('uccello.calendar.toggleCalendar', {
+        var url = laroute.route('uccello.calendar.toggle', {
           domain: domainSlug,
           accountId: $(element).data('accountid'),
           id: escape($(element).data('calendarid'))

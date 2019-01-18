@@ -32,7 +32,7 @@
                             @forelse ($accounts as $account)
                                 @if ($account->service_name == $calendarType->name)
                                     <li class="list-group-item"> {{ $account->username }} 
-                                        <a href="{{ ucroute('uccello.calendar.removeAccount', $domain, $module, ['id' => $account->id]) }}" title="{{ uctrans('button.delete', $module) }}" class="delete-btn" data-config='{"actionType":"link","confirm":true,"dialog":{"title":"{{ uctrans('button.delete.confirm', $module) }}"}}'><i class="material-icons">delete</i></a>
+                                        <a href="{{ ucroute('uccello.calendar.account.remove', $domain, $module, ['id' => $account->id]) }}" title="{{ uctrans('button.delete', $module) }}" class="delete-btn" data-config='{"actionType":"link","confirm":true,"dialog":{"title":"{{ uctrans('button.delete.confirm', $module) }}"}}'><i class="material-icons">delete</i></a>
                                     </li>   
                                 @endif     
                             @empty
@@ -44,7 +44,7 @@
                             
                         </ul>
                         <a role="button" class="btn btn-primary waves-effect" 
-                            href="{{ route('uccello.calendar.signin', ['domain' => $domain->slug, 'type' => $calendarType->name]) }}">
+                            href="{{ route('uccello.calendar.account.signin', ['domain' => $domain->slug, 'type' => $calendarType->name]) }}">
                             <i class="material-icons">add</i>
                             <span>{{ uctrans('add_account', $module) }}</span>
                         </a>

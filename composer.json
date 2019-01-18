@@ -4,6 +4,7 @@
     "type": "library",
     "require": {
         "league/oauth2-client": "^2.0",
+        "google/apiclient": "^2.2",
         "microsoft/microsoft-graph": "1.0.*",
         "uccello/uccello": "^1.0@dev"
     },

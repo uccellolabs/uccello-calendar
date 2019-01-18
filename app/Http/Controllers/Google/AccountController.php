@@ -9,7 +9,7 @@ use Google\Client;
 use Uccello\Calendar\CalendarAccount;
 
 
-class AuthController extends Controller
+class AccountController extends Controller
 {
     public function signin()
     {
@@ -35,8 +35,8 @@ class AuthController extends Controller
         );
     }
 
-  public function gettoken()
-  {
+    public function gettoken()
+    {
         // Authorization code should be in the "code" query param
         if (isset($_GET['code'])) {
 
@@ -114,5 +114,30 @@ class AuthController extends Controller
         }
 
         return $calendarAccounts->token;
+    }
+
+    public function initClient($accountId)
+    {
+        // Initialize the OAuth client
+        $oauthClient = new \Google_Client([
+            'application_name'          => env('APP_NAME'),
+            'client_id'                 => env('GOOGLE_CLIENT_ID'),
+            'client_secret'             => env('GOOGLE_CLIENT_SECRET'),
+            'redirect_uri'              => env('GOOGLE_REDIRECT_URI'),
+        ]);
+        $oauthClient->addScope(\Google_Service_Calendar::CALENDAR);
+        $oauthClient->setAccessType('offline');
+
+        $account = \Uccello\Calendar\CalendarAccount::where([
+            'service_name'  => 'google',
+            'user_id'       => auth()->id(),
+            'id'            => $accountId,
+        ])->first();
+
+        $oauthClient->setAccessToken(
+            AccountController::getAccessToken($account)
+        );
+
+        return $oauthClient;
     }
 }
