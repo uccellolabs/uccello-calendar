@@ -10523,7 +10523,7 @@ new CalendarManager();
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! F:\VMs\Partage\uccello\packages\uccello\calendar\resources\assets\js\calendar-manager.js */"./resources/assets/js/calendar-manager.js");
+module.exports = __webpack_require__(/*! C:\Users\savin\OneDrive\JSdev\Projets\uccello\packages\uccello\calendar\resources\assets\js\calendar-manager.js */"./resources/assets/js/calendar-manager.js");
 
 
 /***/ })

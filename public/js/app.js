@@ -46537,25 +46537,6 @@ var calendar = $('#calendar').fullCalendar({
     $('#addEventModal #start_date').val(start.format('DD/MM/YYYY'));
     $('#addEventModal #end_date').val(end.subtract(1, "days").format('DD/MM/YYYY'));
     $('#addEventModal').modal('show');
-    $('#addEventModal button.save').on('click', function (event) {
-      var url = laroute.route('uccello.calendar.events.create', {
-        domain: $('meta[name="domain"]').attr('content'),
-        type: $('input[name=calendars]:checked').data('calendar-type')
-      });
-      $.post(url, {
-        _token: $("meta[name='csrf-token']").attr('content'),
-        subject: $('#subject').val(),
-        start_date: $('#start_date').val(),
-        end_date: $('#end_date').val(),
-        location: $('#location').val(),
-        start_time: $('#start_time').val(),
-        end_time: $('#end_time').val(),
-        calendar: $('input[name=calendars]:checked').val()
-      }).done(function () {
-        console.log('Réussi');
-        $('#calendar').fullCalendar('refetchEvents');
-      });
-    });
     calendar.fullCalendar('unselect');
   },
   eventSources: ['/default/calendar/events']
@@ -46570,6 +46551,23 @@ $(document).ready(function () {
     nowButton: true,
     switchOnClick: true
   });
+  $('#addEventModal button.save').on('click', function (event) {
+    var url = laroute.route('uccello.calendar.events.create', {
+      domain: $('meta[name="domain"]').attr('content'),
+      type: $('input[name=calendars]:checked').data('calendar-type')
+    });
+    $.post(url, {
+      _token: $("meta[name='csrf-token']").attr('content'),
+      subject: $('#subject').val(),
+      start_date: $('#start_date').val(),
+      end_date: $('#end_date').val(),
+      location: $('#location').val(),
+      description: $('#description').val(),
+      calendar: $('input[name=calendars]:checked').val()
+    }).done(function () {
+      $('#calendar').fullCalendar('refetchEvents');
+    });
+  });
 });
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js")))
 
@@ -46582,7 +46580,7 @@ $(document).ready(function () {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! F:\VMs\Partage\uccello\packages\uccello\calendar\resources\assets\js\app.js */"./resources/assets/js/app.js");
+module.exports = __webpack_require__(/*! C:\Users\savin\OneDrive\JSdev\Projets\uccello\packages\uccello\calendar\resources\assets\js\app.js */"./resources/assets/js/app.js");
 
 
 /***/ })

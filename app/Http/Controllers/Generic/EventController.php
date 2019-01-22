@@ -58,4 +58,22 @@ class EventController extends Controller
         $calendarType = new $calendarClass();
         return $calendarType->create($domain, $module, $request);
     }
+
+    protected function update(Domain $domain, $type, Module $module, Request $request)
+    {
+        $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $type)->get()->first();
+        $calendarClass = $calendarTypeModel->namespace.'\EventController';
+
+        $calendarType = new $calendarClass();
+        return $calendarType->create($domain, $module, $request);
+    }
+
+    protected function delete(Domain $domain, $type, Module $module,  Request $request)
+    {
+        $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $type)->get()->first();
+        $calendarClass = $calendarTypeModel->namespace.'\EventController';
+
+        $calendarType = new $calendarClass();
+        return $calendarType->create($domain, $module, $request);
+    }
 }

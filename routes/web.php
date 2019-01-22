@@ -24,6 +24,14 @@ Route::name('uccello.calendar.')->group(function () {
         ->defaults('module', 'calendar')
         ->name('events.create');
 
+    Route::post($domainParam.'/calendar/event/{type}/update', 'Generic\EventController@update')
+        ->defaults('module', 'calendar')
+        ->name('events.update');
+
+    Route::post($domainParam.'/calendar/event/{type}/remove', 'Generic\EventController@remove')
+        ->defaults('module', 'calendar')
+        ->name('events.remove');
+
 
     //Calendars
     Route::get($domainParam.'/calendar/{type}/calendars/{accountId}', 'Generic\CalendarController@list')

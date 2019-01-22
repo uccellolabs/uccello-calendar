@@ -56,10 +56,7 @@
                                 <input type="text" class="form-control" placeholder="Emplacement" id="location">
                             </div>
                             <div class="form-line">
-                                <input type="text" class="timepicker form-control" placeholder="Début" id="start_time">
-                            </div>
-                            <div class="form-line">
-                                <input type="text" class="timepicker form-control" placeholder="Fin" id="end_time">
+                                <textarea rows="4" class="form-control no-resize" placeholder="Description" id="description"></textarea>
                             </div>
                             
                         </div>
@@ -75,7 +72,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-link waves-effect save">SAVE CHANGES</button>
+                <button type="button" class="btn btn-link waves-effect save" data-dismiss="modal">SAVE CHANGES</button>
                 <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">CLOSE</button>
             </div>
         </div>

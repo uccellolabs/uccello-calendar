@@ -102,6 +102,88 @@ class EventController extends Controller
 
     public function create(Domain $domain, Module $module, Request $request)
     {
-        dd($request);
+
+        $accounts = \Uccello\Calendar\CalendarAccount::where([
+            'service_name'  => 'microsoft',
+            'user_id'       => auth()->id(),
+        ])->get();
+
+
+        $accountId = null;
+
+        foreach($accounts as $account)
+        {
+            $calendarController = new CalendarController();
+            $calendars = $calendarController->list($domain, $module, $request, $account->id);
+            foreach($calendars as $calendar)
+            {
+                if($calendar->id==$request->input('calendar'))
+                {
+                    $accountId = $account->id;
+                    break;
+                }
+            }
+            if($accountId!=null)
+                break;
+        }
+
+        if($accountId!=null)
+        {
+            $accountController = new AccountController();
+            $graph = $accountController->initClient($accountId);
+
+            $datetimeRegex = '/\d{2}\/\d{2}\/\d{4}\ \d{2}\:\d{2}/';
+
+            
+            //dd(Carbon::createFromFormat('d/m/Y H:i', '02/01/2019 10:30'));
+
+            $dateOnly = true;
+            $startDate = '';
+            $endDate = '';
+            $parameters = new \StdClass;
+            $parameters->start = new \StdClass;
+            $parameters->end = new \StdClass;
+
+            if(preg_match($datetimeRegex, $request->input('start_date')) || preg_match($datetimeRegex, $request->input('end_date')))
+                $dateOnly = false;
+
+            if($dateOnly)
+            {
+                $startDate = Carbon::createFromFormat('!d/m/Y', $request->input('start_date'))
+                    ->setTimezone(config('app.timezone', 'UTC'));
+                $endDate = Carbon::createFromFormat('!d/m/Y', $request->input('end_date'))
+                    ->setTimezone(config('app.timezone', 'UTC'));
+
+                $endDate->addDay(1);
+
+                $parameters->isAllDay = true;
+            }
+            else
+            {
+                $startDate = Carbon::createFromFormat('d/m/Y H:i', $request->input('start_date'))
+                    ->setTimezone(config('app.timezone', 'UTC'));
+                $endDate = Carbon::createFromFormat('d/m/Y H:i', $request->input('end_date'))
+                    ->setTimezone(config('app.timezone', 'UTC'));      
+            }
+
+            $parameters->subject = $request->input('subject');
+            $parameters->end->dateTime = $endDate->toAtomString();
+            $parameters->start->dateTime = $startDate->toAtomString();
+            $parameters->end->timeZone = config('app.timezone', 'UTC');
+            $parameters->start->timeZone = config('app.timezone', 'UTC');
+            $parameters->location = new \StdClass;
+            $parameters->location->displayName = $request->input('location') ?? '';
+            $parameters->body = new \StdClass;
+            $parameters->body->content = $request->input('description') ?? '';
+
+            $event = $graph->createRequest('POST', '/me/calendars/'.$request->input('calendar').'/events')
+                        ->attachBody($parameters)
+                        ->setReturnType(Model\Event::class)
+                        ->execute();
+
+            return var_dump($event);
+        }
     }
+
+    
 }

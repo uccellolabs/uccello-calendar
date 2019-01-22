@@ -23,28 +23,6 @@ var calendar = $('#calendar').fullCalendar({
         $('#addEventModal #start_date').val(start.format('DD/MM/YYYY'))
         $('#addEventModal #end_date').val(end.subtract(1, "days").format('DD/MM/YYYY'))
         $('#addEventModal').modal('show')
-
-        $('#addEventModal button.save').on('click', (event) =>{
-
-            let url = laroute.route('uccello.calendar.events.create', { 
-                domain: $('meta[name="domain"]').attr('content'), 
-                type: $('input[name=calendars]:checked').data('calendar-type')
-            })
-
-            $.post(url, {
-                _token: $("meta[name='csrf-token']").attr('content'),
-                subject: $('#subject').val(),
-                start_date: $('#start_date').val(),
-                end_date: $('#end_date').val(),
-                location: $('#location').val(),
-                start_time: $('#start_time').val(),
-                end_time: $('#end_time').val(),
-                calendar: $('input[name=calendars]:checked').val()
-            }).done(function(){
-                console.log('Réussi');
-                $('#calendar').fullCalendar('refetchEvents');
-            })
-        })
         calendar.fullCalendar('unselect');
     },
 
@@ -66,4 +44,24 @@ $(document).ready(function()
         nowButton : true,
         switchOnClick : true
     });
+
+    $('#addEventModal button.save').on('click', (event) =>{
+
+        let url = laroute.route('uccello.calendar.events.create', { 
+            domain: $('meta[name="domain"]').attr('content'), 
+            type: $('input[name=calendars]:checked').data('calendar-type')
+        })
+
+        $.post(url, {
+            _token: $("meta[name='csrf-token']").attr('content'),
+            subject: $('#subject').val(),
+            start_date: $('#start_date').val(),
+            end_date: $('#end_date').val(),
+            location: $('#location').val(),
+            description : $('#description').val(),
+            calendar: $('input[name=calendars]:checked').val()
+        }).done(function(){
+            $('#calendar').fullCalendar('refetchEvents');
+        })
+    })
 });

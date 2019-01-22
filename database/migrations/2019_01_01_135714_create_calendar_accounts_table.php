@@ -21,7 +21,7 @@ class CreateCalendarAccountsTable extends Migration
             $table->text('token');
             $table->text('refresh_token')->nullable();
             $table->string('expiration')->nullable();
-            $table->text('disabled_calendars')->nullable()->default('{}');
+            $table->text('disabled_calendars')->nullable();
 
             $table->foreign('user_id')
                 ->references('id')

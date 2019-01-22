@@ -105,23 +105,45 @@ class EventController extends Controller
             $oauthClient = $accountController->initClient($accountId);
             $service = new \Google_Service_Calendar($oauthClient);
 
-            $startDate = Carbon::createFromFormat('Y-m-d H:i', $request->input('start_date').' '.$request->input('start_time'))
-                ->setTimezone(config('timezone', 'UTC'));
-            $endDate = Carbon::createFromFormat('Y-m-d H:i', $request->input('end_date').' '.$request->input('end_time'))
-                ->setTimezone(config('timezone', 'UTC'));
+            $datetimeRegex = '/\d{2}\/\d{2}\/\d{4}\ \d{2}\:\d{2}/';
+
+            
+            //dd(Carbon::createFromFormat('d/m/Y H:i', '02/01/2019 10:30'));
+
+            $dateOnly = true;
+            $startArray = [];
+            $endArray = [];
+            $startArray['timeZone'] =config('app.timezone', 'UTC');
+            $endArray['timeZone'] = config('app.timezone', 'UTC');
+
+            if(preg_match($datetimeRegex, $request->input('start_date')) || preg_match($datetimeRegex, $request->input('end_date')))
+                $dateOnly = false;
+
+            if($dateOnly)
+            {
+                $startDate = Carbon::createFromFormat('!d/m/Y', $request->input('start_date'))
+                    ->setTimezone(config('app.timezone', 'UTC'));
+                $endDate = Carbon::createFromFormat('!d/m/Y', $request->input('end_date'))
+                    ->setTimezone(config('app.timezone', 'UTC'));
+                $startArray['date'] = $startDate->toDateString();
+                $endArray['date'] =  $endDate->toDateString();
+            }
+            else
+            {
+                $startDate = Carbon::createFromFormat('d/m/Y H:i', $request->input('start_date'))
+                    ->setTimezone(config('app.timezone', 'UTC'));
+                $endDate = Carbon::createFromFormat('d/m/Y H:i', $request->input('end_date'))
+                    ->setTimezone(config('app.timezone', 'UTC'));
+                $startArray['dateTime'] =$startDate->toAtomString();
+                $endArray['dateTime'] =  $endDate->toAtomString();
+            }
 
             $event = new \Google_Service_Calendar_Event(array(
                 'summary' => $request->input('subject'),
                 'location' => $request->input('location'),
-                'description' => $request->input('location') ?? '',
-                'start' => array(
-                    'dateTime' => $startDate->toIso8601String(),
-                    'timeZone' => config('timezone', 'UTC'),
-                ),
-                'end' => array(
-                    'dateTime' => $endDate->toIso8601String(),
-                    'timeZone' => config('timezone', 'UTC'),
-                ),
+                'description' => $request->input('description') ?? '',
+                'start' => $startArray,
+                'end' => $endArray,
             ));
             // $event = new \Google_Service_Calendar_Event(array(
             //     'summary' => 'Google I/O 2015',
