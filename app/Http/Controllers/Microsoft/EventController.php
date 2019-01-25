@@ -89,8 +89,10 @@ class EventController extends Controller
                             "title" => $item->getSubject() ?? '(no title)',
                             "start" => $dateStartStr,
                             "end" => $dateEndStr,
-                            // "color" => $color,
-                            "className" => $className
+                            "color" => $calendar->color,
+                            "calendarId" => $calendar->id,
+                            "accountId" => $account->id,
+                            "calendarType" => $account->service_name,
                         ];
                     }
                 }
@@ -103,87 +105,122 @@ class EventController extends Controller
     public function create(Domain $domain, Module $module, Request $request)
     {
 
-        $accounts = \Uccello\Calendar\CalendarAccount::where([
-            'service_name'  => 'microsoft',
-            'user_id'       => auth()->id(),
-        ])->get();
+        $accountController = new AccountController();
+        $graph = $accountController->initClient($request->input('accountId'));
+
+        $datetimeRegex = '/\d{2}\/\d{2}\/\d{4}\ \d{2}\:\d{2}/';
+        
+        $dateOnly = true;
+        $startDate = '';
+        $endDate = '';
+        $parameters = new \StdClass;
+        $parameters->start = new \StdClass;
+        $parameters->end = new \StdClass;
 
 
-        $accountId = null;
+        // dd($request);
 
-        foreach($accounts as $account)
+        if($request->input('allDay')=="true")
         {
-            $calendarController = new CalendarController();
-            $calendars = $calendarController->list($domain, $module, $request, $account->id);
-            foreach($calendars as $calendar)
-            {
-                if($calendar->id==$request->input('calendar'))
-                {
-                    $accountId = $account->id;
-                    break;
-                }
-            }
-            if($accountId!=null)
-                break;
+            $startDate = Carbon::createFromFormat('!d/m/Y', $request->input('start_date'))
+                ->setTimezone(config('app.timezone', 'UTC'));
+            $endDate = Carbon::createFromFormat('!d/m/Y', $request->input('end_date'))
+                ->setTimezone(config('app.timezone', 'UTC'));
+
+            $endDate->addDay(1);
+
+            $parameters->isAllDay = true;
+            $parameters->end->dateTime = explode('+', $endDate->toAtomString())[0].'+00:00';
+            $parameters->start->dateTime = explode('+', $startDate->toAtomString())[0].'+00:00';
+            $parameters->end->timeZone = 'UTC';
+            $parameters->start->timeZone = 'UTC';
         }
-
-        if($accountId!=null)
+        else
         {
-            $accountController = new AccountController();
-            $graph = $accountController->initClient($accountId);
-
-            $datetimeRegex = '/\d{2}\/\d{2}\/\d{4}\ \d{2}\:\d{2}/';
-
-            
-            //dd(Carbon::createFromFormat('d/m/Y H:i', '02/01/2019 10:30'));
-
-            $dateOnly = true;
-            $startDate = '';
-            $endDate = '';
-            $parameters = new \StdClass;
-            $parameters->start = new \StdClass;
-            $parameters->end = new \StdClass;
-
-            if(preg_match($datetimeRegex, $request->input('start_date')) || preg_match($datetimeRegex, $request->input('end_date')))
-                $dateOnly = false;
-
-            if($dateOnly)
-            {
-                $startDate = Carbon::createFromFormat('!d/m/Y', $request->input('start_date'))
-                    ->setTimezone(config('app.timezone', 'UTC'));
-                $endDate = Carbon::createFromFormat('!d/m/Y', $request->input('end_date'))
-                    ->setTimezone(config('app.timezone', 'UTC'));
-
-                $endDate->addDay(1);
-
-                $parameters->isAllDay = true;
-            }
-            else
-            {
-                $startDate = Carbon::createFromFormat('d/m/Y H:i', $request->input('start_date'))
-                    ->setTimezone(config('app.timezone', 'UTC'));
-                $endDate = Carbon::createFromFormat('d/m/Y H:i', $request->input('end_date'))
-                    ->setTimezone(config('app.timezone', 'UTC'));      
-            }
-
-            $parameters->subject = $request->input('subject');
+            $startDate = Carbon::createFromFormat('d/m/Y H:i', $request->input('start_date'))
+                ->setTimezone(config('app.timezone', 'UTC'));
+            $endDate = Carbon::createFromFormat('d/m/Y H:i', $request->input('end_date'))
+                ->setTimezone(config('app.timezone', 'UTC'));
             $parameters->end->dateTime = $endDate->toAtomString();
             $parameters->start->dateTime = $startDate->toAtomString();
             $parameters->end->timeZone = config('app.timezone', 'UTC');
             $parameters->start->timeZone = config('app.timezone', 'UTC');
-            $parameters->location = new \StdClass;
-            $parameters->location->displayName = $request->input('location') ?? '';
-            $parameters->body = new \StdClass;
-            $parameters->body->content = $request->input('description') ?? '';
-
-            $event = $graph->createRequest('POST', '/me/calendars/'.$request->input('calendar').'/events')
-                        ->attachBody($parameters)
-                        ->setReturnType(Model\Event::class)
-                        ->execute();
-
-            return var_dump($event);
         }
+
+        $parameters->subject = $request->input('subject');
+        
+        $parameters->location = new \StdClass;
+        $parameters->location->displayName = $request->input('location') ?? '';
+        $parameters->body = new \StdClass;
+        $parameters->body->content = $request->input('description') ?? '';
+        $parameters->body->contentType = "Text";
+
+        // dd($endDate->toAtomString());
+        // dd($parameters);
+
+        $event = $graph->createRequest('POST', '/me/calendars/'.$request->input('calendarId').'/events')
+                    ->attachBody($parameters)
+                    ->setReturnType(Model\Event::class)
+                    ->execute();
+
+        return var_dump($event);
+        
     }
 
-    
+    public function retrieve(Domain $domain, Module $module, Request $request)
+    {
+        $accountController = new AccountController();
+        $graph = $accountController->initClient($request->input('accountId'));
+
+        // $eventsQueryParams = array (
+        //     // // Only return Subject, Start, and End fields
+        //     "\$Prefer" => "outlook.body-content-type=\"text\"",
+        // );
+
+        $getEventUrl = '/me/calendars/'.$request->input('calendarId').'/events/'.$request->input('id');//.http_build_query($eventsQueryParams);
+        $event = $graph->createRequest('GET', $getEventUrl)
+                        ->setReturnType(Model\Event::class)  
+                        ->execute();
+
+
+        $startDate = new Carbon($event->getStart()->getDateTime());
+
+        $endDate = new Carbon($event->getEnd()->getDateTime());
+
+        if(!$event->getIsAllDay())
+        {
+            $start = $startDate->format('d/m/Y H:i');   
+            $end = $endDate->format('d/m/Y H:i');
+        }
+        else
+        { 
+            $start = $startDate->format('d/m/Y');
+            $end = $endDate->format('d/m/Y');
+        }
+
+        
+
+        $returnEvent = new \StdClass;
+        $returnEvent->id =              $event->getId();
+        $returnEvent->title =           $event->getSubject() ?? '(no title)';
+        $returnEvent->start =           $start;
+        $returnEvent->end =             $end;
+        $returnEvent->allDay =          $event->getIsAllDay();
+        $returnEvent->location =        $event->getLocation()->getDisplayName();
+        $returnEvent->description =     $event->getBody()->getContent();
+        $returnEvent->calendarId =      $request->input('calendarId');
+        $returnEvent->accountId =       $request->input('accountId');
+
+        return json_encode($returnEvent);
+    }
+
+    public function delete(Domain $domain, Module $module,  Request $request)
+    {
+        $accountController = new AccountController();
+        $graph = $accountController->initClient($request->input('accountId'));
+
+        $getEventUrl = '/me/calendars/'.$request->input('calendarId').'/events/'.$request->input('id');
+        $returnData = $graph->createRequest('DELETE', $getEventUrl)
+                        ->execute();
+    }
 }

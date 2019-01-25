@@ -14,4 +14,8 @@ return [
     'accounts.stored' => 'Comptes enregistrés',
     'create' => 'Créer',
     'calendars.manage' => 'Gérer les calendriers',
+    'event.allday' => 'Toute la journée',
+    'event.add' => 'Ajouter un événement',
+    'event.save' => 'Enregistrer l\'événement',
+    'cancel' => 'Annuler',
 ];

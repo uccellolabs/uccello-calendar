@@ -10,7 +10,7 @@
             <div class="body">
                 <a role="button" class="btn btn-primary waves-effect" href="{{ route('uccello.calendar.manage', ['domain' => 'default']) }}">
                     <i class="material-icons">settings</i>
-                    <span>Manage calendars</span>
+                    <span>{{ uctrans('calendars.manage', $module) }}</span>
                 </a>
                 @foreach ($calendars as $calendar)
                     @if(!$calendar->disabled)
@@ -37,20 +37,25 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title" id="defaultModalLabel">Ajouter un événement</h4>
+                <h4 class="modal-title" id="defaultModalLabel">{{ uctrans('event.add', $module) }}</h4>
             </div>
             <div class="modal-body">
                 <div class="row clearfix">
                     <div class="col-sm-12">
                         <div class="form-group">
+                            <input type="hidden" id="id">
                             <div class="form-line">
                                 <input type="text" class="form-control" placeholder="Sujet" id="subject">
                             </div>
                             <div class="form-line">
                                 <input type="text" class="form-control" placeholder="Please choose a date..." id ="start_date">
                             </div>
-                            <div class="form-line" id="bs_datepicker_container">
+                            <div class="form-line">
                                 <input type="text" class="form-control" placeholder="Please choose a date..." id="end_date">
+                            </div>
+                            <div class="form-line">
+                                <input type="checkbox" id="all_day" >
+                                <label for="all_day">{{ uctrans('event.allday', $module) }}</label>
                             </div>
                             <div class="form-line">
                                 <input type="text" class="form-control" placeholder="Emplacement" id="location">
@@ -63,7 +68,8 @@
                         <div class="fd">
                             @foreach ($calendars as $calendar)
                                 @if(!$calendar->disabled)
-                                    <input name="calendars" type="radio" id="{{ $calendar->id }}" value="{{ $calendar->id }}" class="radio-col-blue" data-calendar-type="{{ $calendar->service }}">
+                                    <input name="calendars" type="radio" id="{{ $calendar->id }}" value="{{ $calendar->id }}" 
+                                        class="radio-col-blue" data-calendar-type="{{ $calendar->service }}" data-account-id="{{ $calendar->accountId }}">
                                     <label for="{{ $calendar->id }}">{{ $calendar->name }}</label>
                                 @endif
                             @endforeach
@@ -72,8 +78,9 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-link waves-effect save" data-dismiss="modal">SAVE CHANGES</button>
-                <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">CLOSE</button>
+                <button type="button" class="btn bg-red waves-effect delete"><i class="material-icons">delete</i></button>
+                <button type="button" class="btn btn-primary waves-effect save" data-dismiss="modal">{{ uctrans('event.save', $module) }}</button>
+                <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">{{ uctrans('cancel', $module) }}</button>
             </div>
         </div>
     </div>

@@ -46515,6 +46515,11 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+function jq(myid) {
+  return myid.replace(/(:|\.|\[|\]|,|=|@)/g, "\\$1");
+}
+
 var calendar = $('#calendar').fullCalendar({
   header: {
     left: 'title',
@@ -46539,6 +46544,30 @@ var calendar = $('#calendar').fullCalendar({
     $('#addEventModal').modal('show');
     calendar.fullCalendar('unselect');
   },
+  eventClick: function eventClick(calEvent) {
+    var url = laroute.route('uccello.calendar.events.retrieve', {
+      domain: $('meta[name="domain"]').attr('content'),
+      type: calEvent.calendarType
+    });
+    $.get(url, {
+      _token: $("meta[name='csrf-token']").attr('content'),
+      id: calEvent.id,
+      calendarId: calEvent.calendarId,
+      accountId: calEvent.accountId
+    }).done(function (data) {
+      var json = $.parseJSON(data); //Open popup and fill in fields
+
+      $('#addEventModal #id').val(json.id);
+      $('#addEventModal #start_date').val(json.start);
+      $('#addEventModal #end_date').val(json.end);
+      $('#addEventModal #subject').val(json.title);
+      $('#addEventModal #all_day').prop('checked', json.allDay);
+      $('#addEventModal #location').val(json.location);
+      $('#addEventModal #description').val(json.description);
+      $('#addEventModal #' + jq(json.calendarId)).prop('checked', true);
+      $('#addEventModal').modal('show');
+    });
+  },
   eventSources: ['/default/calendar/events']
 });
 $(document).ready(function () {
@@ -46552,6 +46581,11 @@ $(document).ready(function () {
     switchOnClick: true
   });
   $('#addEventModal button.save').on('click', function (event) {
+    if ($('#all_day').is(':checked')) {
+      $('#start_date').val($('#start_date').val().split(' ')[0]);
+      $('#end_date').val($('#end_date').val().split(' ')[0]);
+    }
+
     var url = laroute.route('uccello.calendar.events.create', {
       domain: $('meta[name="domain"]').attr('content'),
       type: $('input[name=calendars]:checked').data('calendar-type')
@@ -46563,10 +46597,32 @@ $(document).ready(function () {
       end_date: $('#end_date').val(),
       location: $('#location').val(),
       description: $('#description').val(),
-      calendar: $('input[name=calendars]:checked').val()
+      allDay: $('#all_day').is(':checked'),
+      calendarId: $('input[name=calendars]:checked').val(),
+      accountId: $('input[name=calendars]:checked').data('account-id')
     }).done(function () {
       $('#calendar').fullCalendar('refetchEvents');
     });
+  });
+  $('#addEventModal button.delete').on('click', function (event) {
+    var url = laroute.route('uccello.calendar.events.remove', {
+      domain: $('meta[name="domain"]').attr('content'),
+      type: $('input[name=calendars]:checked').data('calendar-type')
+    });
+    $.post(url, {
+      _token: $("meta[name='csrf-token']").attr('content'),
+      id: $('#addEventModal #id').val(),
+      calendarId: $('input[name=calendars]:checked').val(),
+      accountId: $('input[name=calendars]:checked').data('account-id')
+    }).done(function () {
+      $("#calendar").fullCalendar('removeEvents', $('#addEventModal #id').val());
+    });
+  });
+  $('#all_day').change(function () {
+    if ($(this).is(':checked')) {
+      $('#start_date').val($('#start_date').val().split(' ')[0]);
+      $('#end_date').val($('#end_date').val().split(' ')[0]);
+    }
   });
 });
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js")))
