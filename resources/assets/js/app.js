@@ -45,7 +45,9 @@ var calendar = $('#calendar').fullCalendar({
             calendarId: calEvent.calendarId,
             accountId: calEvent.accountId
         }).done(function(data){
+            
             var json = $.parseJSON(data);
+            console.log(json);
             //Open popup and fill in fields
             $('#addEventModal #id').val(json.id)
             $('#addEventModal #start_date').val(json.start)
@@ -120,8 +122,9 @@ $(document).ready(function()
             calendarId: $('input[name=calendars]:checked').val(),
             accountId: $('input[name=calendars]:checked').data('account-id'),
         }).done(function(){
-            $("#calendar").fullCalendar('removeEvents', $('#addEventModal #id').val());
+            $("#calendar").fullCalendar('removeEvents', $('#addEventModal #id').val());   
         })
+        $('#addEventModal').modal('hide');
     });
 
     $('#all_day').change(function() {

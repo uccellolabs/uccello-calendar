@@ -46555,7 +46555,8 @@ var calendar = $('#calendar').fullCalendar({
       calendarId: calEvent.calendarId,
       accountId: calEvent.accountId
     }).done(function (data) {
-      var json = $.parseJSON(data); //Open popup and fill in fields
+      var json = $.parseJSON(data);
+      console.log(json); //Open popup and fill in fields
 
       $('#addEventModal #id').val(json.id);
       $('#addEventModal #start_date').val(json.start);
@@ -46617,6 +46618,7 @@ $(document).ready(function () {
     }).done(function () {
       $("#calendar").fullCalendar('removeEvents', $('#addEventModal #id').val());
     });
+    $('#addEventModal').modal('hide');
   });
   $('#all_day').change(function () {
     if ($(this).is(':checked')) {

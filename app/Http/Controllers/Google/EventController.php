@@ -126,17 +126,6 @@ class EventController extends Controller
         
     }
 
-    public function delete(Domain $domain, Module $module,  Request $request)
-    {
-        
-        $accountController = new AccountController();
-        $oauthClient = $accountController->initClient($request->input('accountId'));
-        $service = new \Google_Service_Calendar($oauthClient);
-
-        return $service->events->delete($request->input('calendar'), $request->input('event'));
-        
-    }
-
     public function retrieve(Domain $domain, Module $module, Request $request)
     {
         $accountController = new AccountController();
@@ -144,8 +133,6 @@ class EventController extends Controller
         $service = new \Google_Service_Calendar($oauthClient);
 
         $event = $service->events->get($request->input('calendarId'), $request->input('id'));
-
-
 
         if($event->start->dateTime)
         {
@@ -187,5 +174,29 @@ class EventController extends Controller
         $returnEvent->accountId =       $request->input('accountId');
 
         return json_encode($returnEvent);
+    }
+
+    public function update(Domain $domain, Module $module, Request $request)
+    {
+        $accountController = new AccountController();
+        $oauthClient = $accountController->initClient($request->input('accountId'));
+        $service = new \Google_Service_Calendar($oauthClient);
+
+        $event = $service->events->get($request->input('calendarId'), $request->input('id'));
+
+
+
+        $service->events->update($request->input('calendarId'), $event->getId(), $event);
+
+    }
+
+    public function delete(Domain $domain, Module $module,  Request $request)
+    {
+        
+        $accountController = new AccountController();
+        $oauthClient = $accountController->initClient($request->input('accountId'));
+        $service = new \Google_Service_Calendar($oauthClient);
+
+        $service->events->delete($request->input('calendarId'), $request->input('id'));
     }
 }
