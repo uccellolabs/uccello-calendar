@@ -68,7 +68,7 @@
                         <div class="fd">
                             @foreach ($calendars as $calendar)
                                 @if(!$calendar->disabled)
-                                    <input name="calendars" type="radio" id="{{ $calendar->id }}" value="{{ $calendar->id }}" 
+                                    <input name="calendars" type="radio" id='{!! $calendar->id !!}' value='{!! $calendar->id !!}' 
                                         class="radio-col-blue" data-calendar-type="{{ $calendar->service }}" data-account-id="{{ $calendar->accountId }}">
                                     <label for="{{ $calendar->id }}">{{ $calendar->name }}</label>
                                 @endif
@@ -80,7 +80,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn bg-red waves-effect delete"><i class="material-icons">delete</i></button>
                 <button type="button" class="btn btn-primary waves-effect save" data-dismiss="modal">{{ uctrans('event.save', $module) }}</button>
-                <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">{{ uctrans('cancel', $module) }}</button>
+                <button type="button" class="btn btn-link waves-effect cancel" data-dismiss="modal">{{ uctrans('cancel', $module) }}</button>
             </div>
         </div>
     </div>

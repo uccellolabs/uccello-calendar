@@ -25,7 +25,6 @@ class CalendarController extends Controller
 
         foreach($calendarList as $calendarListEntry)
         {
-
             $calendar = new \StdClass;
             $calendar->name = $calendarListEntry->getName();
             $calendar->id = $calendarListEntry->getProperties()['id'];

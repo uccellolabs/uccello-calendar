@@ -43,11 +43,14 @@ class EventController extends Controller
                     $service = new \Google_Service_Calendar($oauthClient);
 
                     // Print the next 10 events on the user's calendar.
-                    
+                    $start = new Carbon($request->input('start'));
+                    $end = new Carbon($request->input('end'));
+
                     $optParams = array(
                     'orderBy' => 'startTime',
                     'singleEvents' => true,
-                    'timeMin' => date('c'),
+                    'timeMin' => $start->toIso8601String(),
+                    'timeMax' => $end->toIso8601String(),
                     );
 
                     $results = $service->events->listEvents($calendar->id, $optParams);
@@ -184,10 +187,56 @@ class EventController extends Controller
 
         $event = $service->events->get($request->input('calendarId'), $request->input('id'));
 
+        $start = $event->getStart();
+        $end = $event->getEnd();
 
+        $datetimeRegex = '/\d{2}\/\d{2}\/\d{4}\ \d{2}\:\d{2}/';
 
-        $service->events->update($request->input('calendarId'), $event->getId(), $event);
+        $dateOnly = true;
+        $startArray = [];
+        $endArray = [];
+        $start->setTimeZone(config('app.timezone', 'UTC'));
+        $end->setTimeZone(config('app.timezone', 'UTC'));
 
+        if(preg_match($datetimeRegex, $request->input('start_date')) || preg_match($datetimeRegex, $request->input('end_date')))
+            $dateOnly = false;
+
+        if($dateOnly)
+        {
+            $start->setDateTime(null);
+            $end->setDateTime(null);
+            
+            $startDate = Carbon::createFromFormat('!d/m/Y', $request->input('start_date'))
+                ->setTimezone(config('app.timezone', 'UTC'));
+            $endDate = Carbon::createFromFormat('!d/m/Y', $request->input('end_date'))
+                ->setTimezone(config('app.timezone', 'UTC'));
+
+            $start->setDate($startDate->toDateString());
+            $end->setDate($endDate->toDateString());
+        }
+        else
+        {
+            $start->setDate(null);
+            $end->setDate(null);
+
+            $startDate = Carbon::createFromFormat('d/m/Y H:i', $request->input('start_date'))
+                ->setTimezone(config('app.timezone', 'UTC'));
+            $endDate = Carbon::createFromFormat('d/m/Y H:i', $request->input('end_date'))
+                ->setTimezone(config('app.timezone', 'UTC'));
+
+            $start->setDateTime($startDate->toAtomString());
+            $end->setDateTime($endDate->toAtomString());
+        }
+
+        $event->setSummary($request->input('subject'));
+        $event->setLocation($request->input('location'));
+        $event->setDescription($request->input('description') ?? '');
+        $event->setStart($start);
+        $event->setEnd($end);
+
+        $event = $service->events->update($request->input('calendarId'), $event->getId(), $event);
+
+        return var_dump($event);
     }
 
     public function delete(Domain $domain, Module $module,  Request $request)

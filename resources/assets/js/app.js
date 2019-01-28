@@ -16,6 +16,7 @@ var calendar = $('#calendar').fullCalendar({
     },
     height: "auto",
     locale: 'fr',
+    timeFormat: 'H:mm',
     groupByResource: true,
     editable: true,
     handleWindowResize: true,
@@ -24,14 +25,20 @@ var calendar = $('#calendar').fullCalendar({
     selectable: true,
 
     selectHelper: true,
+
+    //New event creation
     select: function(start, end, jsEvent) {
-        // var title = prompt('Event Title:');
+        $("#addEventModal button.save").html('Enregistrer l\'événement');
+        $("#addEventModal input[name=calendars]").removeAttr("disabled");
+
+
         $('#addEventModal #start_date').val(start.format('DD/MM/YYYY'))
         $('#addEventModal #end_date').val(end.subtract(1, "days").format('DD/MM/YYYY'))
         $('#addEventModal').modal('show')
         calendar.fullCalendar('unselect');
     },
 
+    //Retrieve existing event
     eventClick: function(calEvent){
 
         let url = laroute.route('uccello.calendar.events.retrieve', { 
@@ -47,8 +54,10 @@ var calendar = $('#calendar').fullCalendar({
         }).done(function(data){
             
             var json = $.parseJSON(data);
-            console.log(json);
             //Open popup and fill in fields
+            $("#addEventModal button.save").html('Mettre à jour l\'événement');
+            $("#addEventModal input[name=calendars]").attr("disabled", true);
+
             $('#addEventModal #id').val(json.id)
             $('#addEventModal #start_date').val(json.start)
             $('#addEventModal #end_date').val(json.end)
@@ -81,6 +90,7 @@ $(document).ready(function()
         switchOnClick : true
     });
 
+    //Saving event (new ou existing)
     $('#addEventModal button.save').on('click', (event) =>{
 
         if($('#all_day').is(':checked'))
@@ -89,13 +99,26 @@ $(document).ready(function()
             $('#end_date').val( $('#end_date').val().split(' ')[0]);
         }
 
-        let url = laroute.route('uccello.calendar.events.create', { 
-            domain: $('meta[name="domain"]').attr('content'), 
-            type: $('input[name=calendars]:checked').data('calendar-type')
-        })
+        let url = '';
+
+        if($('#addEventModal #id').val()=='')
+        {
+            url = laroute.route('uccello.calendar.events.create', { 
+                domain: $('meta[name="domain"]').attr('content'), 
+                type: $('input[name=calendars]:checked').data('calendar-type')
+            })   
+        }
+        else
+        {
+            url = laroute.route('uccello.calendar.events.update', { 
+                domain: $('meta[name="domain"]').attr('content'), 
+                type: $('input[name=calendars]:checked').data('calendar-type')
+            })
+        }
 
         $.post(url, {
             _token: $("meta[name='csrf-token']").attr('content'),
+            id: $('#addEventModal #id').val(),
             subject: $('#subject').val(),
             start_date: $('#start_date').val(),
             end_date: $('#end_date').val(),
@@ -109,6 +132,20 @@ $(document).ready(function()
         })
     });
 
+    //Clear HTML
+    $('#addEventModal button.cancel').on('click', (event) =>{
+
+        $('#addEventModal #id').val('')
+        $('#addEventModal #start_date').val('')
+        $('#addEventModal #end_date').val('')
+        $('#addEventModal #subject').val('')
+        $('#addEventModal #all_day').prop('checked', false)
+        $('#addEventModal #location').val('')
+        $('#addEventModal #description').val('')
+        $('#addEventModal input[name=calendars]').prop('checked', false)
+    });
+
+    //Delete event
     $('#addEventModal button.delete').on('click', (event) =>{
 
         let url = laroute.route('uccello.calendar.events.remove', { 
@@ -127,6 +164,7 @@ $(document).ready(function()
         $('#addEventModal').modal('hide');
     });
 
+    //Update datetime on checkbox checked to remove time
     $('#all_day').change(function() {
         if($(this).is(':checked'))
         {
