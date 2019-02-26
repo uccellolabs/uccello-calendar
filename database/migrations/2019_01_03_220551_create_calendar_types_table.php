@@ -37,6 +37,13 @@ class CreateCalendarTypesTable extends Migration
         $microsoft->icon = 'outlook.png';
         $microsoft->save();
 
+        $tasks = new \Uccello\Calendar\CalendarTypes();
+        $tasks->name = 'tasks';
+        $tasks->namespace = 'Uccello\\Calendar\\Http\\Controllers\\Task';
+        $tasks->friendly_name = "Tasks";
+        $tasks->icon = '';
+        $tasks->save();
+
     }
 
     /**

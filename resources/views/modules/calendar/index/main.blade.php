@@ -39,37 +39,85 @@
             <div class="modal-header">
                 <h4 class="modal-title" id="defaultModalLabel">{{ uctrans('event.add', $module) }}</h4>
             </div>
+            <input type="hidden" id="id">
             <div class="modal-body">
                 <div class="row clearfix">
                     <div class="col-sm-12">
                         <div class="form-group">
-                            <input type="hidden" id="id">
                             <div class="form-line">
-                                <input type="text" class="form-control" placeholder="Sujet" id="subject">
+                                    <input type="text" class="form-control" placeholder="Sujet" id="subject">
                             </div>
-                            <div class="form-line">
-                                <input type="text" class="form-control" placeholder="Please choose a date..." id ="start_date">
-                            </div>
-                            <div class="form-line">
-                                <input type="text" class="form-control" placeholder="Please choose a date..." id="end_date">
-                            </div>
-                            <div class="form-line">
-                                <input type="checkbox" id="all_day" >
-                                <label for="all_day">{{ uctrans('event.allday', $module) }}</label>
-                            </div>
-                            <div class="form-line">
-                                <input type="text" class="form-control" placeholder="Emplacement" id="location">
-                            </div>
-                            <div class="form-line">
-                                <textarea rows="4" class="form-control no-resize" placeholder="Description" id="description"></textarea>
-                            </div>
-                            
                         </div>
+                    </div>
+                </div>
+                <div class="row clearfix">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <div class="form-line">
+                                    <input type="text" class="form-control" placeholder="Please choose a date..." id ="start_date">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <div class="form-line">
+                                <input type="text" class="form-control" placeholder="Please choose a date..." id ="end_date">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <input type="checkbox" id="all_day" >
+                            <label for="all_day">{{ uctrans('event.allday', $module) }}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row clearfix">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <div class="form-line">
+                                    <input type="text" class="form-control" placeholder="Emplacement" id="location">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row clearfix">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <div class="form-line">
+                                    <textarea rows="4" class="form-control" placeholder="Description" id="description"></textarea>
+                                    {{-- <div class="form-control" id="description"></div> --}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row clearfix">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <div class="form-line">
+                                <input type="text" class="form-control" placeholder="Module" id="entityType">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <div class="form-line">
+                                <input type="text" class="form-control" placeholder="Id" id="entityId">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row clearfix">
+                    <div class="col-sm-12">
                         <div class="fd">
                             @foreach ($calendars as $calendar)
                                 @if(!$calendar->disabled)
                                     <input name="calendars" type="radio" id='{!! $calendar->id !!}' value='{!! $calendar->id !!}' 
-                                        class="radio-col-blue" data-calendar-type="{{ $calendar->service }}" data-account-id="{{ $calendar->accountId }}">
+                                        class="radio-col-blue" data-calendar-type="{{ $calendar->service }}" data-account-id="{{ $calendar->accountId }}"
+                                        @if($calendar->read_only)
+                                        readonly="true" disabled="disabled"
+                                        @endif
+                                        >
                                     <label for="{{ $calendar->id }}">{{ $calendar->name }}</label>
                                 @endif
                             @endforeach

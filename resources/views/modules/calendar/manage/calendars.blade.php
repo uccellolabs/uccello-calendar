@@ -3,7 +3,7 @@
         <div class="card">
             <div class="header">
                 <h2>
-                    {{ $account->service_name }} 
+                    {{ uctrans($account->service_name, $module) }} 
                     <small> {{ $account->username }} </small>
                 </h2>
             </div>
@@ -35,6 +35,7 @@
                         @endforelse
 
                 </ul>
+                @if ($account->service_name != 'tasks')
                 <a role="button" class="btn btn-primary waves-effect" data-toggle="collapse" aria-expanded="false"
                     href="#addCalendar{{$loop->index}}">
                     <i class="material-icons">add</i>
@@ -59,6 +60,7 @@
                         </form>
                     </div>
                 </div>
+                @endif
             </div>
         </div>
     </div>

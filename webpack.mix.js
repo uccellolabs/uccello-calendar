@@ -12,6 +12,7 @@ mix.setPublicPath('public');
 mix.js('./resources/assets/js/app.js', 'public/js')
 mix.js('./resources/assets/js/fr.js', 'public/js')
 mix.js('./resources/assets/js/calendar-manager.js', 'public/js')
+mix.js('./resources/assets/js/notify.js', 'public/js')
 
 //mix.sass('resources/assets/sass/app.scss', 'public/css', {
 //   implementation: require('node-sass')

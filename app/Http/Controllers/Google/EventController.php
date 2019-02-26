@@ -87,10 +87,13 @@ class EventController extends Controller
         $datetimeRegex = '/\d{2}\/\d{2}\/\d{4}\ \d{2}\:\d{2}/';
 
         $dateOnly = true;
+        $conferenceArray = [];
         $startArray = [];
         $endArray = [];
         $startArray['timeZone'] =config('app.timezone', 'UTC');
         $endArray['timeZone'] = config('app.timezone', 'UTC');
+
+        $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.$request->input('entityType').'/'.$request->input('entityId');
 
         if(preg_match($datetimeRegex, $request->input('start_date')) || preg_match($datetimeRegex, $request->input('end_date')))
             $dateOnly = false;
@@ -117,7 +120,7 @@ class EventController extends Controller
         $event = new \Google_Service_Calendar_Event(array(
             'summary' => $request->input('subject'),
             'location' => $request->input('location'),
-            'description' => $request->input('description') ?? '',
+            'description' => ($request->input('description') ?? '').$uccelloLink,
             'start' => $startArray,
             'end' => $endArray,
         ));
@@ -126,7 +129,6 @@ class EventController extends Controller
         $event = $service->events->insert($calendarId, $event);
 
         return var_dump($event);
-        
     }
 
     public function retrieve(Domain $domain, Module $module, Request $request)
@@ -163,7 +165,16 @@ class EventController extends Controller
             $end = $endDate->format('d/m/Y');
         }
 
+        $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
         
+        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]+/([a-z]+)/([0-9]+?)`', $event->description, $matches);
+        $entityType = '';
+        $entityId = '';
+        if($regexFound)
+        {
+            $entityType = $matches[1] ?? '';
+            $entityId = $matches[2] ?? '';
+        }
 
         $returnEvent = new \StdClass;
         $returnEvent->id =              $event->id;
@@ -172,7 +183,9 @@ class EventController extends Controller
         $returnEvent->end =             $end;
         $returnEvent->allDay =          $event->start->dateTime || $event->end->dateTime ? false : true;
         $returnEvent->location =        $event->location;
-        $returnEvent->description =     $event->description;
+        $returnEvent->description =     $regexFound ? str_replace($matches[0],'',$event->description) : $event->description;
+        $returnEvent->entityType =      $entityType;
+        $returnEvent->entityId =        $entityId;
         $returnEvent->calendarId =      $request->input('calendarId');
         $returnEvent->accountId =       $request->input('accountId');
 

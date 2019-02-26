@@ -7,11 +7,11 @@
                 @foreach ($calendarsType as $calendarType)
                     @if ($loop->first)
                         <li role="presentation" class="active">
-                            <a href="#{{$calendarType->name}}" data-toggle="tab" aria-expanded="true">{{ strtoupper($calendarType->friendly_name) }}</a>
+                            <a href="#{{$calendarType->name}}" data-toggle="tab" aria-expanded="true">{{ mb_strtoupper(uctrans($calendarType->friendly_name, $module)) }}</a>
                         </li>    
                     @else
                         <li role="presentation">
-                            <a href="#{{$calendarType->name}}" data-toggle="tab" aria-expanded="false">{{ strtoupper($calendarType->friendly_name) }}</a>
+                            <a href="#{{$calendarType->name}}" data-toggle="tab" aria-expanded="false">{{ mb_strtoupper(uctrans($calendarType->friendly_name, $module)) }}</a>
                             
                         </li>    
                     @endif
@@ -32,7 +32,9 @@
                             @forelse ($accounts as $account)
                                 @if ($account->service_name == $calendarType->name)
                                     <li class="list-group-item"> {{ $account->username }} 
+                                        @if ($calendarType->name != 'tasks')
                                         <a href="{{ ucroute('uccello.calendar.account.remove', $domain, $module, ['id' => $account->id]) }}" title="{{ uctrans('button.delete', $module) }}" class="delete-btn" data-config='{"actionType":"link","confirm":true,"dialog":{"title":"{{ uctrans('button.delete.confirm', $module) }}"}}'><i class="material-icons">delete</i></a>
+                                        @endif
                                     </li>   
                                 @endif     
                             @empty
@@ -43,11 +45,13 @@
                             @endforelse
                             
                         </ul>
+                        @if ($calendarType->name != 'tasks')
                         <a role="button" class="btn btn-primary waves-effect" 
                             href="{{ route('uccello.calendar.account.signin', ['domain' => $domain->slug, 'type' => $calendarType->name]) }}">
                             <i class="material-icons">add</i>
                             <span>{{ uctrans('add_account', $module) }}</span>
                         </a>
+                        @endif
                     </div>
                 @endforeach
             </div>

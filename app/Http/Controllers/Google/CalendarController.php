@@ -31,6 +31,12 @@ class CalendarController extends Controller
             $calendar->service = 'google';
             $calendar->color = $colors->getCalendar()[$calendarListEntry->colorId]->background;
             $calendar->accountId = $accountId;
+            
+            $accessRole = $calendarListEntry->getAccessRole();
+            if($accessRole=='owner' || $accessRole=='writer')
+                $calendar->read_only = false;
+            else
+                $calendar->read_only = true;
 
             $calendars[] = $calendar;
         }

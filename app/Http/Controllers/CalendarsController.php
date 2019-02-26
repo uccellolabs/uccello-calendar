@@ -43,6 +43,7 @@ class CalendarsController extends Controller
         $accounts = \Uccello\Calendar\CalendarAccount::all();
 
         $calendars = [];
+        $entities = [];
 
         foreach($accounts as $account){
             $calendarController = new Generic\CalendarController();
@@ -63,11 +64,18 @@ class CalendarsController extends Controller
             }
         }
 
+        $allEntities = \Uccello\Core\Models\Module::all();
+        foreach($allEntities as $entity)
+        {
+            $entities[] = $entity->name;
+        }
+
         $this->viewName = 'index.main';
 
         return $this->autoView([
             'accounts' => $accounts,
             'calendars' => $calendars,
+            'entities' => $entities,
         ]);
     }
 }

@@ -112,6 +112,8 @@ class EventController extends Controller
         $parameters->start = new \StdClass;
         $parameters->end = new \StdClass;
 
+        $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.$request->input('entityType').'/'.$request->input('entityId');
+
         if($request->input('allDay')=="true")
         {
             $startDate = Carbon::createFromFormat('!d/m/Y', $request->input('start_date'))
@@ -144,7 +146,7 @@ class EventController extends Controller
         $parameters->location = new \StdClass;
         $parameters->location->displayName = $request->input('location') ?? '';
         $parameters->body = new \StdClass;
-        $parameters->body->content = $request->input('description') ?? '';
+        $parameters->body->content = ($request->input('description') ?? '').$uccelloLink;
         $parameters->body->contentType = "Text";
 
         $event = $graph->createRequest('POST', '/me/calendars/'.$request->input('calendarId').'/events')
@@ -185,7 +187,26 @@ class EventController extends Controller
             $end = $endDate->format('d/m/Y');
         }
 
-        preg_match('/<div class="PlainText">(.+?)<\/div>/m', $event->getBody()->getContent(), $matches, PREG_OFFSET_CAPTURE, 0);
+        $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
+        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]+/([a-z]+)/([0-9]+?)`', $event->getBody()->getContent(), $matches);
+        $entityType = '';
+        $entityId = '';
+        $expression = '';
+        if($regexFound)
+        {
+            $expression = $matches[0] ?? '';
+            $entityType = $matches[1] ?? '';
+            $entityId = $matches[2] ?? '';
+        }
+
+        preg_match_all('/<div class="PlainText">(.+?)<\/div>/', $event->getBody()->getContent(), $matches, PREG_OFFSET_CAPTURE, 0);
+        // dd($event->getBody()->getContent());
+        // var_dump($event->getBody()->getContent());
+        $description = '';
+        foreach($matches[1] as $div)
+        {
+            $description.=$div[0]."\n"; 
+        }
 
         $returnEvent = new \StdClass;
         $returnEvent->id =              $event->getId();
@@ -194,9 +215,12 @@ class EventController extends Controller
         $returnEvent->end =             $end;
         $returnEvent->allDay =          $event->getIsAllDay();
         $returnEvent->location =        $event->getLocation()->getDisplayName();
-        $returnEvent->description =     $matches[1][0] ?? '';
+        $returnEvent->description =     preg_replace('`<a .+? href="'.$uccelloUrl.'.+?">.+?</a>`', '', $description);
+        $returnEvent->entityType =      $entityType;
+        $returnEvent->entityId =        $entityId;
         $returnEvent->calendarId =      $request->input('calendarId');
         $returnEvent->accountId =       $request->input('accountId');
+
 
         return json_encode($returnEvent);
     }

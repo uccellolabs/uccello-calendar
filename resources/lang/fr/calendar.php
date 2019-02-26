@@ -18,4 +18,9 @@ return [
     'event.add' => 'Ajouter un événement',
     'event.save' => 'Enregistrer l\'événement',
     'cancel' => 'Annuler',
+    'my_tasks' => 'Mes tâches',
+    'Tasks' => 'Tâches',
+    'microsoft' => 'Microsoft Outlook',
+    'google' => 'Google Calendar',
+    'tasks' => 'Tâches',
 ];

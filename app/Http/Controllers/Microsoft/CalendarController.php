@@ -31,6 +31,7 @@ class CalendarController extends Controller
             $calendar->service = 'microsoft';
             $calendar->color = $calendarListEntry->getProperties()['color'];
             $calendar->accountId = $accountId;
+            $calendar->read_only = !boolval($calendarListEntry->getCanEdit());
 
             if($calendar->color=='auto')
                 $calendar->color = '#03A9F4';

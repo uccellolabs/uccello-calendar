@@ -2,6 +2,10 @@ import 'bootstrap'; // Mandatory to user $.modal()
 import 'fullcalendar';
 import 'bootstrap-material-datetimepicker/js/bootstrap-material-datetimepicker';
 
+import 'bootstrap-notify';
+
+import { Notify } from './notify'
+
 function jq( myid ) {
  
     return myid.replace( /(:|\.|\[|\]|,|=|@)/g, "\\$1" );
@@ -29,7 +33,7 @@ var calendar = $('#calendar').fullCalendar({
     //New event creation
     select: function(start, end, jsEvent) {
         $("#addEventModal button.save").html('Enregistrer l\'événement');
-        $("#addEventModal input[name=calendars]").removeAttr("disabled");
+        $("#addEventModal input[name=calendars]:not([readonly])").removeAttr("disabled");
 
 
         $('#addEventModal #start_date').val(start.format('DD/MM/YYYY'))
@@ -56,7 +60,7 @@ var calendar = $('#calendar').fullCalendar({
             var json = $.parseJSON(data);
             //Open popup and fill in fields
             $("#addEventModal button.save").html('Mettre à jour l\'événement');
-            $("#addEventModal input[name=calendars]").attr("disabled", true);
+            $("#addEventModal input[name=calendars]:not([readonly])").attr("disabled", true);
 
             $('#addEventModal #id').val(json.id)
             $('#addEventModal #start_date').val(json.start)
@@ -65,6 +69,8 @@ var calendar = $('#calendar').fullCalendar({
             $('#addEventModal #all_day').prop('checked', json.allDay)
             $('#addEventModal #location').val(json.location)
             $('#addEventModal #description').val(json.description)
+            $('#addEventModal #entityType').val(json.entityType)
+            $('#addEventModal #entityId').val(json.entityId)
             $('#addEventModal #'+jq(json.calendarId)).prop('checked', true)
 
             $('#addEventModal').modal('show')
@@ -124,10 +130,16 @@ $(document).ready(function()
             end_date: $('#end_date').val(),
             location: $('#location').val(),
             description : $('#description').val(),
+            entityType: $('#entityType').val(),
+            entityId: $('#entityId').val(),
             allDay: $('#all_day').is(':checked'),
             calendarId: $('input[name=calendars]:checked').val(),
             accountId: $('input[name=calendars]:checked').data('account-id'),
         }).done(function(){
+
+            let notify = new Notify();
+            notify.show("L'événement a été sauvegardé !", 'bg-primary', 'bottom', 'center');            
+
             $('#calendar').fullCalendar('refetchEvents');
         })
     });
@@ -142,6 +154,8 @@ $(document).ready(function()
         $('#addEventModal #all_day').prop('checked', false)
         $('#addEventModal #location').val('')
         $('#addEventModal #description').val('')
+        $('#addEventModal #entityType').val('')
+        $('#addEventModal #entityId').val('')
         $('#addEventModal input[name=calendars]').prop('checked', false)
     });
 
