@@ -30,6 +30,8 @@ class EventController extends Controller
 
         foreach ($accounts as $account) {
 
+            
+
             $calendarController = new CalendarController();
             $calendars = $calendarController->list($domain, $module, $request, $account->id);
             $calendarsDisabled = \Uccello\Calendar\Http\Controllers\Generic\CalendarController::getDisabledCalendars($account->id);
@@ -120,7 +122,7 @@ class EventController extends Controller
         $event = new \Google_Service_Calendar_Event(array(
             'summary' => $request->input('subject'),
             'location' => $request->input('location'),
-            'description' => ($request->input('description') ?? '').($request->input('entityType')!=null && $request->input('entityId')!=null ? $uccelloLink : ''),
+            'description' => ($request->input('description') ?? '').($request->input('entityType')!=null && $request->input('entityId')!=null ? ' - '.$uccelloLink : ''),
             'start' => $startArray,
             'end' => $endArray,
         ));
@@ -167,7 +169,7 @@ class EventController extends Controller
 
         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
         
-        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]+/([a-z]+)/([0-9]+)`', $event->description, $matches);
+        $regexFound = preg_match('` - '.$uccelloUrl.'/[0-9]+/([a-z]+)/([0-9]+)`', $event->description, $matches);
         $entityType = '';
         $entityId = '';
         if($regexFound)
@@ -245,7 +247,7 @@ class EventController extends Controller
         $event->setSummary($request->input('subject'));
         $event->setLocation($request->input('location'));
         $event->setDescription(($request->input('description') ?? '').
-            ($request->input('entityType')!=null && $request->input('entityId')!=null ? $uccelloLink : ''));
+            ($request->input('entityType')!=null && $request->input('entityId')!=null ? ' - '.$uccelloLink : ''));
         $event->setStart($start);
         $event->setEnd($end);
 

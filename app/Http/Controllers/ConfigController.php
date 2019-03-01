@@ -139,11 +139,14 @@ class ConfigController extends Controller
                 $rules = [];
                 for($i=0 ; $i<$this->rules_nb ; $i++)
                 {
-                    $rule = new \StdClass;
-                    $rule->module = $db_rules->data[$i]->{'rule_'.$i}->module;
-                    $rule->field = $db_rules->data[$i]->{'rule_'.$i}->field;
-                    if($rule->module!=null && $rule->field!=null)
-                        $rules[] = $rule;
+                    if(property_exists($db_rules->data, 'rule_'.$i))
+                    {
+                        $rule = new \StdClass;
+                        $rule->module = $db_rules->data->{'rule_'.$i}->module;
+                        $rule->field = $db_rules->data->{'rule_'.$i}->field;
+                        if($rule->module!=null && $rule->field!=null)
+                            $rules[] = $rule;
+                    }
                 }
 
                 //We check, rule after rule, if the current rule can be resolved

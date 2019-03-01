@@ -146,7 +146,7 @@ class EventController extends Controller
         $parameters->location = new \StdClass;
         $parameters->location->displayName = $request->input('location') ?? '';
         $parameters->body = new \StdClass;
-        $parameters->body->content = ($request->input('description') ?? '').($request->input('entityType')!=null && $request->input('entityId')!=null ? $uccelloLink : '');
+        $parameters->body->content = ($request->input('description') ?? '').($request->input('entityType')!=null && $request->input('entityId')!=null ? ' - '.$uccelloLink : '');
         $parameters->body->contentType = "Text";
 
         $event = $graph->createRequest('POST', '/me/calendars/'.$request->input('calendarId').'/events')
@@ -215,7 +215,7 @@ class EventController extends Controller
         $returnEvent->end =             $end;
         $returnEvent->allDay =          $event->getIsAllDay();
         $returnEvent->location =        $event->getLocation()->getDisplayName();
-        $returnEvent->description =     preg_replace('`<a .+? href="'.$uccelloUrl.'.+?">.+?</a>`', '', $description);
+        $returnEvent->description =     preg_replace('` - <a.+?href="'.$uccelloUrl.'.+?">.+?</a>`', '', $description);
         $returnEvent->entityType =      $entityType;
         $returnEvent->entityId =        $entityId;
         $returnEvent->calendarId =      $request->input('calendarId');
@@ -271,7 +271,7 @@ class EventController extends Controller
         $parameters->location->displayName = $request->input('location') ?? '';
         $parameters->body = new \StdClass;
         $parameters->body->content = ($request->input('description') ?? '').
-            ($request->input('entityType')!=null && $request->input('entityId')!=null ? $uccelloLink : '');
+            ($request->input('entityType')!=null && $request->input('entityId')!=null ? ' - '.$uccelloLink : '');
         $parameters->body->contentType = "Text";
 
         $event = $graph->createRequest('PATCH', '/me/calendars/'.$request->input('calendarId').'/events/'.$request->input('id'))

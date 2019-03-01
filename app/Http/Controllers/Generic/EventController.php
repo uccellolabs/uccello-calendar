@@ -32,31 +32,20 @@ class EventController extends Controller
     {
         $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $type)->get()->first();
         $calendarClass =  $calendarTypeModel->namespace.'\EventController';
-        
         $calendarType = new $calendarClass();
         return $calendarType->list($domain, $module, $request);
     }
 
-    protected function all(Domain $domain, Module $module, Request $request)
+    public function all(Domain $domain, Module $module, Request $request)
     {
         $types = \Uccello\Calendar\CalendarTypes::all();
         $globalEvents = [];
 
         foreach($types as $calendarType)
         {
+            
             $events = $this->list($domain, $calendarType->name, $module, $request);
             $globalEvents = array_merge($globalEvents, $events);
-        }
-
-        foreach($globalEvents as $event_short)
-        {
-            $request->request->add([
-                'accountId' => $event_short['accountId'],
-                'calendarId' => $event_short['calendarId'],
-                'id' => $event_short['id']]
-            );
-            $full_event = json_decode($this->retrieve($domain, $event_short['calendarType'], $module, $request));
-            (new \Uccello\Calendar\Http\Controllers\ConfigController)->processAutomaticAssignment($domain, $module, $request, $full_event);
         }
 
         return $globalEvents;
@@ -71,7 +60,7 @@ class EventController extends Controller
         return $calendarType->create($domain, $module, $request);
     }
 
-    protected function retrieve(Domain $domain, $type, Module $module,  Request $request)
+    public function retrieve(Domain $domain, $type, Module $module,  Request $request)
     {
         $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $type)->get()->first();
         $calendarClass = $calendarTypeModel->namespace.'\EventController';
