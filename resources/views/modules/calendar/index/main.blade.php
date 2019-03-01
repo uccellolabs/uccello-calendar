@@ -95,7 +95,7 @@
                     <div class="col-sm-6">
                         <div class="form-group">
                             <div class="form-line">
-                                <input type="text" class="form-control" placeholder="Module" id="entityType">
+                                <input type="text" class="form-control" placeholder="Module slug" id="entityType">
                             </div>
                         </div>
                     </div>

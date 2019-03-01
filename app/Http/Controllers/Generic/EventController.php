@@ -41,10 +41,22 @@ class EventController extends Controller
     {
         $types = \Uccello\Calendar\CalendarTypes::all();
         $globalEvents = [];
+
         foreach($types as $calendarType)
         {
             $events = $this->list($domain, $calendarType->name, $module, $request);
             $globalEvents = array_merge($globalEvents, $events);
+        }
+
+        foreach($globalEvents as $event_short)
+        {
+            $request->request->add([
+                'accountId' => $event_short['accountId'],
+                'calendarId' => $event_short['calendarId'],
+                'id' => $event_short['id']]
+            );
+            $full_event = json_decode($this->retrieve($domain, $event_short['calendarType'], $module, $request));
+            (new \Uccello\Calendar\Http\Controllers\ConfigController)->processAutomaticAssignment($domain, $module, $request, $full_event);
         }
 
         return $globalEvents;

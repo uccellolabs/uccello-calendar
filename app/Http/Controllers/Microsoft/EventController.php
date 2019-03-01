@@ -146,7 +146,7 @@ class EventController extends Controller
         $parameters->location = new \StdClass;
         $parameters->location->displayName = $request->input('location') ?? '';
         $parameters->body = new \StdClass;
-        $parameters->body->content = ($request->input('description') ?? '').$uccelloLink;
+        $parameters->body->content = ($request->input('description') ?? '').($request->input('entityType')!=null && $request->input('entityId')!=null ? $uccelloLink : '');
         $parameters->body->contentType = "Text";
 
         $event = $graph->createRequest('POST', '/me/calendars/'.$request->input('calendarId').'/events')
@@ -188,7 +188,7 @@ class EventController extends Controller
         }
 
         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
-        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]+/([a-z]+)/([0-9]+?)`', $event->getBody()->getContent(), $matches);
+        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]+/([a-z]+)/([0-9]+)`', $event->getBody()->getContent(), $matches);
         $entityType = '';
         $entityId = '';
         $expression = '';
@@ -232,6 +232,8 @@ class EventController extends Controller
         $accountController = new AccountController();
         $graph = $accountController->initClient($request->input('accountId'));
 
+        $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.$request->input('entityType').'/'.$request->input('entityId');
+
         $parameters = new \StdClass;
         $parameters->start = new \StdClass;
         $parameters->end = new \StdClass;
@@ -268,7 +270,8 @@ class EventController extends Controller
         $parameters->location = new \StdClass;
         $parameters->location->displayName = $request->input('location') ?? '';
         $parameters->body = new \StdClass;
-        $parameters->body->content = $request->input('description') ?? '';
+        $parameters->body->content = ($request->input('description') ?? '').
+            ($request->input('entityType')!=null && $request->input('entityId')!=null ? $uccelloLink : '');
         $parameters->body->contentType = "Text";
 
         $event = $graph->createRequest('PATCH', '/me/calendars/'.$request->input('calendarId').'/events/'.$request->input('id'))
@@ -276,7 +279,7 @@ class EventController extends Controller
                     ->setReturnType(Model\Event::class)
                     ->execute();
 
-        return var_dump($event);
+        //return var_dump($event);
     }
 
     public function delete(Domain $domain, Module $module,  Request $request)

@@ -46945,6 +46945,11 @@ var calendar = $('#calendar').fullCalendar({
   eventSources: ['/default/calendar/events']
 });
 $(document).ready(function () {
+  //     $('#module').on('change', function(e) {
+  //         let selector = $(this).val();
+  //         $("#field > option").hide();
+  //         $("#field > option").filter(function(){return $(this).data('module') == selector}).show();
+  //   });
   $('#start_date, #end_date').bootstrapMaterialDatePicker({
     format: 'DD/MM/YYYY HH:mm',
     lang: 'fr',
@@ -47109,14 +47114,26 @@ function () {
 
 /***/ }),
 
+/***/ "./resources/assets/sass/rangeslider.scss":
+/*!************************************************!*\
+  !*** ./resources/assets/sass/rangeslider.scss ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+
 /***/ 0:
-/*!******************************************!*\
-  !*** multi ./resources/assets/js/app.js ***!
-  \******************************************/
+/*!***********************************************************************************!*\
+  !*** multi ./resources/assets/js/app.js ./resources/assets/sass/rangeslider.scss ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\savin\OneDrive\JSdev\Projets\uccello\packages\uccello\calendar\resources\assets\js\app.js */"./resources/assets/js/app.js");
+__webpack_require__(/*! C:\Users\savin\OneDrive\JSdev\Projets\uccello\packages\uccello\calendar\resources\assets\js\app.js */"./resources/assets/js/app.js");
+module.exports = __webpack_require__(/*! C:\Users\savin\OneDrive\JSdev\Projets\uccello\packages\uccello\calendar\resources\assets\sass\rangeslider.scss */"./resources/assets/sass/rangeslider.scss");
 
 
 /***/ })

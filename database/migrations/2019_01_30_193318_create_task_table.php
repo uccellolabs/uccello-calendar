@@ -13,7 +13,7 @@ class CreateTaskTable extends Migration
      */
     public function up()
     {
-        Schema::create('calendar_tasks', function (Blueprint $table) {
+        /*Schema::create('calendar_tasks', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
             $table->date('date');
@@ -36,7 +36,7 @@ class CreateTaskTable extends Migration
                 ->onDelete('cascade');
             
             $table->timestamps();
-        });
+        });*/
     }
 
     /**
@@ -46,6 +46,6 @@ class CreateTaskTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('calendar_tasks');
+        //Schema::dropIfExists('calendar_tasks');
     }
 }

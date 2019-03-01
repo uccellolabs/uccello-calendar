@@ -85,6 +85,13 @@ var calendar = $('#calendar').fullCalendar({
 
 $(document).ready(function()
 {
+
+//     $('#module').on('change', function(e) {
+//         let selector = $(this).val();
+//         $("#field > option").hide();
+//         $("#field > option").filter(function(){return $(this).data('module') == selector}).show();
+//   });
+
     $('#start_date, #end_date').bootstrapMaterialDatePicker
     ({
         format: 'DD/MM/YYYY HH:mm',

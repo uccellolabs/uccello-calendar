@@ -46,7 +46,7 @@ class CreateTaskModule extends Migration
 
     protected function initTablePrefix()
     {
-        $this->tablePrefix = '';
+        $this->tablePrefix = 'calendar_';
 
         return $this->tablePrefix;
     }

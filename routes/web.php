@@ -76,5 +76,18 @@ Route::name('uccello.calendar.')->group(function () {
     Route::get($domainParam.'/calendar', 'CalendarsController@list')
         ->defaults('module', 'calendar')
         ->name('list');
+
+    Route::get($domainParam.'/calendar/config', 'ConfigController@setup')
+        ->defaults('module', 'calendar')
+        ->name('config');
+
+    Route::post($domainParam.'/calendar/config/save', 'ConfigController@saveConfig')
+        ->defaults('module', 'calendar')
+        ->name('config.save');
+
+    Route::get($domainParam.'/calendar/config/process', 'ConfigController@processAutomaticAssignment')
+        ->defaults('module', 'calendar')
+        ->defaults('domain', '1')
+        ->name('config.process');
    
 });

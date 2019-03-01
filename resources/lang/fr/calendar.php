@@ -23,4 +23,11 @@ return [
     'microsoft' => 'Microsoft Outlook',
     'google' => 'Google Calendar',
     'tasks' => 'Tâches',
+    'module' => 'Module',
+    'field' => 'Champ',
+    'calendar.config' => 'Configurateur de liaison d\'événements du calendrier',
+    'calendar.rules' => 'Parametrer les règles pour la liaison automatique d\'événements du calendrier avec des entités du CRM. Les règles doivent être paramétrées par ordre de priorité',
+    'calendar.rule' => 'Règle',
+    'save' => 'ENREGISTRER',
+    'calendar.config.cron_delay' => 'Délai entre deux exécutions'
 ];

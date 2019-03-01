@@ -66,6 +66,17 @@ class CalendarController extends Controller
         return $calendars;
     }
 
+    public function retrieve(Domain $domain, $accountId, $calendarId, Module $module, Request $request)
+    {
+        $account = \Uccello\Calendar\CalendarAccount::where('id', $accountId)->get()->first();
+        $calendars = $this->list($domain, $account->service_name, $accountId, $module, $request);
+        foreach($calendars as $calendar)
+        {
+            if($calendar->id == $calendarId)
+                return $calendar;   
+        }
+    }
+
     /**
      * Activate or desactivate a calendar
      *
