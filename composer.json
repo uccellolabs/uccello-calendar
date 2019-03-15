@@ -6,7 +6,6 @@
         "google/apiclient": "^2.2",
         "league/oauth2-client": "^2.0",
         "microsoft/microsoft-graph": "1.0.*",
-        "uccello/calendar": "1.0.*",
         "uccello/uccello": "^1.0@dev"
     },
     "license": "MIT",
