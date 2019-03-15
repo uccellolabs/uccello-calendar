@@ -9,7 +9,7 @@
 @include('calendar::modules.calendar.manage.accounts')
 
 <div class="block-header">
-    <h2>CALENDRIERS</h2>
+    <h2>{{ uctrans('calendars', $module) }}</h2>
 </div>
 
 @include('calendar::modules.calendar.manage.calendars')

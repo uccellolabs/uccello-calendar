@@ -1,5 +1,16 @@
 import 'bootstrap'; // Mandatory to user $.modal()
-import 'fullcalendar'
+import 'fullcalendar';
+import 'bootstrap-material-datetimepicker/js/bootstrap-material-datetimepicker';
+
+import 'bootstrap-notify';
+
+import { Notify } from './notify'
+
+function jq( myid ) {
+
+    return myid.replace( /(:|\.|\[|\]|,|=|@)/g, "\\$1" );
+
+}
 
 var calendar = $('#calendar').fullCalendar({
     header: {
@@ -9,155 +20,177 @@ var calendar = $('#calendar').fullCalendar({
     },
     height: "auto",
     locale: 'fr',
+    timeFormat: 'H:mm',
     groupByResource: true,
     editable: true,
     handleWindowResize: true,
     weekends: true, // Hide weekends
     displayEventTime: true, // Display event time
     selectable: true,
-    // axisFormat: 'h:mm',
-    // allDaySlot: false,
-    // defaultView: 'agendaWeek', // Only show week view
-    // minTime: '07:30:00', // Start time for the calendar
-    // maxTime: '22:00:00', // End time for the calendar
 
     selectHelper: true,
+
+    //New event creation
     select: function(start, end, jsEvent) {
-        // var title = prompt('Event Title:');
-        // $('#addEventModal #start_date').val(start)
-        // $('#addEventModal #end_date').val(end)
+        $("#addEventModal button.save").html('Enregistrer l\'événement');
+        $("#addEventModal input[name=calendars]:not([readonly])").removeAttr("disabled");
+
+
+        $('#addEventModal #start_date').val(start.format('DD/MM/YYYY'))
+        $('#addEventModal #end_date').val(end.subtract(1, "days").format('DD/MM/YYYY'))
         $('#addEventModal').modal('show')
-        // if (title) {
-        //     calendar.fullCalendar('renderEvent',
-        //         {
-        //             title: title,
-        //             start: start,
-        //             end: end,
-        //             className: 'bg-primary'
-        //         },
-        //         true // make the event "stick"
-        //     );
-        // }
         calendar.fullCalendar('unselect');
     },
 
-    // events: function(start, end, callback){
-      
-    //   var allEvents = [];
-    //   var googleEvents = function(start, end, timezone, callback) {
-    //       console.log(start);
-    //       $.ajax({
-    //         url: '/default/calendar/google/events',
-    //         dataType: 'json',
-    //         data: {
-    //           // our hypothetical feed requires UNIX timestamps
-    //           start: start.unix(),
-    //           end: end.unix()
-    //         },
-    //         success: function(response) {
-    //           callback(response);
-    //         }
-    //       });
-    //   };
-    //   var microsoftEvents = function(start, end, timezone, callback) {
-    //       $.ajax({
-    //         url: '/default/calendar/google/events',
-    //         dataType: 'json',
-    //         data: {
-    //           // our hypothetical feed requires UNIX timestamps
-    //           start: start.unix(),
-    //           end: end.unix()
-    //         },
-    //         success: function(response) {
-    //           callback(response);
-    //         }
-    //       });
-    //   };
-    //   //allEvents.concat(googleEvents).concat(microsoftEvents);
-      
-    // }
+    //Retrieve existing event
+    eventClick: function(calEvent){
+
+        let url = laroute.route('uccello.calendar.events.retrieve', {
+            domain: $('meta[name="domain"]').attr('content'),
+            type: calEvent.calendarType
+        })
+
+        $.get(url, {
+            _token: $("meta[name='csrf-token']").attr('content'),
+            id : calEvent.id,
+            calendarId: calEvent.calendarId,
+            accountId: calEvent.accountId
+        }).done(function(data){
+
+            var json = $.parseJSON(data);
+            //Open popup and fill in fields
+            $("#addEventModal button.save").html('Mettre à jour l\'événement');
+            $("#addEventModal input[name=calendars]:not([readonly])").attr("disabled", true);
+
+            $('#addEventModal #id').val(json.id)
+            $('#addEventModal #start_date').val(json.start)
+            $('#addEventModal #end_date').val(json.end)
+            $('#addEventModal #subject').val(json.title)
+            $('#addEventModal #all_day').prop('checked', json.allDay)
+            $('#addEventModal #location').val(json.location)
+            $('#addEventModal #description').val(json.description)
+            $('#addEventModal #entityType').val(json.entityType)
+            $('#addEventModal #entityId').val(json.entityId)
+            $('#addEventModal #'+jq(json.calendarId)).prop('checked', true)
+
+            $('#addEventModal').modal('show')
+        })
+    },
 
     eventSources : [
-      '/default/calendar/google/events',
-      '/default/calendar/microsoft/events'
+      'calendar/events'
     ]
-    
-    // header: {
-    //     left: 'title',
-    //     center: 'agendaDay,agendaWeek,month',
-    //     right: 'prev,next today'
-    // },
-    // editable: true,
-    // // firstDay: 1, //  1(Monday) this can be changed to 0(Sunday) for the USA system
-    // // selectable: true,
-    // defaultView: 'month',
 
-    // axisFormat: 'h:mm',
-    // columnFormat: {
-    //     month: 'ddd',    // Mon
-    //     week: 'ddd d', // Mon 7
-    //     day: 'dddd M/d',  // Monday 9/7
-    //     agendaDay: 'dddd d'
-    // },
-    // titleFormat: {
-    //     month: 'MMMM yyyy', // September 2009
-    //     week: "MMMM yyyy", // September 2009
-    //     day: 'MMMM yyyy'                  // Tuesday, Sep 8, 2009
-    // },
-    // allDaySlot: false,
-    // selectHelper: true,
-    // select: function(start, end, allDay) {
-    //     var title = prompt('Event Title:');
-    //     if (title) {
-    //         calendar.fullCalendar('renderEvent',
-    //             {
-    //                 title: title,
-    //                 start: start,
-    //                 end: end,
-    //                 allDay: allDay
-    //             },
-    //             true // make the event "stick"
-    //         );
-    //     }
-    //     calendar.fullCalendar('unselect');
-    // },
-    // droppable: true, // this allows things to be dropped onto the calendar !!!
-    // drop: function(date, allDay) { // this function is called when something is dropped
+});
 
-    //     // retrieve the dropped element's stored Event Object
-    //     var originalEventObject = $(this).data('eventObject');
+$(document).ready(function()
+{
 
-    //     // we need to copy it, so that multiple events don't have a reference to the same object
-    //     var copiedEventObject = $.extend({}, originalEventObject);
+//     $('#module').on('change', function(e) {
+//         let selector = $(this).val();
+//         $("#field > option").hide();
+//         $("#field > option").filter(function(){return $(this).data('module') == selector}).show();
+//   });
 
-    //     // assign it the date that was reported
-    //     copiedEventObject.start = date;
-    //     copiedEventObject.allDay = allDay;
+    $('#start_date, #end_date').bootstrapMaterialDatePicker
+    ({
+        format: 'DD/MM/YYYY HH:mm',
+        lang: 'fr',
+        weekStart: 1,
+        cancelText : 'ANNULER',
+        nowText: "MAINTENANT",
+        nowButton : true,
+        switchOnClick : true
+    });
 
-    //     // render the event on the calendar
-    //     // the last `true` argument determines if the event "sticks" (https://arshaw.com/fullcalendar/docs/event_rendering/renderEvent/)
-    //     $('#calendar').fullCalendar('renderEvent', copiedEventObject, true);
+    //Saving event (new ou existing)
+    $('#addEventModal button.save').on('click', (event) =>{
 
-    //     // is the "remove after drop" checkbox checked?
-    //     if ($('#drop-remove').is(':checked')) {
-    //         // if so, remove the element from the "Draggable Events" list
-    //         $(this).remove();
-    //     }
+        if($('#all_day').is(':checked'))
+        {
+            $('#start_date').val( $('#start_date').val().split(' ')[0]);
+            $('#end_date').val( $('#end_date').val().split(' ')[0]);
+        }
 
-    // },
-    // events: function(start, end, timezone, callback) {
-    //     $.ajax({
-    //         url: '/default/calendar/events',
-    //         dataType: 'json',
-    //         data: {
-    //         // our hypothetical feed requires UNIX timestamps
-    //         start: start.unix(),
-    //         end: end.unix()
-    //         },
-    //         success: function(response) {
-    //         callback(response);
-    //         }
-    //     });
-    // }
+        let url = '';
 
-})
+        if($('#addEventModal #id').val()=='')
+        {
+            url = laroute.route('uccello.calendar.events.create', {
+                domain: $('meta[name="domain"]').attr('content'),
+                type: $('input[name=calendars]:checked').data('calendar-type')
+            })
+        }
+        else
+        {
+            url = laroute.route('uccello.calendar.events.update', {
+                domain: $('meta[name="domain"]').attr('content'),
+                type: $('input[name=calendars]:checked').data('calendar-type')
+            })
+        }
+
+        $.post(url, {
+            _token: $("meta[name='csrf-token']").attr('content'),
+            id: $('#addEventModal #id').val(),
+            subject: $('#subject').val(),
+            start_date: $('#start_date').val(),
+            end_date: $('#end_date').val(),
+            location: $('#location').val(),
+            description : $('#description').val(),
+            entityType: $('#entityType').val(),
+            entityId: $('#entityId').val(),
+            allDay: $('#all_day').is(':checked'),
+            calendarId: $('input[name=calendars]:checked').val(),
+            accountId: $('input[name=calendars]:checked').data('account-id'),
+        }).done(function(){
+
+            let notify = new Notify();
+            notify.show("L'événement a été sauvegardé !", 'bg-primary', 'bottom', 'center');
+
+            $('#calendar').fullCalendar('refetchEvents');
+        })
+    });
+
+    //Clear HTML
+    $('#addEventModal button.cancel').on('click', (event) =>{
+
+        $('#addEventModal #id').val('')
+        $('#addEventModal #start_date').val('')
+        $('#addEventModal #end_date').val('')
+        $('#addEventModal #subject').val('')
+        $('#addEventModal #all_day').prop('checked', false)
+        $('#addEventModal #location').val('')
+        $('#addEventModal #description').val('')
+        $('#addEventModal #entityType').val('')
+        $('#addEventModal #entityId').val('')
+        $('#addEventModal input[name=calendars]').prop('checked', false)
+    });
+
+    //Delete event
+    $('#addEventModal button.delete').on('click', (event) =>{
+
+        let url = laroute.route('uccello.calendar.events.remove', {
+            domain: $('meta[name="domain"]').attr('content'),
+            type: $('input[name=calendars]:checked').data('calendar-type')
+        })
+
+        $.post(url, {
+            _token: $("meta[name='csrf-token']").attr('content'),
+            id: $('#addEventModal #id').val(),
+            calendarId: $('input[name=calendars]:checked').val(),
+            accountId: $('input[name=calendars]:checked').data('account-id'),
+        }).done(function(){
+            $("#calendar").fullCalendar('removeEvents', $('#addEventModal #id').val());
+        })
+        $('#addEventModal').modal('hide');
+    });
+
+    //Update datetime on checkbox checked to remove time
+    $('#all_day').change(function() {
+        if($(this).is(':checked'))
+        {
+            $('#start_date').val( $('#start_date').val().split(' ')[0]);
+            $('#end_date').val( $('#end_date').val().split(' ')[0]);
+        }
+    });
+});

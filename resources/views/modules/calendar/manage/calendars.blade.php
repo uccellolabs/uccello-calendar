@@ -3,7 +3,7 @@
         <div class="card">
             <div class="header">
                 <h2>
-                    {{ $account->service_name }} 
+                    {{ uctrans($account->service_name, $module) }} 
                     <small> {{ $account->username }} </small>
                 </h2>
             </div>
@@ -18,7 +18,7 @@
                                     @if(!$calendar->disabled)checked @endif
                                     id="{{ $account->id.$calendar->id }}">
                                 <label for="{{ $account->id.$calendar->id }}">{{ $calendar->name }}</label>
-                                <a href="{{ ucroute('uccello.calendar.removeCalendar', $domain, $module, ['accountId'=> $account->id, 'id' => $calendar->id]) }}" 
+                                <a href="{{ ucroute('uccello.calendar.remove', $domain, $module, ['accountId'=> $account->id, 'id' => $calendar->id]) }}" 
                                     title="{{ uctrans('button.delete', $module) }}" 
                                     class="delete-btn" 
                                     data-config='{"actionType":"link","confirm":true,"dialog":{"title":"{{ uctrans('button.delete.confirm', $module) }}"}}'>
@@ -35,6 +35,7 @@
                         @endforelse
 
                 </ul>
+                @if ($account->service_name != 'tasks')
                 <a role="button" class="btn btn-primary waves-effect" data-toggle="collapse" aria-expanded="false"
                     href="#addCalendar{{$loop->index}}">
                     <i class="material-icons">add</i>
@@ -42,7 +43,7 @@
                 </a>
                 <div class="collapse .p-t-10" id="addCalendar{{$loop->index}}" aria-expanded="false" style="height: 0px;">
                     <div class="body">
-                        <form method="POST" action=" {{ route('uccello.calendar.addCalendar', ['domain' => $domain->slug]) }} ">
+                        <form method="POST" action=" {{ route('uccello.calendar.add', ['domain' => $domain->slug]) }} ">
                             <input type="hidden" name="account" value=" {{ $account->id }} ">
                             <div class="row clearfix">
                                 <div class="col-lg-9 col-md-9 col-sm-9 col-xs-18">
@@ -59,6 +60,7 @@
                         </form>
                     </div>
                 </div>
+                @endif
             </div>
         </div>
     </div>

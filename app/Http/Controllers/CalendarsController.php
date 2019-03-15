@@ -9,108 +9,73 @@ use Uccello\Core\Models\Module;
 
 class CalendarsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    public function manageAccounts(?Domain $domain, Module $module, Request $request)
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create(?Domain $domain, Module $module, Request $request)
-    {
+        // Pre-process
         $this->preProcess($domain, $module, $request);
 
-        $account = \Uccello\Calendar\CalendarAccount::find(request(['account']))->first();
+        $calendarsType = \Uccello\Calendar\CalendarTypes::all();
+        $accounts = \Uccello\Calendar\CalendarAccount::all();
 
-        Generic\EventsController::addCalendar($domain, $account->service_name, $account->id, $module, $request);
-        
-        return redirect(route('uccello.calendar.manage', ['domain' => $domain->slug]));
+        $calendars = [];
+
+        foreach($accounts as $account){
+            $calendarController = new Generic\CalendarController();
+            $currentCalendars = $calendarController->list($domain, $account->service_name, $account->id, $module, $request);
+            array_push($calendars, $currentCalendars);
+        }
+
+        $this->viewName = 'manage.main';
+
+        return $this->autoView([
+            'calendarsType' => $calendarsType,
+            'accounts' => $accounts,
+            'calendars' => $calendars,
+        ]);
     }
 
-    public function toggle(Domain $domain, $accountId, $calendarId, Module $module, Request $request)
+    public function list(?Domain $domain, Module $module, Request $request)
     {
+        // Pre-process
         $this->preProcess($domain, $module, $request);
 
-        $account = \Uccello\Calendar\CalendarAccount::find($accountId);
+        $calendarsType = \Uccello\Calendar\CalendarTypes::all();
+        $accounts = \Uccello\Calendar\CalendarAccount::all();
 
-        $calendarsDisabled = json_decode($account->disabled_calendars);
+        $calendars = [];
+        $entities = [];
 
-        if($calendarsDisabled==null)
-            $calendarsDisabled = new \StdClass;
+        foreach($accounts as $account){
+            $calendarController = new Generic\CalendarController();
+            $accountCalendars = $calendarController->list($domain, $account->service_name, $account->id, $module, $request);
 
-        if(property_exists($calendarsDisabled, $calendarId))
-            unset($calendarsDisabled->$calendarId);
-        else
-            $calendarsDisabled->$calendarId = 'true';
+            foreach($accountCalendars as $calendar)
+            {
+                $exists = false;
 
-        $account->disabled_calendars = json_encode($calendarsDisabled);
+                foreach($calendars as $currCalendar)
+                {
+                    if($calendar->id == $currCalendar->id)
+                        $exists = true;
+                }
 
-        $account->save();
-        
-        return redirect(route('uccello.calendar.manage', ['domain' => $domain->slug]));
-    }
+                if(!$exists && $calendar->disabled==false)
+                    $calendars[] = $calendar;
+            }
+        }
 
-    /**
-     * Undocumented function
-     *
-     * @param [type] $accountId
-     * @return void
-     */
-    static function getDisabledCalendars($accountId)
-    {
-        $account = \Uccello\Calendar\CalendarAccount::find($accountId);
-        $disabledCalendars = json_decode($account->disabled_calendars);
-        if($disabledCalendars==null)
-            $disabledCalendars = new \StdClass;
-        return $disabledCalendars;
-    }
+        $allEntities = \Uccello\Core\Models\Module::all();
+        foreach($allEntities as $entity)
+        {
+            $entities[] = $entity->name;
+        }
 
+        $this->viewName = 'index.main';
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function retrieve($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Domain $domain, $accountId, $calendarId, Module $module, Request $request)
-    {
-        $this->preProcess($domain, $module, $request);
-
-        $account = \Uccello\Calendar\CalendarAccount::find($accountId);
-
-        Generic\EventsController::removeCalendar($domain, $account, $calendarId, $module, $request);
-        
-        return redirect(route('uccello.calendar.manage', ['domain' => $domain->slug]));
+        return $this->autoView([
+            'accounts' => $accounts,
+            'calendars' => $calendars,
+            'entities' => $entities,
+        ]);
     }
 }
