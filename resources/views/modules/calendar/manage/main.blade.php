@@ -16,6 +16,6 @@
 
 @endsection
 
-@section('extra-script')
-    {{ Html::script(ucasset('js/calendar-manager.js', 'uccello/calendar')) }}
-@endsection
+@section('script')
+    {{ Html::script(mix('js/calendar-manager.js', 'vendor/uccello/calendar')) }}
+@append

@@ -3,34 +3,34 @@
         <div class="card">
             <div class="header">
                 <h2>
-                    {{ uctrans($account->service_name, $module) }} 
+                    {{ uctrans($account->service_name, $module) }}
                     <small> {{ $account->username }} </small>
                 </h2>
             </div>
             <div class="body">
                 <ul class="list-group">
-                    
+
                         @forelse ($calendars[$loop->index] as $calendar)
-                            
-                            <li class="list-group-item">  
+
+                            <li class="list-group-item">
                                 <input type="checkbox" class="calendar-toggle"
                                     data-accountid = {{ $account->id }} data-calendarid = {{ $calendar->id }}
                                     @if(!$calendar->disabled)checked @endif
                                     id="{{ $account->id.$calendar->id }}">
                                 <label for="{{ $account->id.$calendar->id }}">{{ $calendar->name }}</label>
-                                <a href="{{ ucroute('uccello.calendar.remove', $domain, $module, ['accountId'=> $account->id, 'id' => $calendar->id]) }}" 
-                                    title="{{ uctrans('button.delete', $module) }}" 
-                                    class="delete-btn" 
+                                <a href="{{ ucroute('calendar.remove', $domain, $module, ['accountId'=> $account->id, 'id' => $calendar->id]) }}"
+                                    title="{{ uctrans('button.delete', $module) }}"
+                                    class="delete-btn"
                                     data-config='{"actionType":"link","confirm":true,"dialog":{"title":"{{ uctrans('button.delete.confirm', $module) }}"}}'>
                                     <i class="material-icons">delete</i>
                                 </a>
                                 <span style="background-color: {{ $calendar->color }}" class="badge">{{ uctrans('color', $module) }}</span>
-                            </li>   
-    
+                            </li>
+
                         @empty
-                        <div
+                        <div>
                             <span class="label label-default">{{ uctrans('none', $module) }}</span>
-                            
+
                         </div>
                         @endforelse
 
@@ -43,7 +43,7 @@
                 </a>
                 <div class="collapse .p-t-10" id="addCalendar{{$loop->index}}" aria-expanded="false" style="height: 0px;">
                     <div class="body">
-                        <form method="POST" action=" {{ route('uccello.calendar.add', ['domain' => $domain->slug]) }} ">
+                        <form method="POST" action=" {{ ucroute('calendar.add', $domain, $module) }} ">
                             <input type="hidden" name="account" value=" {{ $account->id }} ">
                             <div class="row clearfix">
                                 <div class="col-lg-9 col-md-9 col-sm-9 col-xs-18">

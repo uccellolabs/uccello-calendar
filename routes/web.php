@@ -1,21 +1,23 @@
 <?php
 
-use Uccello\Calendar\CalendarTypes;
+Route::middleware('web', 'auth')
+->name('calendar.')
+->group(function() {
 
-Route::name('uccello.calendar.')->group(function () {
-
-    // Adapt params if we use or not multi domains
+    // This makes it possible to adapt the parameters according to the use or not of the multi domains
     if (!uccello()->useMultiDomains()) {
         $domainParam = '';
+        $domainAndModuleParams = '{module}';
     } else {
         $domainParam = '{domain}';
+        $domainAndModuleParams = '{domain}/{module}';
     }
 
     //Events
     Route::get($domainParam.'/calendar/{type}/events', 'Generic\EventController@list')
         ->defaults('module', 'calendar')
         ->name('events.list');
-    
+
     Route::get($domainParam.'/calendar/events', 'Generic\EventController@all')
         ->defaults('module', 'calendar')
         ->name('events.all');
@@ -24,7 +26,7 @@ Route::name('uccello.calendar.')->group(function () {
         ->defaults('module', 'calendar')
         ->name('events.create');
 
-    Route::get($domainParam.'/calendar/event/{type}', 'Generic\EventController@retrieve')
+    Route::get($domainParam.'/calendar/event', 'Generic\EventController@retrieve')
         ->defaults('module', 'calendar')
         ->name('events.retrieve');
 
@@ -66,7 +68,7 @@ Route::name('uccello.calendar.')->group(function () {
     Route::get($domainParam.'/calendar/account/remove', 'Generic\AccountController@destroy')
         ->defaults('module', 'calendar')
         ->name('account.remove');
-    
+
 
     //ModuleController
     Route::get($domainParam.'/calendar/manage', 'CalendarsController@manageAccounts')
@@ -87,7 +89,5 @@ Route::name('uccello.calendar.')->group(function () {
 
     Route::get($domainParam.'/calendar/config/process', 'ConfigController@processAutomaticAssignment')
         ->defaults('module', 'calendar')
-        ->defaults('domain', '1')
         ->name('config.process');
-   
 });

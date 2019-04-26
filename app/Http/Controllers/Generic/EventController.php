@@ -43,7 +43,7 @@ class EventController extends Controller
 
         foreach($types as $calendarType)
         {
-            
+
             $events = $this->list($domain, $calendarType->name, $module, $request);
             $globalEvents = array_merge($globalEvents, $events);
         }
@@ -60,13 +60,14 @@ class EventController extends Controller
         return $calendarType->create($domain, $module, $request);
     }
 
-    public function retrieve(Domain $domain, $type, Module $module,  Request $request)
+    public function retrieve(Domain $domain, Module $module)
     {
+        $type = request('type');
         $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $type)->get()->first();
         $calendarClass = $calendarTypeModel->namespace.'\EventController';
 
         $calendarType = new $calendarClass();
-        return $calendarType->retrieve($domain, $module, $request);
+        return $calendarType->retrieve($domain, $module, request());
     }
 
     protected function update(Domain $domain, $type, Module $module, Request $request)

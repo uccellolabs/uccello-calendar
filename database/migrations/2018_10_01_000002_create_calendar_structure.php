@@ -37,7 +37,7 @@ class CreateCalendarStructure extends Migration
         $module->icon = 'date_range';
         $module->model_class = null;
         $module->data = ["package" => "uccello/calendar", "menu" => [
-            ['label' => 'Calendars', 'route'=> 'uccello.index', 'icon' => 'date_range'],
+            ['label' => 'calendar', 'route'=> 'uccello.index', 'icon' => 'date_range'],
         ]];
         $module->save();
 

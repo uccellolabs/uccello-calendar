@@ -28,11 +28,11 @@ class CalendarController extends Controller
 
         $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $account->service_name)->get()->first();
         $calendarClass =  $calendarTypeModel->namespace.'\CalendarController';
-        
+
         $calendarType = new $calendarClass();
-        return $calendarType->addCalendar($domain, $module, $request, $account->id);    
-        
-        return redirect(route('uccello.calendar.manage', ['domain' => $domain->slug]));
+        return $calendarType->addCalendar($domain, $module, $request, $account->id);
+
+        return redirect(ucroute('calendar.manage', $domain, $module));
     }
 
     /**
@@ -49,9 +49,9 @@ class CalendarController extends Controller
     {
         $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $type)->get()->first();
         $calendarClass =  $calendarTypeModel->namespace.'\CalendarController';
-        
+
         $calendarType = new $calendarClass();
-        $calendars = $calendarType->list($domain, $module, $request, $accountId);    
+        $calendars = $calendarType->list($domain, $module, $request, $accountId);
 
         $disabledCalendars = $this->getDisabledCalendars($accountId);
 
@@ -62,7 +62,7 @@ class CalendarController extends Controller
             else
                 $calendar->disabled = false;
         }
-        
+
         return $calendars;
     }
 
@@ -73,7 +73,7 @@ class CalendarController extends Controller
         foreach($calendars as $calendar)
         {
             if($calendar->id == $calendarId)
-                return $calendar;   
+                return $calendar;
         }
     }
 
@@ -106,8 +106,8 @@ class CalendarController extends Controller
         $account->disabled_calendars = json_encode($calendarsDisabled);
 
         $account->save();
-        
-        return redirect(route('uccello.calendar.manage', ['domain' => $domain->slug]));
+
+        return redirect(ucroute('calendar.manage', $domain, $module));
     }
 
     /**
@@ -145,13 +145,13 @@ class CalendarController extends Controller
 
         $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $account->service_name)->get()->first();
         $calendarClass =  $calendarTypeModel->namespace.'\CalendarController';
-        
+
         $calendarType = new $calendarClass();
-        return $calendarType->removeCalendar($domain, $module, $request, $account, $calendarId);   
-        
-        return redirect(route('uccello.calendar.manage', ['domain' => $domain->slug]));
+        return $calendarType->removeCalendar($domain, $module, $request, $account, $calendarId);
+
+        return redirect(ucroute('calendar.manage', $domain, $module));
     }
 
-    
+
 
 }

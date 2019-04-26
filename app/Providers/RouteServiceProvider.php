@@ -48,8 +48,7 @@ class RouteServiceProvider extends DefaultRouteServiceProvider
     protected function mapUccelloRoutes()
     {
       // Web
-      Route::middleware('web', 'auth')
-            ->namespace('Uccello\Calendar\Http\Controllers') // We prefer to do this instead of modifying $this->namespace, else LoginController is not find
+      Route::namespace('Uccello\Calendar\Http\Controllers') // We prefer to do this instead of modifying $this->namespace, else LoginController is not find
             ->group(__DIR__.'/../../routes/web.php');
     }
 }

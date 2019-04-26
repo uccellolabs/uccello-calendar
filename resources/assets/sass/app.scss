@@ -1,7 +1,28 @@
+// @import url('https://use.fontawesome.com/releases/v5.8.1/css/all.css');
+
 @import '~fullcalendar/dist/fullcalendar.min.css';
 // @import '~fullcalendar/dist/fullcalendar.print.css';
 @import 'material-full-calendar.scss';
 
-.fc-unthemed td.fc-today {
-    background: #F1F2F8;
+.fc-unthemed {
+    td.fc-today {
+        background: #F1F2F8;
+
+        span {
+            font-weight: bold;
+        }
+    }
+
+    tr {
+        border-bottom: none;
+    }
+
+    .fc-time,
+    .fc-title {
+        font-size: 12px;
+    }
+
+    button:focus {
+        background-color: rgba(158, 158, 158, 0.2)
+    }
 }

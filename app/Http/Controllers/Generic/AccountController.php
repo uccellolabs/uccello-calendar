@@ -12,9 +12,9 @@ class AccountController extends Controller
     public function signin(Domain $domain, $type)
     {
         $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $type)->get()->first();
-        
+
         $calendarClass =  $calendarTypeModel->namespace.'\AccountController';
-        
+
         $calendarType = new $calendarClass();
         return $calendarType->signin();
     }
@@ -23,9 +23,9 @@ class AccountController extends Controller
     {
         $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $type)->get()->first();
         $calendarClass =  $calendarTypeModel->namespace.'\AccountController';
-        
+
         $calendarType = new $calendarClass();
-        return $calendarType->gettoken();   
+        return $calendarType->gettoken();
     }
 
     public function destroy(?Domain $domain, Module $module, Request $request)
@@ -36,6 +36,6 @@ class AccountController extends Controller
 
         $account->delete();
 
-        return redirect(route('uccello.calendar.manage', ['domain' => $domain->slug]));
+        return redirect(ucroute('calendar.manage', $domain, $module));
     }
 }

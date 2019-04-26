@@ -6,7 +6,7 @@ return [
     'calendar.create' => 'Créer un calendrier',
     'calendar.name' => 'Nom du calendrier',
     'accounts' => 'COMPTES',
-    'calendars' => 'CALENDRIERS',
+    'calendars' => 'Calendriers',
     'none' => 'Aucun compte',
     'delete_account' => 'Supprimer ce compte',
     'confirm' => 'Etes-vous sûrs de vouloir supprimer ce compte ?',
@@ -14,7 +14,7 @@ return [
     'accounts.stored' => 'Comptes enregistrés',
     'create' => 'Créer',
     'calendars.manage' => 'Gérer les calendriers',
-    'event.allday' => 'Toute la journée',
+    'event.allday' => 'Journée entière',
     'event.add' => 'Ajouter un événement',
     'event.save' => 'Enregistrer l\'événement',
     'cancel' => 'Annuler',
@@ -29,5 +29,15 @@ return [
     'calendar.rules' => 'Parametrer les règles pour la liaison automatique d\'événements du calendrier avec des entités du CRM. Les règles doivent être paramétrées par ordre de priorité',
     'calendar.rule' => 'Règle',
     'save' => 'ENREGISTRER',
-    'calendar.config.cron_delay' => 'Délai entre deux exécutions'
+    'calendar.config.cron_delay' => 'Délai entre deux exécutions',
+
+    'field' => [
+        'subject' => 'Sujet',
+        'start_date' => 'Du',
+        'end_date' => 'Au',
+        'entity_type' => 'Module',
+        // 'entity_id' => '',
+        'location' => 'Lieu',
+        'description' => 'Description',
+    ],
 ];
