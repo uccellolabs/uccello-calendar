@@ -57,7 +57,6 @@ class EventController extends Controller
                     );
 
                     $getEventsUrl = '/me/calendars/'.$calendar->id.'/events?'.http_build_query($eventsQueryParams);
-
                     $items = $graph->createRequest('GET', $getEventsUrl)
                                     ->setReturnType(Model\Event::class)
                                     ->execute();
@@ -104,7 +103,6 @@ class EventController extends Controller
         $graph = $accountController->initClient($request->input('accountId'));
 
         $datetimeRegex = '/\d{2}\/\d{2}\/\d{4}\ \d{2}\:\d{2}/';
-
         $dateOnly = true;
         $startDate = '';
         $endDate = '';
@@ -142,7 +140,6 @@ class EventController extends Controller
         }
 
         $parameters->subject = $request->input('subject');
-
         $parameters->location = new \StdClass;
         $parameters->location->displayName = $request->input('location') ?? '';
         $parameters->body = new \StdClass;
@@ -155,7 +152,6 @@ class EventController extends Controller
                     ->execute();
 
         return var_dump($event);
-
     }
 
     public function retrieve(Domain $domain, Module $module, Request $request)
@@ -266,7 +262,6 @@ class EventController extends Controller
         }
 
         $parameters->subject = $request->input('subject');
-
         $parameters->location = new \StdClass;
         $parameters->location->displayName = $request->input('location') ?? '';
         $parameters->body = new \StdClass;

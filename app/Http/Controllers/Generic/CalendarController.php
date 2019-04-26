@@ -62,7 +62,6 @@ class CalendarController extends Controller
             else
                 $calendar->disabled = false;
         }
-
         return $calendars;
     }
 

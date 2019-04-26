@@ -86,25 +86,25 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./resources/assets/js/fr.js":
-/*!***********************************!*\
-  !*** ./resources/assets/js/fr.js ***!
-  \***********************************/
+/***/ "./resources/assets/js/fullCalendar_locale_fr.js":
+/*!*******************************************************!*\
+  !*** ./resources/assets/js/fullCalendar_locale_fr.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-throw new Error("Module build failed (from ./node_modules/babel-loader/lib/index.js):\nError: ENOENT: no such file or directory, open '/Users/jonathan/work/www/uccellocrm/packages/uccello/calendar/resources/assets/js/fr.js'");
+throw new Error("Module build failed (from ./node_modules/babel-loader/lib/index.js):\nError: ENOENT: no such file or directory, open 'F:\\VMs\\Partage\\uccello\\packages\\uccello\\calendar\\resources\\assets\\js\\fullCalendar_locale_fr.js'");
 
 /***/ }),
 
 /***/ 1:
-/*!*****************************************!*\
-  !*** multi ./resources/assets/js/fr.js ***!
-  \*****************************************/
+/*!*************************************************************!*\
+  !*** multi ./resources/assets/js/fullCalendar_locale_fr.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /Users/jonathan/work/www/uccellocrm/packages/uccello/calendar/resources/assets/js/fr.js */"./resources/assets/js/fr.js");
+module.exports = __webpack_require__(/*! F:\VMs\Partage\uccello\packages\uccello\calendar\resources\assets\js\fullCalendar_locale_fr.js */"./resources/assets/js/fullCalendar_locale_fr.js");
 
 
 /***/ })

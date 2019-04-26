@@ -33,7 +33,6 @@ class ConfigController extends Controller
      */
     public function setup(?Domain $domain, Module $module, Request $request)
     {
-
         // Pre-process
         $this->preProcess($domain, $module, $request);
 
@@ -61,7 +60,6 @@ class ConfigController extends Controller
             $cron_delay = intval($db_rules->data->cron_delay);
         if($cron_delay<1)
             $cron_delay = 5;
-
         //Get specific rules
         if($db_rules->data!=NULL)
         {
@@ -100,12 +98,10 @@ class ConfigController extends Controller
         if($cron_delay<1)
             $cron_delay = 5;
 
-
         $config = CalendarConfig::firstOrNew([
             'domain_id' => $domain->id,
             'user_id' => null,
             ]);
-
         //Fill in data's field
         $data = [];
         $data['cron_delay'] = $cron_delay;

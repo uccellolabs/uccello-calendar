@@ -43,7 +43,6 @@ class EventController extends Controller
 
         foreach($types as $calendarType)
         {
-
             $events = $this->list($domain, $calendarType->name, $module, $request);
             $globalEvents = array_merge($globalEvents, $events);
         }
