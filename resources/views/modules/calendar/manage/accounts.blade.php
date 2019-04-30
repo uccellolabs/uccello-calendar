@@ -1,72 +1,57 @@
-<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+<div class="col s12 m6">
     <div class="card">
-        <div class="body">
-            <!-- Nav tabs -->
-            <ul class="nav nav-tabs tab-nav-right" role="tablist">
-                @foreach ($calendarsType as $calendarType)
-                    @if ($loop->first)
-                        <li role="presentation" class="active">
-                            <a href="#{{$calendarType->name}}" data-toggle="tab" aria-expanded="true">{{ mb_strtoupper(uctrans($calendarType->friendly_name, $module)) }}</a>
-                        </li>
-                    @else
-                        <li role="presentation">
-                            <a href="#{{$calendarType->name}}" data-toggle="tab" aria-expanded="false">{{ mb_strtoupper(uctrans($calendarType->friendly_name, $module)) }}</a>
+        <div class="card-content">
+            <span class="card-title">
+                <i class="material-icons primary-text left">people</i>
+                {{ uctrans('accounts', $module) }}
 
+                <a href="#"
+                    class="btn-small btn-floating waves-effect green right dropdown-trigger"
+                    data-target="add-account-dropdown"
+                    data-constrain-width="false"
+                    data-tooltip="{{ uctrans('button.add_account', $module) }}"
+                    data-position="left">
+                    <i class="material-icons">add</i>
+                </a>
+
+                <ul id="add-account-dropdown" class="dropdown-content">
+                    @foreach ($calendarsType as $calendarType)
+                        @continue($calendarType->name === 'tasks')
+                        <li><a href="{{ ucroute('calendar.account.signin', $domain, $module, ['type' => $calendarType->name]) }}">{{ uctrans($calendarType->friendly_name, $module) }}</a></li>
+                    @endforeach
+                </ul>
+            </span>
+
+            <ul class="collection">
+                <?php $cpt = 0; ?>
+                @foreach ($calendarsType as $calendarType)
+                    @foreach($accounts as $account)
+                        @continue($account->service_name !== $calendarType->name)
+                        <?php $cpt++; ?>
+                        <li class="collection-item avatar">
+                            <img src="{{ asset('vendor/uccello/calendar/images/'.$calendarType->name .'.png') }}" alt="{{ $account->service_name }}" class="circle">
+                            <span class="title"><b>{{ $account->username }}</b></span>
+                            <p>{{ uctrans($calendarType->friendly_name, $module) }}</p>
+
+                            @if ($calendarType->name !== 'tasks')
+                            <a href="{{ ucroute('calendar.account.remove', $domain, $module, ['id' => $account->id]) }}"
+                                class="secondary-content primary-text"
+                                data-tooltip="{{ uctrans('button.delete_account', $module) }}"
+                                data-position="left"
+                                data-config='{"actionType":"link", "confirm":true}'>
+                                <i class="material-icons">delete</i>
+                            </a>
+                            @endif
                         </li>
-                    @endif
+                    @endforeach
                 @endforeach
-            </ul>
 
-            <!-- Tab panes -->
-            <div class="tab-content">
-                @foreach ($calendarsType as $calendarType)
-                @if ($loop->first)
-                    <div role="tabpanel" class="tab-pane fade active in" id="{{$calendarType->name}}">
-                @else
-                    <div role="tabpanel" class="tab-pane fade" id="{{$calendarType->name}}">
+                @if ($cpt === 0)
+                <li class="collection-item grey lighten-4 center-align">
+                    {{ uctrans('none', $module) }}
+                </li>
                 @endif
-                        <b>{{ uctrans('accounts.stored', $module) }} : </b>
-                        <br>
-                        <ul class="list-group">
-                            @forelse ($accounts as $account)
-                                @if ($account->service_name == $calendarType->name)
-                                    <li class="list-group-item"> {{ $account->username }}
-                                        @if ($calendarType->name != 'tasks')
-                                        <a href="{{ ucroute('calendar.account.remove', $domain, $module, ['id' => $account->id]) }}" title="{{ uctrans('button.delete', $module) }}" class="delete-btn" data-config='{"actionType":"link","confirm":true,"dialog":{"title":"{{ uctrans('button.delete.confirm', $module) }}"}}'><i class="material-icons">delete</i></a>
-                                        @endif
-                                    </li>
-                                @endif
-                            @empty
-                            <div>
-                                <span class="label label-default">{{ uctrans('none', $module) }}</span>
-                            </div>
-                            @endforelse
-
-                        </ul>
-                        @if ($calendarType->name != 'tasks')
-                        <a role="button" class="btn btn-primary waves-effect"
-                            href="{{ ucroute('calendar.account.signin', $domain, $module, ['type' => $calendarType->name]) }}">
-                            <i class="material-icons">add</i>
-                            <span>{{ uctrans('add_account', $module) }}</span>
-                        </a>
-                        @endif
-                    </div>
-                @endforeach
-            </div>
+            </ul>
         </div>
     </div>
 </div>
-
-<div class="modal fade" id="defaultModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title" id="defaultModalLabel">{{ uctrans('confirm', $module) }}</h4>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default">ANNULER</button>
-                    <button type="button" class="btn btn-danger btn-ok" data-dismiss="modal">SUPPRIMER</button>
-                </div>
-            </div>
-        </div>
-    </div>

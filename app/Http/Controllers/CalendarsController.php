@@ -34,10 +34,10 @@ class CalendarsController extends Controller
         ]);
     }
 
-    public function list(?Domain $domain, Module $module, Request $request)
+    public function list(?Domain $domain, Module $module)
     {
         // Pre-process
-        $this->preProcess($domain, $module, $request);
+        $this->preProcess($domain, $module, request());
 
         $calendarsType = \Uccello\Calendar\CalendarTypes::all();
         $accounts = \Uccello\Calendar\CalendarAccount::all();
@@ -47,7 +47,7 @@ class CalendarsController extends Controller
 
         foreach($accounts as $account){
             $calendarController = new Generic\CalendarController();
-            $accountCalendars = $calendarController->list($domain, $account->service_name, $account->id, $module, $request);
+            $accountCalendars = $calendarController->list($domain, $account->service_name, $account->id, $module);
 
             foreach($accountCalendars as $calendar)
             {
@@ -55,27 +55,29 @@ class CalendarsController extends Controller
 
                 foreach($calendars as $currCalendar)
                 {
-                    if($calendar->id == $currCalendar->id)
+                    if($calendar->id === $currCalendar->id) {
                         $exists = true;
+                    }
                 }
 
-                if(!$exists && $calendar->disabled==false)
+                if(!$exists) {
                     $calendars[] = $calendar;
+                }
             }
         }
 
-        $allEntities = \Uccello\Core\Models\Module::all();
-        foreach($allEntities as $entity)
-        {
-            $entities[] = $entity->name;
-        }
+        // $allEntities = \Uccello\Core\Models\Module::all();
+        // foreach($allEntities as $entity)
+        // {
+        //     $entities[] = $entity->name;
+        // }
 
         $this->viewName = 'index.main';
 
         return $this->autoView([
             'accounts' => $accounts,
             'calendars' => $calendars,
-            'entities' => $entities,
+            // 'entities' => $entities,
         ]);
     }
 }

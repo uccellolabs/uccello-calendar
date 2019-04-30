@@ -2,16 +2,17 @@
 
 namespace Uccello\Calendar\Http\Controllers\Microsoft;
 
-use Uccello\Core\Http\Controllers\Core\Controller;
-use Uccello\Calendar\CalendarAccount;
 use Microsoft\Graph\Graph;
 use Microsoft\Graph\Model;
+use Uccello\Core\Http\Controllers\Core\Controller;
+use Uccello\Calendar\CalendarAccount;
+use Uccello\Core\Models\Domain;
+use Uccello\Core\Models\Module;
 
 class AccountController extends Controller
 {
     public function signin()
     {
-
         // Initialize the OAuth client
         $oauthClient = new \League\OAuth2\Client\Provider\GenericProvider([
             'clientId'                => env('OAUTH_APP_ID'),
@@ -33,8 +34,9 @@ class AccountController extends Controller
         return redirect($authorizationUrl);
     }
 
-  public function gettoken()
-  {
+    public function gettoken(?Domain $domain, Module $module)
+    {
+        $this->preProcess($domain, $module, request());
 
         // Authorization code should be in the "code" query param
         if (isset($_GET['code'])) {
@@ -78,15 +80,15 @@ class AccountController extends Controller
                     'username'      => $user->getUserPrincipalName(),
                 ]);
 
-                
+
                 $tokenDb->token = $accessToken->getToken();
                 $tokenDb->refresh_token = $accessToken->getRefreshToken();
                 $tokenDb->expiration = $accessToken->getExpires();
-                
+
                 $tokenDb->save();
 
                 // Redirect back to home page
-                return redirect()->route('uccello.calendar.manage', ['domain' => 'default', 'module' => 'calendar']);
+                return redirect(ucroute('calendar.manage', $domain, $module));
             }
             catch (League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
                 exit('ERROR getting tokens: '.$e->getMessage());
@@ -133,7 +135,7 @@ class AccountController extends Controller
             }
             catch (League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
                 return '';
-            }   
+            }
         }
 
         return $calendarAccount->token;

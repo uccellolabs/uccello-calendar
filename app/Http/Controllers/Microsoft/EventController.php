@@ -20,10 +20,9 @@ class EventController extends Controller
      *
      * @param \Uccello\Core\Models\Domain|null $domain
      * @param \Uccello\Core\Models\Module $module
-     * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public function list(Domain $domain, Module $module, Request $request)
+    public function list(Domain $domain, Module $module)
     {
 
         $accounts = \Uccello\Calendar\CalendarAccount::where([
@@ -37,19 +36,20 @@ class EventController extends Controller
         $accountController = new AccountController();
 
         foreach ($accounts as $account) {
-
             $calendarController = new CalendarController();
-            $calendars = $calendarController->list($domain, $module, $request, $account->id);
+            $calendars = $calendarController->list($domain, $module, $account->id);
+            $calendarsDisabled = (array) \Uccello\Calendar\Http\Controllers\Generic\CalendarController::getDisabledCalendars($account->id);
+
             foreach($calendars as $calendar)
             {
-                if(!in_array($calendar->id, $calendarsFetched))
+                if(!in_array($calendar->id, $calendarsFetched) && !in_array($calendar->id, $calendarsDisabled))
                 {
                     $graph = $accountController->initClient($account->id);
 
                     $eventsQueryParams = array (
                         // // Only return Subject, Start, and End fields
                         "\$select" => "*",
-                        "\$filter" => 'Start/DateTime ge \''.$request->input('start').'\' and Start/DateTime le \''.$request->input('end').'\'',
+                        "\$filter" => 'Start/DateTime ge \''.request('start').'\' and Start/DateTime le \''.request('end').'\'',
                         // Sort by Start, oldest first
                         "\$orderby" => "Start/DateTime",
                         // Return at most 100 results
@@ -95,12 +95,12 @@ class EventController extends Controller
         return $events;
     }
 
-    public function create(Domain $domain, Module $module, Request $request)
+    public function create(Domain $domain, Module $module)
     {
         //https://docs.microsoft.com/en-us/graph/api/group-post-events?view=graph-rest-1.0
 
         $accountController = new AccountController();
-        $graph = $accountController->initClient($request->input('accountId'));
+        $graph = $accountController->initClient(request('accountId'));
 
         $datetimeRegex = '/\d{2}\/\d{2}\/\d{4}\ \d{2}\:\d{2}/';
         $dateOnly = true;
@@ -110,13 +110,13 @@ class EventController extends Controller
         $parameters->start = new \StdClass;
         $parameters->end = new \StdClass;
 
-        $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.$request->input('entityType').'/'.$request->input('entityId');
+        $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('entityType').'/'.request('entityId');
 
-        if($request->input('allDay')=="true")
+        if(request('allDay')=="true")
         {
-            $startDate = Carbon::createFromFormat('!d/m/Y', $request->input('start_date'))
+            $startDate = Carbon::createFromFormat('!d/m/Y', request('start_date'))
                 ->setTimezone(config('app.timezone', 'UTC'));
-            $endDate = Carbon::createFromFormat('!d/m/Y', $request->input('end_date'))
+            $endDate = Carbon::createFromFormat('!d/m/Y', request('end_date'))
                 ->setTimezone(config('app.timezone', 'UTC'));
 
             $endDate->addDay(1);
@@ -129,9 +129,9 @@ class EventController extends Controller
         }
         else
         {
-            $startDate = Carbon::createFromFormat('d/m/Y H:i', $request->input('start_date'))
+            $startDate = Carbon::createFromFormat('d/m/Y H:i', request('start_date'))
                 ->setTimezone(config('app.timezone', 'UTC'));
-            $endDate = Carbon::createFromFormat('d/m/Y H:i', $request->input('end_date'))
+            $endDate = Carbon::createFromFormat('d/m/Y H:i', request('end_date'))
                 ->setTimezone(config('app.timezone', 'UTC'));
             $parameters->end->dateTime = $endDate->toAtomString();
             $parameters->start->dateTime = $startDate->toAtomString();
@@ -139,14 +139,14 @@ class EventController extends Controller
             $parameters->start->timeZone = config('app.timezone', 'UTC');
         }
 
-        $parameters->subject = $request->input('subject');
+        $parameters->subject = request('subject');
         $parameters->location = new \StdClass;
-        $parameters->location->displayName = $request->input('location') ?? '';
+        $parameters->location->displayName = request('location') ?? '';
         $parameters->body = new \StdClass;
-        $parameters->body->content = ($request->input('description') ?? '').($request->input('entityType')!=null && $request->input('entityId')!=null ? ' - '.$uccelloLink : '');
+        $parameters->body->content = (request('description') ?? '').(request('entityType')!=null && request('entityId')!=null ? ' - '.$uccelloLink : '');
         $parameters->body->contentType = "Text";
 
-        $event = $graph->createRequest('POST', '/me/calendars/'.$request->input('calendarId').'/events')
+        $event = $graph->createRequest('POST', '/me/calendars/'.request('calendarId').'/events')
                     ->attachBody($parameters)
                     ->setReturnType(Model\Event::class)
                     ->execute();
@@ -154,14 +154,14 @@ class EventController extends Controller
         return var_dump($event);
     }
 
-    public function retrieve(Domain $domain, Module $module, Request $request)
+    public function retrieve(Domain $domain, Module $module)
     {
         //https://docs.microsoft.com/en-us/graph/api/group-get-event?view=graph-rest-1.0
 
         $accountController = new AccountController();
-        $graph = $accountController->initClient($request->input('accountId'));
+        $graph = $accountController->initClient(request('accountId'));
 
-        $getEventUrl = '/me/calendars/'.$request->input('calendarId').'/events/'.$request->input('id');//.http_build_query($eventsQueryParams);
+        $getEventUrl = '/me/calendars/'.request('calendarId').'/events/'.request('id');//.http_build_query($eventsQueryParams);
         $event = $graph->createRequest('GET', $getEventUrl)
                         ->setReturnType(Model\Event::class)
                         ->execute();
@@ -214,31 +214,31 @@ class EventController extends Controller
         $returnEvent->description =     preg_replace('` - <a.+?href="'.$uccelloUrl.'.+?">.+?</a>`', '', $description);
         $returnEvent->entityType =      $entityType;
         $returnEvent->entityId =        $entityId;
-        $returnEvent->calendarId =      $request->input('calendarId');
-        $returnEvent->accountId =       $request->input('accountId');
+        $returnEvent->calendarId =      request('calendarId');
+        $returnEvent->accountId =       request('accountId');
 
 
         return json_encode($returnEvent);
     }
 
-    public function update(Domain $domain, Module $module, Request $request)
+    public function update(Domain $domain, Module $module)
     {
         //https://docs.microsoft.com/en-us/graph/api/group-update-event?view=graph-rest-1.0
 
         $accountController = new AccountController();
-        $graph = $accountController->initClient($request->input('accountId'));
+        $graph = $accountController->initClient(request('accountId'));
 
-        $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.$request->input('entityType').'/'.$request->input('entityId');
+        $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('entityType').'/'.request('entityId');
 
         $parameters = new \StdClass;
         $parameters->start = new \StdClass;
         $parameters->end = new \StdClass;
 
-        if($request->input('allDay')=="true")
+        if(request('allDay')=="true")
         {
-            $startDate = Carbon::createFromFormat('!d/m/Y', $request->input('start_date'))
+            $startDate = Carbon::createFromFormat('!d/m/Y', request('start_date'))
                 ->setTimezone(config('app.timezone', 'UTC'));
-            $endDate = Carbon::createFromFormat('!d/m/Y', $request->input('end_date'))
+            $endDate = Carbon::createFromFormat('!d/m/Y', request('end_date'))
                 ->setTimezone(config('app.timezone', 'UTC'));
 
             $endDate->addDay(1);
@@ -251,9 +251,9 @@ class EventController extends Controller
         }
         else
         {
-            $startDate = Carbon::createFromFormat('d/m/Y H:i', $request->input('start_date'))
+            $startDate = Carbon::createFromFormat('d/m/Y H:i', request('start_date'))
                 ->setTimezone(config('app.timezone', 'UTC'));
-            $endDate = Carbon::createFromFormat('d/m/Y H:i', $request->input('end_date'))
+            $endDate = Carbon::createFromFormat('d/m/Y H:i', request('end_date'))
                 ->setTimezone(config('app.timezone', 'UTC'));
             $parameters->end->dateTime = $endDate->toAtomString();
             $parameters->start->dateTime = $startDate->toAtomString();
@@ -261,30 +261,30 @@ class EventController extends Controller
             $parameters->start->timeZone = config('app.timezone', 'UTC');
         }
 
-        $parameters->subject = $request->input('subject');
+        $parameters->subject = request('subject');
         $parameters->location = new \StdClass;
-        $parameters->location->displayName = $request->input('location') ?? '';
+        $parameters->location->displayName = request('location') ?? '';
         $parameters->body = new \StdClass;
-        $parameters->body->content = ($request->input('description') ?? '').
-            ($request->input('entityType')!=null && $request->input('entityId')!=null ? ' - '.$uccelloLink : '');
+        $parameters->body->content = (request('description') ?? '').
+            (request('entityType')!=null && request('entityId')!=null ? ' - '.$uccelloLink : '');
         $parameters->body->contentType = "Text";
 
-        $event = $graph->createRequest('PATCH', '/me/calendars/'.$request->input('calendarId').'/events/'.$request->input('id'))
+        $event = $graph->createRequest('PATCH', '/me/calendars/'.request('calendarId').'/events/'.request('id'))
                     ->attachBody($parameters)
                     ->setReturnType(Model\Event::class)
                     ->execute();
 
-        //return var_dump($event);
+        return $event;
     }
 
-    public function delete(Domain $domain, Module $module,  Request $request)
+    public function delete(Domain $domain, Module $module)
     {
         //https://docs.microsoft.com/en-us/graph/api/group-delete-event?view=graph-rest-1.0
 
         $accountController = new AccountController();
-        $graph = $accountController->initClient($request->input('accountId'));
+        $graph = $accountController->initClient(request('accountId'));
 
-        $getEventUrl = '/me/calendars/'.$request->input('calendarId').'/events/'.$request->input('id');
+        $getEventUrl = '/me/calendars/'.request('calendarId').'/events/'.request('id');
         $returnData = $graph->createRequest('DELETE', $getEventUrl)
                         ->execute();
     }

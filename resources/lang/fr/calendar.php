@@ -2,21 +2,21 @@
 
 return [
     'calendar' => 'Calendrier',
-    'add_account' => 'Ajouter un compte',
+
     'calendar.create' => 'Créer un calendrier',
     'calendar.name' => 'Nom du calendrier',
-    'accounts' => 'COMPTES',
+    'accounts' => 'Comptes',
     'calendars' => 'Calendriers',
-    'none' => 'Aucun compte',
-    'delete_account' => 'Supprimer ce compte',
+    'none' => 'Aucun compte pour le moment.',
     'confirm' => 'Etes-vous sûrs de vouloir supprimer ce compte ?',
     'color' => 'Couleur',
     'accounts.stored' => 'Comptes enregistrés',
     'create' => 'Créer',
-    'calendars.manage' => 'Gérer les calendriers',
+    'manage' => 'Gérer les calendriers',
+    'manage_accounts' => 'Gérer les comptes',
     'event.allday' => 'Journée entière',
     'event.add' => 'Ajouter un événement',
-    'event.save' => 'Enregistrer l\'événement',
+    'event.save' => 'Enregistrer',
     'cancel' => 'Annuler',
     'my_tasks' => 'Mes tâches',
     'Tasks' => 'Tâches',
@@ -39,5 +39,10 @@ return [
         // 'entity_id' => '',
         'location' => 'Lieu',
         'description' => 'Description',
+    ],
+
+    'button' => [
+        'add_account' => 'Ajouter un compte',
+        'delete_account' => 'Supprimer ce compte',
     ],
 ];

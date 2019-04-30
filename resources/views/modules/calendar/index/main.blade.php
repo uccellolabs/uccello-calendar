@@ -5,7 +5,11 @@
 @section('extra-meta')
 <meta name="calendar-manage-url" content="{{ ucroute('calendar.manage', $domain, $module) }}">
 <meta name="calendar-events-url" content="{{ ucroute('calendar.events.all', $domain, $module) }}">
+<meta name="calendar-create-event-url" content="{{ ucroute('calendar.events.create', $domain, $module) }}">
 <meta name="calendar-retrieve-event-url" content="{{ ucroute('calendar.events.retrieve', $domain, $module) }}">
+<meta name="calendar-update-event-url" content="{{ ucroute('calendar.events.update', $domain, $module) }}">
+<meta name="calendar-delete-event-url" content="{{ ucroute('calendar.events.delete', $domain, $module) }}">
+<meta name="calendar-toggle-url" content="{{ ucroute('calendar.toggle', $domain, $module) }}">
 @append
 
 @section('sidebar-main-menu-after')
@@ -13,33 +17,51 @@
         <a class="subheader">
             {{ uctrans('calendars', $module) }}
         </a>
-        <a href="{{ ucroute('calendar.manage', $domain, $module) }}" style="position: absolute; right: 0; top: 0;" data-tooltip="{{ uctrans('calendars.manage', $module) }}" data-position="right">
+        <a href="{{ ucroute('calendar.manage', $domain, $module) }}" style="position: absolute; right: 0; top: 0;" data-tooltip="{{ uctrans('manage_accounts', $module) }}" data-position="right">
             <i class="material-icons">settings</i>
         </a>
     </li>
 
-    {{-- <li>
-        <a href="{{ ucroute('calendar.manage', $domain, $module) }}">
-            <i class="material-icons">date_range</i>
-            <span>{{ uctrans('calendars.manage', $module) }}</span>
-        </a>
-    </li> --}}
-
-    @foreach ($calendars as $calendar)
-    @continue($calendar->disabled)
     <li>
-        <a href="#">
-            <span>{{ $calendar->name }}</span>
-            <i class="material-icons right" style="color: {{ $calendar->color }}">stop</i>
-        </a>
+        <ul class="collapsible collapsible-accordion">
+            @foreach ($accounts as $i => $account)
+            <li class="submenu">
+                <a href="javascript:void(0)" class="collapsible-header" tabindex="0">
+                    <span>{{ $account->username }}</span>
+                </a>
+                <div class="collapsible-body">
+                    <ul>
+                        @foreach ($calendars as $calendar)
+                            @continue($calendar->service !== $account->service_name)
+                            <li>
+                                <a href="#" class="calendar-name" data-account-id="{{ $account->id }}" data-calendar-id="{{ $calendar->id }}" data-readonly="{{ $calendar->read_only ? 'true' : 'false' }}" style="margin-left: 0">
+                                    <i class="material-icons is-active">@if($calendar->disabled)check_box_outline_blank @else check_box @endif</i>
+                                    <span>{{ $calendar->name }}</span>
+                                    <i class="material-icons right" style="color: {{ $calendar->color }}">stop</i>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </li>
+            @endforeach
+
+        </ul>
     </li>
-    @endforeach
 @append
 
 @section('content')
+<div id="calendar-loader" class="row" style="margin-bottom: 0">
+    <div class="col s12">
+        <div class="progress transparent" style="margin: 0">
+            <div class="indeterminate green"></div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="col s12">
-      <div class="card">
+      <div class="card" style="margin-top: 0">
         <div class="card-content">
             {{-- Calendar --}}
             <div id="calendar"></div>
@@ -54,12 +76,13 @@
     <div class="modal-content">
         <h4>
             {{ uctrans('event.add', $module) }}
-            <a class="modal-close waves-effect red white-text btn-small right"><i class="material-icons">delete</i></a>
+            <a class="waves-effect red white-text btn-small right hide delete"><i class="material-icons">delete</i></a>
         </h4>
       <div class="row">
         <form class="col s12">
             <input type="hidden" id="id">
             <div class="row">
+
                 <div class="input-field col s12 m8">
                     {{-- <i class="material-icons prefix">short_text</i> --}}
                     <input id="subject" type="text" autocomplete="off">
@@ -92,6 +115,18 @@
                     </p>
                 </div>
 
+                <div class="input-field col s12">
+                    <select id="all_calendars">
+                        @foreach ($calendars as $calendar)
+                            @continue($calendar->disabled || $calendar->read_only)
+                            <option value="{!! $calendar->id !!}"
+                                data-calendar-type="{{ $calendar->service }}"
+                                data-account-id="{{ $calendar->accountId }}">{{ $calendar->name }}</option>
+                        @endforeach
+                    </select>
+                    <label>{{ uctrans('calendar', $module) }}</label>
+                </div>
+
                 <div class="input-field col s3">
                     {{-- <i class="material-icons prefix">extension</i> --}}
                     <select id="entityType">
@@ -118,23 +153,13 @@
                 </div>
             </div>
 
-            {{-- @foreach ($calendars as $calendar)
-                @if(!$calendar->disabled)
-                    <input name="calendars" type="radio" id='{!! $calendar->id !!}' value='{!! $calendar->id !!}'
-                        class="radio-col-blue" data-calendar-type="{{ $calendar->service }}" data-account-id="{{ $calendar->accountId }}"
-                        @if($calendar->read_only)
-                        readonly="true" disabled="disabled"
-                        @endif
-                        >
-                    <label for="{{ $calendar->id }}">{{ $calendar->name }}</label>
-                @endif
-            @endforeach --}}
+
         </form>
       </div>
     </div>
     <div class="modal-footer">
         <a class="btn-flat modal-close waves-effect" data-dismiss="modal">{{ uctrans('cancel', $module) }}</a>
-        <a class="btn-flat waves-effect green-text" data-dismiss="modal">{{ uctrans('event.save', $module) }}</a>
+        <a class="btn-flat waves-effect green-text save" data-dismiss="modal">{{ uctrans('event.save', $module) }}</a>
     </div>
 </div>
 @append

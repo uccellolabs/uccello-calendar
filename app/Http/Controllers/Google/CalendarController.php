@@ -11,7 +11,7 @@ use Uccello\Calendar\CalendarAccount;
 
 class CalendarController extends Controller
 {
-    public function list(Domain $domain, Module $module, Request $request, $accountId)
+    public function list(Domain $domain, Module $module, $accountId)
     {
         $oauthClient = $this->initClient($accountId);
 
@@ -31,7 +31,7 @@ class CalendarController extends Controller
             $calendar->service = 'google';
             $calendar->color = $colors->getCalendar()[$calendarListEntry->colorId]->background;
             $calendar->accountId = $accountId;
-            
+
             $accessRole = $calendarListEntry->getAccessRole();
             if($accessRole=='owner' || $accessRole=='writer')
                 $calendar->read_only = false;
@@ -44,18 +44,18 @@ class CalendarController extends Controller
         return $calendars;
     }
 
-    public function create(Domain $domain, Module $module, Request $request, $accountId)
+    public function create(Domain $domain, Module $module, $accountId)
     {
         $oauthClient = $this->initClient($accountId);
         $service = new \Google_Service_Calendar($oauthClient);
 
         $calendar = new \Google_Service_Calendar_Calendar();
-        $calendar->setSummary($request['calendarName']);
+        $calendar->setSummary(request('calendarName'));
         $calendar->setTimeZone(config('timezone', 'UTC'));
         $createdCalendar = $service->calendars->insert($calendar);
     }
 
-    public function destroy(Domain $domain, Module $module, Request $request, CalendarAccount $account, $calendarId)
+    public function destroy(Domain $domain, Module $module, CalendarAccount $account, $calendarId)
     {
         $oauthClient = $this->initClient($account->id);
         $service = new \Google_Service_Calendar($oauthClient);

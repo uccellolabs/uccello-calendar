@@ -8,7 +8,6 @@ use Uccello\Core\Models\Domain;
 use Uccello\Core\Models\Module;
 use Uccello\Calendar\CalendarAccount;
 
-
 class CalendarController extends Controller
 {
 
@@ -17,12 +16,11 @@ class CalendarController extends Controller
      *
      * @param Domain|null $domain
      * @param Module $module
-     * @param Request $request
      * @return void
      */
-    public function create(?Domain $domain, Module $module, Request $request)
+    public function create(?Domain $domain, Module $module)
     {
-        $this->preProcess($domain, $module, $request);
+        $this->preProcess($domain, $module, request());
 
         $account = \Uccello\Calendar\CalendarAccount::find(request(['account']))->first();
 
@@ -30,7 +28,7 @@ class CalendarController extends Controller
         $calendarClass =  $calendarTypeModel->namespace.'\CalendarController';
 
         $calendarType = new $calendarClass();
-        return $calendarType->addCalendar($domain, $module, $request, $account->id);
+        return $calendarType->create($domain, $module, $account->id);
 
         return redirect(ucroute('calendar.manage', $domain, $module));
     }
@@ -42,22 +40,21 @@ class CalendarController extends Controller
      * @param [type] $type
      * @param [type] $accountId
      * @param Module $module
-     * @param Request $request
      * @return void
      */
-    public function list(Domain $domain, $type, $accountId, Module $module, Request $request)
+    public function list(Domain $domain, $type, $accountId, Module $module)
     {
         $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $type)->get()->first();
         $calendarClass =  $calendarTypeModel->namespace.'\CalendarController';
 
         $calendarType = new $calendarClass();
-        $calendars = $calendarType->list($domain, $module, $request, $accountId);
+        $calendars = $calendarType->list($domain, $module, $accountId);
 
-        $disabledCalendars = $this->getDisabledCalendars($accountId);
+        $disabledCalendars = (array) $this->getDisabledCalendars($accountId);
 
         foreach($calendars as $calendar)
         {
-            if(property_exists($disabledCalendars, $calendar->id))
+            if(in_array($calendar->id, $disabledCalendars))
                 $calendar->disabled = true;
             else
                 $calendar->disabled = false;
@@ -65,14 +62,15 @@ class CalendarController extends Controller
         return $calendars;
     }
 
-    public function retrieve(Domain $domain, $accountId, $calendarId, Module $module, Request $request)
+    public function retrieve(Domain $domain, $accountId, $calendarId, Module $module)
     {
         $account = \Uccello\Calendar\CalendarAccount::where('id', $accountId)->get()->first();
-        $calendars = $this->list($domain, $account->service_name, $accountId, $module, $request);
-        foreach($calendars as $calendar)
-        {
-            if($calendar->id == $calendarId)
+        $calendars = $this->list($domain, $account->service_name, $accountId, $module);
+
+        foreach($calendars as $calendar) {
+            if($calendar->id == $calendarId) {
                 return $calendar;
+            }
         }
     }
 
@@ -80,47 +78,53 @@ class CalendarController extends Controller
      * Activate or desactivate a calendar
      *
      * @param Domain $domain
-     * @param [type] $accountId
-     * @param [type] $calendarId
      * @param Module $module
-     * @param Request $request
      * @return void
      */
-    public function toggle(Domain $domain, $accountId, $calendarId, Module $module, Request $request)
+    public function toggle(Domain $domain, Module $module)
     {
-        $this->preProcess($domain, $module, $request);
+        $this->preProcess($domain, $module, request());
 
-        $account = \Uccello\Calendar\CalendarAccount::find($accountId);
+        $calendarId = urldecode(request('id'));
+        $accountId = request('account_id');
 
-        $calendarsDisabled = json_decode($account->disabled_calendars);
+        $account = \Uccello\Calendar\CalendarAccount::findOrFail($accountId);
 
-        if($calendarsDisabled==null)
-            $calendarsDisabled = new \StdClass;
+        $disabledCalendars = (array) $account->disabled_calendars;
 
-        if(property_exists($calendarsDisabled, $calendarId))
-            unset($calendarsDisabled->$calendarId);
-        else
-            $calendarsDisabled->$calendarId = 'true';
+        if (empty($disabledCalendars)) {
+            $disabledCalendars = [];
+        }
 
-        $account->disabled_calendars = json_encode($calendarsDisabled);
+        $index = array_search($calendarId, $disabledCalendars);
+        if($index > -1) {
+            unset($disabledCalendars[$index]);
+        }
+        else {
+            $disabledCalendars[ ] = $calendarId;
+        }
+
+        $account->disabled_calendars = $disabledCalendars;
 
         $account->save();
 
-        return redirect(ucroute('calendar.manage', $domain, $module));
+        return $account;
     }
 
     /**
      * Returns a list of all disabled calendars for a given account
      *
-     * @param [type] $accountId
-     * @return void
+     * @param int $accountId
+     * @return array
      */
     public static function getDisabledCalendars($accountId)
     {
         $account = \Uccello\Calendar\CalendarAccount::find($accountId);
-        $disabledCalendars = json_decode($account->disabled_calendars);
-        if($disabledCalendars==null)
-            $disabledCalendars = new \StdClass;
+        $disabledCalendars = $account->disabled_calendars;
+
+        if(!$disabledCalendars) {
+            $disabledCalendars = [ ];
+        }
 
         return $disabledCalendars;
     }
@@ -132,12 +136,11 @@ class CalendarController extends Controller
      * @param [type] $accountId
      * @param [type] $calendarId
      * @param Module $module
-     * @param Request $request
      * @return void
      */
-    public function destroy(Domain $domain, $accountId, $calendarId, Module $module, Request $request)
+    public function destroy(Domain $domain, $accountId, $calendarId, Module $module)
     {
-        $this->preProcess($domain, $module, $request);
+        $this->preProcess($domain, $module, request());
 
         $account = \Uccello\Calendar\CalendarAccount::find($accountId);
 
@@ -146,7 +149,7 @@ class CalendarController extends Controller
         $calendarClass =  $calendarTypeModel->namespace.'\CalendarController';
 
         $calendarType = new $calendarClass();
-        return $calendarType->removeCalendar($domain, $module, $request, $account, $calendarId);
+        return $calendarType->removeCalendar($domain, $module, $account, $calendarId);
 
         return redirect(ucroute('calendar.manage', $domain, $module));
     }

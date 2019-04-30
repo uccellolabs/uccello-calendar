@@ -2,12 +2,11 @@
 
 namespace Uccello\Calendar\Http\Controllers\Google;
 
-use Uccello\Core\Http\Controllers\Core\Controller;
-use Google\Auth\OAuth2;
 use Google\Client;
-
+use Uccello\Core\Http\Controllers\Core\Controller;
 use Uccello\Calendar\CalendarAccount;
-
+use Uccello\Core\Models\Domain;
+use Uccello\Core\Models\Module;
 
 class AccountController extends Controller
 {
@@ -34,8 +33,10 @@ class AccountController extends Controller
         );
     }
 
-    public function gettoken()
+    public function gettoken(?Domain $domain, Module $module)
     {
+        $this->preProcess($domain, $module, request());
+
         // Authorization code should be in the "code" query param
         if (isset($_GET['code'])) {
 
@@ -72,7 +73,7 @@ class AccountController extends Controller
 
             $tokenDb->save();
 
-            return redirect()->route('uccello.calendar.manage', ['domain' => 'default', 'module' => 'calendar']);
+            return redirect(ucroute('calendar.manage', $domain, $module));
 
         }
         elseif (isset($_GET['error'])) {

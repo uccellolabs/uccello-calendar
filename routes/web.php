@@ -22,7 +22,7 @@ Route::middleware('web', 'auth')
         ->defaults('module', 'calendar')
         ->name('events.all');
 
-    Route::post($domainParam.'/calendar/event/{type}', 'Generic\EventController@create')
+    Route::post($domainParam.'/calendar/event', 'Generic\EventController@create')
         ->defaults('module', 'calendar')
         ->name('events.create');
 
@@ -30,13 +30,13 @@ Route::middleware('web', 'auth')
         ->defaults('module', 'calendar')
         ->name('events.retrieve');
 
-    Route::post($domainParam.'/calendar/event/{type}/update', 'Generic\EventController@update')
+    Route::post($domainParam.'/calendar/event/update', 'Generic\EventController@update')
         ->defaults('module', 'calendar')
         ->name('events.update');
 
-    Route::post($domainParam.'/calendar/event/{type}/remove', 'Generic\EventController@delete')
+    Route::post($domainParam.'/calendar/event/delete', 'Generic\EventController@delete')
         ->defaults('module', 'calendar')
-        ->name('events.remove');
+        ->name('events.delete');
 
 
     //Calendars
@@ -52,7 +52,7 @@ Route::middleware('web', 'auth')
         ->defaults('module', 'calendar')
         ->name('add');
 
-    Route::get($domainParam.'/calendar/toggle/{accountId}/{id}', 'Generic\CalendarController@toggle')
+    Route::get($domainParam.'/calendar/toggle', 'Generic\CalendarController@toggle')
         ->defaults('module', 'calendar')
         ->name('toggle');
 

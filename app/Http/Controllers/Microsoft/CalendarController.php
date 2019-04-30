@@ -2,7 +2,6 @@
 
 namespace Uccello\Calendar\Http\Controllers\Microsoft;
 
-use Illuminate\Http\Request;
 use Microsoft\Graph\Graph;
 use Microsoft\Graph\Model;
 use Uccello\Core\Http\Controllers\Core\Controller;
@@ -13,7 +12,7 @@ use Uccello\Calendar\CalendarAccount;
 
 class CalendarController extends Controller
 {
-    public function list(Domain $domain, Module $module, Request $request, $accountId)
+    public function list(Domain $domain, Module $module, $accountId)
     {
         $graph = $this->initClient($accountId);
 
@@ -42,12 +41,12 @@ class CalendarController extends Controller
         return $calendars;
     }
 
-    public function create(Domain $domain, Module $module, Request $request, $accountId)
+    public function create(Domain $domain, Module $module, $accountId)
     {
         $graph = $this->initClient($accountId);
 
         $parameters = new \StdClass;
-        $parameters->Name = $request['calendarName'];
+        $parameters->Name = request('calendarName');
 
         $calendar = $graph->createRequest('POST', '/me/calendars')
                         ->attachBody($parameters)
@@ -55,13 +54,13 @@ class CalendarController extends Controller
                         ->execute();
     }
 
-    public function destroy(Domain $domain, Module $module, Request $request, CalendarAccount $account, $calendarId)
+    public function destroy(Domain $domain, Module $module, CalendarAccount $account, $calendarId)
     {
         $graph = $this->initClient($account->id);
 
         $calendar = $graph->createRequest('DELETE', '/me/calendars/'.$calendarId)
                         ->setReturnType(Model\Calendar::class)
-                        ->execute(); 
+                        ->execute();
     }
 
     private function initClient($accountId)

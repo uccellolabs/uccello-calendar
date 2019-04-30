@@ -18,10 +18,9 @@ class EventController extends Controller
      *
      * @param \Uccello\Core\Models\Domain|null $domain
      * @param \Uccello\Core\Models\Module $module
-     * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public function list(Domain $domain, Module $module, Request $request)
+    public function list(Domain $domain, Module $module)
     {
 
         // $accounts = \Uccello\Calendar\CalendarAccount::where([
@@ -55,7 +54,7 @@ class EventController extends Controller
         //             );
 
         //             $getEventsUrl = '/me/calendars/'.$calendar->id.'/events?'.http_build_query($eventsQueryParams);
-                    
+
         //             $items = $graph->createRequest('GET', $getEventsUrl)
         //                             ->setReturnType(Model\Event::class)
         //                             ->execute();
@@ -94,7 +93,7 @@ class EventController extends Controller
          return $events;
     }
 
-    public function create(Domain $domain, Module $module, Request $request)
+    public function create(Domain $domain, Module $module)
     {
         // //https://docs.microsoft.com/en-us/graph/api/group-post-events?view=graph-rest-1.0
 
@@ -102,7 +101,7 @@ class EventController extends Controller
         // $graph = $accountController->initClient($request->input('accountId'));
 
         // $datetimeRegex = '/\d{2}\/\d{2}\/\d{4}\ \d{2}\:\d{2}/';
-        
+
         // $dateOnly = true;
         // $startDate = '';
         // $endDate = '';
@@ -140,7 +139,7 @@ class EventController extends Controller
         // }
 
         // $parameters->subject = $request->input('subject');
-        
+
         // $parameters->location = new \StdClass;
         // $parameters->location->displayName = $request->input('location') ?? '';
         // $parameters->body = new \StdClass;
@@ -153,10 +152,10 @@ class EventController extends Controller
         //             ->execute();
 
         // return var_dump($event);
-        
+
     }
 
-    public function retrieve(Domain $domain, Module $module, Request $request)
+    public function retrieve(Domain $domain, Module $module)
     {
         // //https://docs.microsoft.com/en-us/graph/api/group-get-event?view=graph-rest-1.0
 
@@ -165,7 +164,7 @@ class EventController extends Controller
 
         // $getEventUrl = '/me/calendars/'.$request->input('calendarId').'/events/'.$request->input('id');//.http_build_query($eventsQueryParams);
         // $event = $graph->createRequest('GET', $getEventUrl)
-        //                 ->setReturnType(Model\Event::class)  
+        //                 ->setReturnType(Model\Event::class)
         //                 ->execute();
 
 
@@ -175,11 +174,11 @@ class EventController extends Controller
 
         // if(!$event->getIsAllDay())
         // {
-        //     $start = $startDate->format('d/m/Y H:i');   
+        //     $start = $startDate->format('d/m/Y H:i');
         //     $end = $endDate->format('d/m/Y H:i');
         // }
         // else
-        // { 
+        // {
         //     $endDate->addDay(-1);
         //     $start = $startDate->format('d/m/Y');
         //     $end = $endDate->format('d/m/Y');
@@ -203,7 +202,7 @@ class EventController extends Controller
         // $description = '';
         // foreach($matches[1] as $div)
         // {
-        //     $description.=$div[0]."\n"; 
+        //     $description.=$div[0]."\n";
         // }
 
         // $returnEvent = new \StdClass;
@@ -223,7 +222,7 @@ class EventController extends Controller
         // return json_encode($returnEvent);
     }
 
-    public function update(Domain $domain, Module $module, Request $request)
+    public function update(Domain $domain, Module $module)
     {
         // //https://docs.microsoft.com/en-us/graph/api/group-update-event?view=graph-rest-1.0
 
@@ -262,7 +261,7 @@ class EventController extends Controller
         // }
 
         // $parameters->subject = $request->input('subject');
-        
+
         // $parameters->location = new \StdClass;
         // $parameters->location->displayName = $request->input('location') ?? '';
         // $parameters->body = new \StdClass;
@@ -277,7 +276,7 @@ class EventController extends Controller
         // return var_dump($event);
     }
 
-    public function delete(Domain $domain, Module $module,  Request $request)
+    public function delete(Domain $domain, Module $module)
     {
         // //https://docs.microsoft.com/en-us/graph/api/group-delete-event?view=graph-rest-1.0
 

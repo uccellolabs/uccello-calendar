@@ -25,38 +25,38 @@ class EventController extends Controller
      * @param Domain $domain
      * @param [type] $type
      * @param Module $module
-     * @param Request $request
-     * @return void
+     * @return array
      */
-    protected function list(Domain $domain, $type, Module $module, Request $request)
+    protected function list(Domain $domain, $type, Module $module)
     {
         $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $type)->get()->first();
         $calendarClass =  $calendarTypeModel->namespace.'\EventController';
         $calendarType = new $calendarClass();
-        return $calendarType->list($domain, $module, $request);
+        return $calendarType->list($domain, $module);
     }
 
-    public function all(Domain $domain, Module $module, Request $request)
+    public function all(Domain $domain, Module $module)
     {
         $types = \Uccello\Calendar\CalendarTypes::all();
         $globalEvents = [];
 
         foreach($types as $calendarType)
         {
-            $events = $this->list($domain, $calendarType->name, $module, $request);
+            $events = $this->list($domain, $calendarType->name, $module);
             $globalEvents = array_merge($globalEvents, $events);
         }
 
         return $globalEvents;
     }
 
-    protected function create(Domain $domain, $type, Module $module,  Request $request)
+    protected function create(Domain $domain, Module $module)
     {
+        $type = request('type');
         $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $type)->get()->first();
         $calendarClass = $calendarTypeModel->namespace.'\EventController';
 
         $calendarType = new $calendarClass();
-        return $calendarType->create($domain, $module, $request);
+        return $calendarType->create($domain, $module);
     }
 
     public function retrieve(Domain $domain, Module $module)
@@ -66,24 +66,26 @@ class EventController extends Controller
         $calendarClass = $calendarTypeModel->namespace.'\EventController';
 
         $calendarType = new $calendarClass();
-        return $calendarType->retrieve($domain, $module, request());
+        return $calendarType->retrieve($domain, $module);
     }
 
-    protected function update(Domain $domain, $type, Module $module, Request $request)
+    protected function update(Domain $domain, Module $module)
     {
+        $type = request('type');
         $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $type)->get()->first();
         $calendarClass = $calendarTypeModel->namespace.'\EventController';
 
         $calendarType = new $calendarClass();
-        return $calendarType->update($domain, $module, $request);
+        return $calendarType->update($domain, $module);
     }
 
-    protected function delete(Domain $domain, $type, Module $module,  Request $request)
+    protected function delete(Domain $domain, Module $module)
     {
+        $type = request('type');
         $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $type)->get()->first();
         $calendarClass = $calendarTypeModel->namespace.'\EventController';
 
         $calendarType = new $calendarClass();
-        return $calendarType->delete($domain, $module, $request);
+        return $calendarType->delete($domain, $module);
     }
 }

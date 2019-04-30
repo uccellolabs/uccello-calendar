@@ -11,7 +11,7 @@ use Uccello\Calendar\CalendarAccount;
 
 class CalendarController extends Controller
 {
-    public function list(Domain $domain, Module $module, Request $request, $accountId)
+    public function list(Domain $domain, Module $module, $accountId)
     {
         $calendars = [];
         $calendar = new \StdClass;
@@ -26,7 +26,7 @@ class CalendarController extends Controller
         return $calendars;
     }
 
-    public function create(Domain $domain, Module $module, Request $request, $accountId)
+    public function create(Domain $domain, Module $module, $accountId)
     {
         // $graph = $this->initClient($accountId);
 
@@ -39,13 +39,13 @@ class CalendarController extends Controller
         //                 ->execute();
     }
 
-    public function destroy(Domain $domain, Module $module, Request $request, CalendarAccount $account, $calendarId)
+    public function destroy(Domain $domain, Module $module, CalendarAccount $account, $calendarId)
     {
         // $graph = $this->initClient($account->id);
 
         // $calendar = $graph->createRequest('DELETE', '/me/calendars/'.$calendarId)
         //                 ->setReturnType(Model\Calendar::class)
-        //                 ->execute(); 
+        //                 ->execute();
     }
 
     private function initClient($accountId)
