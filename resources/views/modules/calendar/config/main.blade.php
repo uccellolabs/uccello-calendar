@@ -6,12 +6,12 @@
     <div class="card">
         <div class="header">
             <h2>
-                {{uctrans('calendar.config', $module)}} 
+                {{uctrans('calendar.config', $module)}}
                 <small>{{uctrans('calendar.rules', $module)}}</small>
             </h2>
-            
+
         </div>
-        <form method="POST" action=" {{ route('uccello.calendar.config.save', ['domain' => $domain->slug]) }} ">
+        <form method="POST" action=" {{ route('calendar.config.save', ['domain' => $domain->slug]) }} ">
             <input type="hidden" name="rules_nb" value="{{ $rules_nb }}">
             <div class="body">
                 <div class="irs-demo">

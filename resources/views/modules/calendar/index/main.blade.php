@@ -2,146 +2,54 @@
 
 @section('page', 'calendar')
 
-@section('content')
+@section('extra-meta')
+<meta name="calendar-manage-url" content="{{ ucroute('calendar.manage', $domain, $module) }}">
+<meta name="calendar-events-url" content="{{ ucroute('calendar.events.all', $domain, $module) }}">
+<meta name="calendar-create-event-url" content="{{ ucroute('calendar.events.create', $domain, $module) }}">
+<meta name="calendar-retrieve-event-url" content="{{ ucroute('calendar.events.retrieve', $domain, $module) }}">
+<meta name="calendar-update-event-url" content="{{ ucroute('calendar.events.update', $domain, $module) }}">
+<meta name="calendar-delete-event-url" content="{{ ucroute('calendar.events.delete', $domain, $module) }}">
+<meta name="calendar-toggle-url" content="{{ ucroute('calendar.toggle', $domain, $module) }}">
+<meta name="calendar-date-format-js" content="{{ config('uccello.format.js.date') }}">
+<meta name="calendar-datetime-format-js" content="{{ config('uccello.format.js.datetime') }}">
+<meta name="calendar-time-format-js" content="{{ config('uccello.format.js.time') }}">
+@append
 
-<div class="row clearfix">
-    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-        <div class="card">
-            <div class="body">
-                <a role="button" class="btn btn-primary waves-effect" href="{{ route('uccello.calendar.manage', ['domain' => 'default']) }}">
-                    <i class="material-icons">settings</i>
-                    <span>{{ uctrans('calendars.manage', $module) }}</span>
-                </a>
-                @foreach ($calendars as $calendar)
-                    @if(!$calendar->disabled)
-                    <span style="background-color: {{ $calendar->color }}" class="badge">{{ $calendar->name }}</span>
-                    @endif
-                @endforeach
-            </div>
+@section('sidebar-main-menu-after')
+    @include('calendar::modules.calendar.index.calendars')
+@append
+
+@section('content')
+<div id="calendar-loader" class="row" style="margin-bottom: 0">
+    <div class="col s12">
+        <div class="progress transparent" style="margin: 0">
+            <div class="indeterminate green"></div>
         </div>
     </div>
-    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-        <div class="card">
-            <div class="body">
-                <div id="calendar">
+</div>
 
-                </div>
-            </div>
+<div class="row" style="margin-bottom: 0">
+    <div class="col s12">
+      <div class="card" style="margin: 0">
+        <div class="card-content">
+            {{-- Calendar --}}
+            <div id="calendar"></div>
         </div>
+      </div>
     </div>
 </div>
 @endsection
 
 @section('extra-content')
-<div class="modal fade" id="addEventModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="defaultModalLabel">{{ uctrans('event.add', $module) }}</h4>
-            </div>
-            <input type="hidden" id="id">
-            <div class="modal-body">
-                <div class="row clearfix">
-                    <div class="col-sm-12">
-                        <div class="form-group">
-                            <div class="form-line">
-                                    <input type="text" class="form-control" placeholder="Sujet" id="subject">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row clearfix">
-                    <div class="col-sm-4">
-                        <div class="form-group">
-                            <div class="form-line">
-                                    <input type="text" class="form-control" placeholder="Please choose a date..." id ="start_date">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-4">
-                        <div class="form-group">
-                            <div class="form-line">
-                                <input type="text" class="form-control" placeholder="Please choose a date..." id ="end_date">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-4">
-                        <div class="form-group">
-                            <input type="checkbox" id="all_day" >
-                            <label for="all_day">{{ uctrans('event.allday', $module) }}</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="row clearfix">
-                    <div class="col-sm-12">
-                        <div class="form-group">
-                            <div class="form-line">
-                                    <input type="text" class="form-control" placeholder="Emplacement" id="location">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row clearfix">
-                    <div class="col-sm-12">
-                        <div class="form-group">
-                            <div class="form-line">
-                                    <textarea rows="4" class="form-control" placeholder="Description" id="description"></textarea>
-                                    {{-- <div class="form-control" id="description"></div> --}}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row clearfix">
-                    <div class="col-sm-6">
-                        <div class="form-group">
-                            <div class="form-line">
-                                <input type="text" class="form-control" placeholder="Module slug" id="entityType">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="form-group">
-                            <div class="form-line">
-                                <input type="text" class="form-control" placeholder="Id" id="entityId">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row clearfix">
-                    <div class="col-sm-12">
-                        <div class="fd">
-                            @foreach ($calendars as $calendar)
-                                @if(!$calendar->disabled)
-                                    <input name="calendars" type="radio" id='{!! $calendar->id !!}' value='{!! $calendar->id !!}'
-                                        class="radio-col-blue" data-calendar-type="{{ $calendar->service }}" data-account-id="{{ $calendar->accountId }}"
-                                        @if($calendar->read_only)
-                                        readonly="true" disabled="disabled"
-                                        @endif
-                                        >
-                                    <label for="{{ $calendar->id }}">{{ $calendar->name }}</label>
-                                @endif
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn bg-red waves-effect delete"><i class="material-icons">delete</i></button>
-                <button type="button" class="btn btn-primary waves-effect save" data-dismiss="modal">{{ uctrans('event.save', $module) }}</button>
-                <button type="button" class="btn btn-link waves-effect cancel" data-dismiss="modal">{{ uctrans('cancel', $module) }}</button>
-            </div>
-        </div>
-    </div>
-</div>
-@endsection
+    @include('calendar::modules.calendar.index.modal')
+@append
 
-@section('app-extra-css')
-    {{ Html::style(ucasset('css/app.css', 'uccello/calendar')) }}
-@show
+@section('css')
+    {{ Html::style(mix('css/app.css', 'vendor/uccello/calendar')) }}
+@append
 
-@section('uccello-autoloader-script') @endsection
-
-@section('app-extra-script')
+@section('script')
     {{ Html::script(mix('js/app.js', 'vendor/uccello/calendar')) }}
-    {{ Html::script(mix('js/fr.js', 'vendor/uccello/calendar')) }}
-@endsection
+    {{-- {{ Html::script('https://maps.googleapis.com/maps/api/js?key=YOU_GOOGLE_API_KEY_GOES_HERE&libraries=places') }} --}}
+@append
+

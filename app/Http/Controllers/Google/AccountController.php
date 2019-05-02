@@ -2,12 +2,11 @@
 
 namespace Uccello\Calendar\Http\Controllers\Google;
 
-use Uccello\Core\Http\Controllers\Core\Controller;
-use Google\Auth\OAuth2;
 use Google\Client;
-
+use Uccello\Core\Http\Controllers\Core\Controller;
 use Uccello\Calendar\CalendarAccount;
-
+use Uccello\Core\Models\Domain;
+use Uccello\Core\Models\Module;
 
 class AccountController extends Controller
 {
@@ -24,7 +23,6 @@ class AccountController extends Controller
         //Add authorizations needed : Calendar for Events and USERINFO to get username
         $oauthClient->addScope(\Google_Service_Calendar::CALENDAR);
         $oauthClient->addScope(\Google_Service_Oauth2::USERINFO_EMAIL);
-        
         //Next two lines needed to get refresh token
         $oauthClient->setAccessType('offline');
         $oauthClient->setApprovalPrompt('force');
@@ -35,8 +33,10 @@ class AccountController extends Controller
         );
     }
 
-    public function gettoken()
+    public function gettoken(?Domain $domain, Module $module)
     {
+        $this->preProcess($domain, $module, request());
+
         // Authorization code should be in the "code" query param
         if (isset($_GET['code'])) {
 
@@ -66,15 +66,15 @@ class AccountController extends Controller
                 'username'      => $tokeninfo->email,
             ]);
 
-            
+
             $tokenDb->token = $oauthClient->getAccessToken()['access_token'];
             $tokenDb->refresh_token = $oauthClient->getRefreshToken();
             $tokenDb->expiration = $oauthClient->getAccessToken()['created'].','.$oauthClient->getAccessToken()['expires_in'];
-            
+
             $tokenDb->save();
 
-            return redirect()->route('uccello.calendar.manage', ['domain' => 'default', 'module' => 'calendar']);
-        
+            return redirect(ucroute('calendar.manage', $domain, $module));
+
         }
         elseif (isset($_GET['error'])) {
             exit('ERROR: '.$_GET['error'].' - '.$_GET['error_description']);
@@ -101,7 +101,6 @@ class AccountController extends Controller
         $t['expires_in'] = explode(',', $calendarAccounts->expiration)[1];
         $t['refresh_token'] = $calendarAccounts->refresh_token;
         $oauthClient->setAccessToken($t);
-        
 
         //If token is expired, refresh it and store new token
         if($oauthClient->isAccessTokenExpired())

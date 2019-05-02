@@ -34,48 +34,33 @@ class CalendarsController extends Controller
         ]);
     }
 
-    public function list(?Domain $domain, Module $module, Request $request)
+    public function list(?Domain $domain, Module $module)
     {
         // Pre-process
-        $this->preProcess($domain, $module, $request);
-
-        $calendarsType = \Uccello\Calendar\CalendarTypes::all();
-        $accounts = \Uccello\Calendar\CalendarAccount::all();
-
-        $calendars = [];
-        $entities = [];
-
-        foreach($accounts as $account){
-            $calendarController = new Generic\CalendarController();
-            $accountCalendars = $calendarController->list($domain, $account->service_name, $account->id, $module, $request);
-
-            foreach($accountCalendars as $calendar)
-            {
-                $exists = false;
-
-                foreach($calendars as $currCalendar)
-                {
-                    if($calendar->id == $currCalendar->id)
-                        $exists = true;
-                }
-
-                if(!$exists && $calendar->disabled==false)
-                    $calendars[] = $calendar;
-            }
-        }
-
-        $allEntities = \Uccello\Core\Models\Module::all();
-        foreach($allEntities as $entity)
-        {
-            $entities[] = $entity->name;
-        }
+        $this->preProcess($domain, $module, request());
 
         $this->viewName = 'index.main';
 
+        // $calendarsType = \Uccello\Calendar\CalendarTypes::all();
+        $accounts = \Uccello\Calendar\CalendarAccount::all();
+
+        $calendars = [ ];
+
+        foreach($accounts as $account) {
+            $calendars[ $account->id ] = [ ];
+
+            $calendarController = new Generic\CalendarController();
+            $accountCalendars = $calendarController->list($domain, $account->service_name, $account->id, $module);
+
+            foreach($accountCalendars as $calendar)
+            {
+                $calendars[ $account->id ][ ] = $calendar;
+            }
+        }
+
         return $this->autoView([
             'accounts' => $accounts,
-            'calendars' => $calendars,
-            'entities' => $entities,
+            'calendars' => $calendars
         ]);
     }
 }

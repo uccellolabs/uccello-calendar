@@ -3,7 +3,6 @@
 namespace Uccello\Calendar\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Routing\Route;
 use Uccello\Core\Http\Controllers\Core\Controller;
 use Uccello\Core\Models\Domain;
 use Uccello\Core\Models\Module;
@@ -33,7 +32,6 @@ class ConfigController extends Controller
      */
     public function setup(?Domain $domain, Module $module, Request $request)
     {
-        
         // Pre-process
         $this->preProcess($domain, $module, $request);
 
@@ -61,7 +59,6 @@ class ConfigController extends Controller
             $cron_delay = intval($db_rules->data->cron_delay);
         if($cron_delay<1)
             $cron_delay = 5;
-        
         //Get specific rules
         if($db_rules->data!=NULL)
         {
@@ -100,12 +97,10 @@ class ConfigController extends Controller
         if($cron_delay<1)
             $cron_delay = 5;
 
-        
         $config = CalendarConfig::firstOrNew([
             'domain_id' => $domain->id,
             'user_id' => null,
             ]);
-        
         //Fill in data's field
         $data = [];
         $data['cron_delay'] = $cron_delay;
@@ -126,7 +121,7 @@ class ConfigController extends Controller
     public function processAutomaticAssignment(?Domain $domain, Module $module, Request $request, $event)
     {
         //If the event needs to be updated
-        if(strpos($event->title, ' - ')!=false && 
+        if(strpos($event->title, ' - ')!=false &&
             ($event->entityType=="" || $event->entityId=="" || $event->entityType==null || $event->entityId==null))
         {
             //If the calendar is writable
@@ -164,8 +159,8 @@ class ConfigController extends Controller
                     {
                         //If 1 row meet the requirements we update the event
                         $entity = $result->first();
-                        
-                        $request = Request::create(ucroute('uccello.calendar.events.update', $domain, $module, ['type' => $calendar->service]),
+
+                        $request = Request::create(ucroute('calendar.events.update', $domain, $module, ['type' => $calendar->service]),
                             'POST', array(
                                 'domain'        => $domain,
                                 'type'          => $calendar->service,
@@ -181,7 +176,7 @@ class ConfigController extends Controller
                                 'description'   => $event->description,
                                 'entityType'    => $entity_module->name,
                                 'entityId'      => $entity->id,
-                        ));           
+                        ));
                         $response = app()->handle($request);
                         break;
                     }
