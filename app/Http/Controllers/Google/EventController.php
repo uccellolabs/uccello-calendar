@@ -47,10 +47,10 @@ class EventController extends Controller
                     $end = new Carbon(request('end'));
 
                     $optParams = array(
-                    'orderBy' => 'startTime',
-                    'singleEvents' => true,
-                    'timeMin' => $start->toIso8601String(),
-                    'timeMax' => $end->toIso8601String(),
+                        'orderBy' => 'startTime',
+                        'singleEvents' => true,
+                        'timeMin' => $start->toIso8601String(),
+                        'timeMax' => $end->toIso8601String(),
                     );
 
                     $results = $service->events->listEvents($calendar->id, $optParams);
@@ -68,6 +68,7 @@ class EventController extends Controller
                             "calendarId" => $calendar->id,
                             "accountId" => $account->id,
                             "calendarType" => $account->service_name,
+                            "editable" => !$calendar->read_only,
                         ];
                     }
                 }
@@ -100,18 +101,18 @@ class EventController extends Controller
 
         if($dateOnly)
         {
-            $startDate = Carbon::createFromFormat('!d/m/Y', request('start_date'))
+            $startDate = Carbon::createFromFormat(config('uccello.format.php.date'), request('start_date'))
                 ->setTimezone(config('app.timezone', 'UTC'));
-            $endDate = Carbon::createFromFormat('!d/m/Y', request('end_date'))
+            $endDate = Carbon::createFromFormat(config('uccello.format.php.date'), request('end_date'))
                 ->setTimezone(config('app.timezone', 'UTC'));
             $startArray['date'] = $startDate->toDateString();
             $endArray['date'] =  $endDate->toDateString();
         }
         else
         {
-            $startDate = Carbon::createFromFormat('d/m/Y H:i', request('start_date'))
+            $startDate = Carbon::createFromFormat(config('uccello.format.php.datetime'), request('start_date'))
                 ->setTimezone(config('app.timezone', 'UTC'));
-            $endDate = Carbon::createFromFormat('d/m/Y H:i', request('end_date'))
+            $endDate = Carbon::createFromFormat(config('uccello.format.php.datetime'), request('end_date'))
                 ->setTimezone(config('app.timezone', 'UTC'));
             $startArray['dateTime'] =$startDate->toAtomString();
             $endArray['dateTime'] =  $endDate->toAtomString();
@@ -128,7 +129,7 @@ class EventController extends Controller
         $calendarId = request('calendarId');
         $event = $service->events->insert($calendarId, $event);
 
-        return var_dump($event);
+        return [ 'success' => true];
     }
 
     public function retrieve(Domain $domain, Module $module)
@@ -143,26 +144,26 @@ class EventController extends Controller
         {
             $startDate = Carbon::createFromFormat(\DateTime::ISO8601, $event->start->dateTime)
                 ->setTimezone($event->start->timeZone ?? config('app.timezone', 'UTC'));
-            $start = $startDate->format('d/m/Y H:i');
+            $start = $startDate->format(config('uccello.format.php.datetime'));
         }
         else
         {
             $startDate = Carbon::createFromFormat('Y-m-d', $event->start->date)
                 ->setTimezone($event->start->timeZone ?? config('app.timezone', 'UTC'));
-            $start = $startDate->format('d/m/Y');
+            $start = $startDate->format(config('uccello.format.php.date'));
         }
 
         if($event->end->dateTime)
         {
             $endDate = Carbon::createFromFormat(\DateTime::ISO8601, $event->end->dateTime)
                 ->setTimezone($event->end->timeZone ?? config('app.timezone', 'UTC'));
-            $end = $endDate->format('d/m/Y H:i');
+            $end = $endDate->format(config('uccello.format.php.datetime'));
         }
         else
         {
             $endDate = Carbon::createFromFormat('Y-m-d', $event->end->date)
                 ->setTimezone($event->end->timeZone ?? config('app.timezone', 'UTC'));
-            $end = $endDate->format('d/m/Y');
+            $end = $endDate->format(config('uccello.format.php.date'));
         }
 
         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
@@ -200,58 +201,68 @@ class EventController extends Controller
 
         $event = $service->events->get(request('calendarId'), request('id'));
 
-        $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('entityType').'/'.request('entityId');
         $start = $event->getStart();
         $end = $event->getEnd();
 
         $datetimeRegex = '/\d{2}\/\d{2}\/\d{4}\ \d{2}\:\d{2}/';
 
         $dateOnly = true;
-        $startArray = [];
-        $endArray = [];
         $start->setTimeZone(config('app.timezone', 'UTC'));
         $end->setTimeZone(config('app.timezone', 'UTC'));
 
-        if(preg_match($datetimeRegex, request('start_date')) || preg_match($datetimeRegex, request('end_date')))
+        if(preg_match($datetimeRegex, request('start_date')) || preg_match($datetimeRegex, request('end_date'))) {
             $dateOnly = false;
+        }
 
-        if($dateOnly)
-        {
+        if($dateOnly) {
             $start->setDateTime(null);
             $end->setDateTime(null);
 
-            $startDate = Carbon::createFromFormat('!d/m/Y', request('start_date'))
+            $startDate = Carbon::createFromFormat(config('uccello.format.php.date'), request('start_date'))
+                ->setTime(0,0,0)
                 ->setTimezone(config('app.timezone', 'UTC'));
-            $endDate = Carbon::createFromFormat('!d/m/Y', request('end_date'))
+
+            $endDate = Carbon::createFromFormat(config('uccello.format.php.date'), request('end_date'))
+                ->setTime(0,0,0)
                 ->setTimezone(config('app.timezone', 'UTC'));
 
             $start->setDate($startDate->toDateString());
             $end->setDate($endDate->toDateString());
-        }
-        else
-        {
+
+        } else {
             $start->setDate(null);
             $end->setDate(null);
 
-            $startDate = Carbon::createFromFormat('d/m/Y H:i', request('start_date'))
+            $startDate = Carbon::createFromFormat(config('uccello.format.php.datetime'), request('start_date'))
                 ->setTimezone(config('app.timezone', 'UTC'));
-            $endDate = Carbon::createFromFormat('d/m/Y H:i', request('end_date'))
+            $endDate = Carbon::createFromFormat(config('uccello.format.php.datetime'), request('end_date'))
                 ->setTimezone(config('app.timezone', 'UTC'));
 
             $start->setDateTime($startDate->toAtomString());
             $end->setDateTime($endDate->toAtomString());
         }
 
-        $event->setSummary(request('subject'));
-        $event->setLocation(request('location'));
-        $event->setDescription((request('description') ?? '').
-            (request('entityType')!=null && request('entityId')!=null ? ' - '.$uccelloLink : ''));
+        if (request()->has('subject')) {
+            $event->setSummary(request('subject'));
+        }
+
+        if (request()->has('location')) {
+            $event->setLocation(request('location'));
+        }
+
+        if (request()->has('description')) {
+            $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('entityType').'/'.request('entityId');
+
+            $event->setDescription((request('description') ?? '').
+                (request('entityType')!=null && request('entityId')!=null ? ' - '.$uccelloLink : ''));
+        }
+
         $event->setStart($start);
         $event->setEnd($end);
 
         $event = $service->events->update(request('calendarId'), $event->getId(), $event);
 
-        //return var_dump($event);
+        return ['success' => true];
     }
 
     public function delete(Domain $domain, Module $module)

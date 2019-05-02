@@ -4,12 +4,18 @@
 @import 'material-full-calendar.scss';
 
 .fc-unthemed {
-    td.fc-today {
-        background: #F1F2F8;
+    td {
+        &.fc-today {
+            background-color: #F1F2F8;
 
-        span {
-            font-weight: bold;
+            span {
+                font-weight: bold;
+            }
         }
+
+        // &.fc-day:hover {
+        //     background-color: #edf8ed;
+        // }
     }
 
     tr {

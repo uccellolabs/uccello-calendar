@@ -69,12 +69,12 @@ class EventController extends Controller
                             $dateStartStr = $dateStart->toDateString();
                             $dateEndStr = $dateEnd->toDateString();
                             // $color = '#D32F2F';
-                            $className = "bg-primary";
+                            // $className = "primary";
                         } else {
                             $dateStartStr = str_replace(' ', 'T', $dateStart->toDateTimeString());
                             $dateEndStr = str_replace(' ', 'T', $dateEnd->toDateTimeString());
                             // $color = '#7B1FA2';
-                            $className = "bg-green";
+                            // $className = "green";
                         }
 
                         $events[] = [
@@ -86,6 +86,7 @@ class EventController extends Controller
                             "calendarId" => $calendar->id,
                             "accountId" => $account->id,
                             "calendarType" => $account->service_name,
+                            "editable" => !$calendar->read_only,
                         ];
                     }
                 }
@@ -112,26 +113,29 @@ class EventController extends Controller
 
         $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('entityType').'/'.request('entityId');
 
-        if(request('allDay')=="true")
+        if(request('allDay') === "true")
         {
-            $startDate = Carbon::createFromFormat('!d/m/Y', request('start_date'))
+            $startDate = Carbon::createFromFormat(config('uccello.format.php.date'), request('start_date'))
+                ->setTime(0,0,0)
                 ->setTimezone(config('app.timezone', 'UTC'));
-            $endDate = Carbon::createFromFormat('!d/m/Y', request('end_date'))
+
+            $endDate = Carbon::createFromFormat(config('uccello.format.php.date'), request('end_date'))
+                ->setTime(0,0,0)
                 ->setTimezone(config('app.timezone', 'UTC'));
 
             $endDate->addDay(1);
 
             $parameters->isAllDay = true;
-            $parameters->end->dateTime = explode('+', $endDate->toAtomString())[0].'+00:00';
             $parameters->start->dateTime = explode('+', $startDate->toAtomString())[0].'+00:00';
-            $parameters->end->timeZone = 'UTC';
             $parameters->start->timeZone = 'UTC';
+            $parameters->end->dateTime = explode('+', $endDate->toAtomString())[0].'+00:00';
+            $parameters->end->timeZone = 'UTC';
         }
         else
         {
-            $startDate = Carbon::createFromFormat('d/m/Y H:i', request('start_date'))
+            $startDate = Carbon::createFromFormat(config('uccello.format.php.datetime'), request('start_date'))
                 ->setTimezone(config('app.timezone', 'UTC'));
-            $endDate = Carbon::createFromFormat('d/m/Y H:i', request('end_date'))
+            $endDate = Carbon::createFromFormat(config('uccello.format.php.datetime'), request('end_date'))
                 ->setTimezone(config('app.timezone', 'UTC'));
             $parameters->end->dateTime = $endDate->toAtomString();
             $parameters->start->dateTime = $startDate->toAtomString();
@@ -146,12 +150,12 @@ class EventController extends Controller
         $parameters->body->content = (request('description') ?? '').(request('entityType')!=null && request('entityId')!=null ? ' - '.$uccelloLink : '');
         $parameters->body->contentType = "Text";
 
-        $event = $graph->createRequest('POST', '/me/calendars/'.request('calendarId').'/events')
-                    ->attachBody($parameters)
-                    ->setReturnType(Model\Event::class)
-                    ->execute();
+        $graph->createRequest('POST', '/me/calendars/'.request('calendarId').'/events')
+            ->attachBody($parameters)
+            ->setReturnType(Model\Event::class)
+            ->execute();
 
-        return var_dump($event);
+        return [ 'success' => true ];
     }
 
     public function retrieve(Domain $domain, Module $module)
@@ -173,14 +177,14 @@ class EventController extends Controller
 
         if(!$event->getIsAllDay())
         {
-            $start = $startDate->format('d/m/Y H:i');
-            $end = $endDate->format('d/m/Y H:i');
+            $start = $startDate->format(config('uccello.format.php.datetime'));
+            $end = $endDate->format(config('uccello.format.php.datetime'));
         }
         else
         {
             $endDate->addDay(-1);
-            $start = $startDate->format('d/m/Y');
-            $end = $endDate->format('d/m/Y');
+            $start = $startDate->format(config('uccello.format.php.date'));
+            $end = $endDate->format(config('uccello.format.php.date'));
         }
 
         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
@@ -196,8 +200,7 @@ class EventController extends Controller
         }
 
         preg_match_all('/<div class="PlainText">(.+?)<\/div>/', $event->getBody()->getContent(), $matches, PREG_OFFSET_CAPTURE, 0);
-        // dd($event->getBody()->getContent());
-        // var_dump($event->getBody()->getContent());
+
         $description = '';
         foreach($matches[1] as $div)
         {
@@ -228,53 +231,63 @@ class EventController extends Controller
         $accountController = new AccountController();
         $graph = $accountController->initClient(request('accountId'));
 
-        $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('entityType').'/'.request('entityId');
-
         $parameters = new \StdClass;
         $parameters->start = new \StdClass;
         $parameters->end = new \StdClass;
 
-        if(request('allDay')=="true")
+        if(request('allDay') === 'true')
         {
-            $startDate = Carbon::createFromFormat('!d/m/Y', request('start_date'))
-                ->setTimezone(config('app.timezone', 'UTC'));
-            $endDate = Carbon::createFromFormat('!d/m/Y', request('end_date'))
+            $startDate = Carbon::createFromFormat(config('uccello.format.php.date'), request('start_date'))
+                ->setTime(0,0,0)
                 ->setTimezone(config('app.timezone', 'UTC'));
 
-            $endDate->addDay(1);
+            $endDate = Carbon::createFromFormat(config('uccello.format.php.date'), request('end_date'))
+                ->setTime(0,0,0)
+                ->setTimezone(config('app.timezone', 'UTC'));
 
             $parameters->isAllDay = true;
-            $parameters->end->dateTime = explode('+', $endDate->toAtomString())[0].'+00:00';
             $parameters->start->dateTime = explode('+', $startDate->toAtomString())[0].'+00:00';
-            $parameters->end->timeZone = 'UTC';
             $parameters->start->timeZone = 'UTC';
+            $parameters->end->dateTime = explode('+', $endDate->toAtomString())[0].'+00:00';
+            $parameters->end->timeZone = 'UTC';
         }
         else
         {
-            $startDate = Carbon::createFromFormat('d/m/Y H:i', request('start_date'))
+            $startDate = Carbon::createFromFormat(config('uccello.format.php.datetime'), request('start_date'))
                 ->setTimezone(config('app.timezone', 'UTC'));
-            $endDate = Carbon::createFromFormat('d/m/Y H:i', request('end_date'))
+            $endDate = Carbon::createFromFormat(config('uccello.format.php.datetime'), request('end_date'))
                 ->setTimezone(config('app.timezone', 'UTC'));
-            $parameters->end->dateTime = $endDate->toAtomString();
             $parameters->start->dateTime = $startDate->toAtomString();
-            $parameters->end->timeZone = config('app.timezone', 'UTC');
             $parameters->start->timeZone = config('app.timezone', 'UTC');
+            $parameters->end->dateTime = $endDate->toAtomString();
+            $parameters->end->timeZone = config('app.timezone', 'UTC');
         }
 
-        $parameters->subject = request('subject');
-        $parameters->location = new \StdClass;
-        $parameters->location->displayName = request('location') ?? '';
-        $parameters->body = new \StdClass;
-        $parameters->body->content = (request('description') ?? '').
-            (request('entityType')!=null && request('entityId')!=null ? ' - '.$uccelloLink : '');
-        $parameters->body->contentType = "Text";
+        if (request()->has('subject')) {
+            $parameters->subject = request('subject');
+        }
 
-        $event = $graph->createRequest('PATCH', '/me/calendars/'.request('calendarId').'/events/'.request('id'))
+        if (request()->has('location')) {
+            $parameters->location = new \StdClass;
+            $parameters->location->displayName = request('location') ?? '';
+        }
+
+        if (request()->has('description')) {
+            $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('entityType').'/'.request('entityId');
+
+            $parameters->body = new \StdClass;
+            $parameters->body->content = (request('description') ?? '').
+                (request('entityType')!=null && request('entityId')!=null ? ' - '.$uccelloLink : '');
+
+            $parameters->body->contentType = "Text";
+        }
+
+        $graph->createRequest('PATCH', '/me/calendars/'.request('calendarId').'/events/'.request('id'))
                     ->attachBody($parameters)
                     ->setReturnType(Model\Event::class)
                     ->execute();
 
-        return $event;
+        return ['success' => true];
     }
 
     public function delete(Domain $domain, Module $module)

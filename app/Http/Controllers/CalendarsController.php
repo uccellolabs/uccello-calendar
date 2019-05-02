@@ -39,45 +39,28 @@ class CalendarsController extends Controller
         // Pre-process
         $this->preProcess($domain, $module, request());
 
-        $calendarsType = \Uccello\Calendar\CalendarTypes::all();
+        $this->viewName = 'index.main';
+
+        // $calendarsType = \Uccello\Calendar\CalendarTypes::all();
         $accounts = \Uccello\Calendar\CalendarAccount::all();
 
-        $calendars = [];
-        $entities = [];
+        $calendars = [ ];
 
-        foreach($accounts as $account){
+        foreach($accounts as $account) {
+            $calendars[ $account->id ] = [ ];
+
             $calendarController = new Generic\CalendarController();
             $accountCalendars = $calendarController->list($domain, $account->service_name, $account->id, $module);
 
             foreach($accountCalendars as $calendar)
             {
-                $exists = false;
-
-                foreach($calendars as $currCalendar)
-                {
-                    if($calendar->id === $currCalendar->id) {
-                        $exists = true;
-                    }
-                }
-
-                if(!$exists) {
-                    $calendars[] = $calendar;
-                }
+                $calendars[ $account->id ][ ] = $calendar;
             }
         }
 
-        // $allEntities = \Uccello\Core\Models\Module::all();
-        // foreach($allEntities as $entity)
-        // {
-        //     $entities[] = $entity->name;
-        // }
-
-        $this->viewName = 'index.main';
-
         return $this->autoView([
             'accounts' => $accounts,
-            'calendars' => $calendars,
-            // 'entities' => $entities,
+            'calendars' => $calendars
         ]);
     }
 }

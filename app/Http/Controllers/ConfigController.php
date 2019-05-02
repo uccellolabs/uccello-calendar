@@ -3,7 +3,6 @@
 namespace Uccello\Calendar\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Routing\Route;
 use Uccello\Core\Http\Controllers\Core\Controller;
 use Uccello\Core\Models\Domain;
 use Uccello\Core\Models\Module;
