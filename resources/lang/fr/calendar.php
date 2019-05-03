@@ -7,7 +7,6 @@ return [
     'calendar.name' => 'Nom du calendrier',
     'accounts' => 'Comptes',
     'calendars' => 'Calendriers',
-    'none' => 'Aucun compte pour le moment.',
     'confirm' => 'Etes-vous sûrs de vouloir supprimer ce compte ?',
     'color' => 'Couleur',
     'accounts.stored' => 'Comptes enregistrés',
@@ -30,6 +29,11 @@ return [
     'calendar.rule' => 'Règle',
     'save' => 'ENREGISTRER',
     'calendar.config.cron_delay' => 'Délai entre deux exécutions',
+
+    'empty' => [
+        'account' => 'Aucun compte pour le moment.',
+        'calendar' => 'Aucun calendrier configuré.',
+    ],
 
     'field' => [
         'subject' => 'Sujet',

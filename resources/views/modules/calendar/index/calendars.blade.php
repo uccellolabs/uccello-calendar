@@ -9,7 +9,7 @@
 
 <li>
     <ul class="collapsible collapsible-accordion">
-        @foreach ($accounts as $i => $account)
+        @forelse ($accounts as $i => $account)
         <li class="submenu">
             <a href="javascript:void(0)" class="collapsible-header truncate" tabindex="0">
                 <span>{{ $account->username }}</span>
@@ -28,7 +28,9 @@
                 </ul>
             </div>
         </li>
-        @endforeach
+        @empty
+        <li class="center-align white-text">{{ uctrans('empty.calendar', $module) }}</li>
+        @endforelse
 
     </ul>
 </li>

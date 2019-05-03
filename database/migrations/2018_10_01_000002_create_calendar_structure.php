@@ -17,7 +17,7 @@ class CreateCalendarStructure extends Migration
     public function up()
     {
         $module = $this->createModule();
-        $this->activateModuleOnDomain($module);
+        $this->activateModuleOnDomains($module);
     }
 
     /**
@@ -36,17 +36,17 @@ class CreateCalendarStructure extends Migration
         $module->name = 'calendar';
         $module->icon = 'date_range';
         $module->model_class = null;
-        $module->data = ["package" => "uccello/calendar", "menu" => [
-            ['label' => 'calendar', 'route'=> 'uccello.index', 'icon' => 'date_range'],
-        ]];
+        $module->data = ["package" => "uccello/calendar", "menu" => 'uccello.index'];
         $module->save();
 
         return $module;
     }
 
-    protected function activateModuleOnDomain($module)
+    protected function activateModuleOnDomains($module)
     {
-        $domain = Domain::first();
-        $domain->modules()->attach($module);
+        $domains = Domain::all();
+        foreach ($domains as $domain) {
+            $domain->modules()->attach($module);
+        }
     }
 }

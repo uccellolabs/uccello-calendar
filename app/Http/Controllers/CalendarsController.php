@@ -44,6 +44,10 @@ class CalendarsController extends Controller
         // $calendarsType = \Uccello\Calendar\CalendarTypes::all();
         $accounts = \Uccello\Calendar\CalendarAccount::all();
 
+        if ($accounts->count() === 0) {
+            return redirect(ucroute('calendar.manage', $domain));
+        }
+
         $calendars = [ ];
 
         foreach($accounts as $account) {

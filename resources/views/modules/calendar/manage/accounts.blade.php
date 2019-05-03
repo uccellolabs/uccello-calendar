@@ -29,7 +29,7 @@
                         @continue($account->service_name !== $calendarType->name)
                         <?php $cpt++; ?>
                         <li class="collection-item avatar">
-                            <img src="{{ asset('vendor/uccello/calendar/images/'.$calendarType->name .'.png') }}" alt="{{ $account->service_name }}" class="circle">
+                            <img src="{{ asset('vendor/uccello/calendar/images/'.$calendarType->icon) }}" alt="{{ $account->service_name }}" class="circle">
                             <span class="title"><b>{{ $account->username }}</b></span>
                             <p>{{ uctrans($calendarType->friendly_name, $module) }}</p>
 
@@ -48,7 +48,7 @@
 
                 @if ($cpt === 0)
                 <li class="collection-item grey lighten-4 center-align">
-                    {{ uctrans('none', $module) }}
+                    {{ uctrans('empty.account', $module) }}
                 </li>
                 @endif
             </ul>

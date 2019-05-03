@@ -50,6 +50,5 @@
 
 @section('script')
     {{ Html::script(mix('js/app.js', 'vendor/uccello/calendar')) }}
-    {{-- {{ Html::script('https://maps.googleapis.com/maps/api/js?key=YOU_GOOGLE_API_KEY_GOES_HERE&libraries=places') }} --}}
 @append
 

@@ -2,7 +2,7 @@
 import 'fullcalendar'
 import allLocales from 'fullcalendar/dist/locale-all'
 import 'materialize-css'
-import 'moment'
+import moment from 'moment'
 import 'daterangepicker'
 
 export class Calendar {
