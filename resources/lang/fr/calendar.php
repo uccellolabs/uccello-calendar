@@ -14,7 +14,7 @@ return [
     'manage' => 'Gérer les calendriers',
     'manage_accounts' => 'Gérer les comptes',
     'event.allday' => 'Journée entière',
-    'event.add' => 'Ajouter un événement',
+    'event.add' => 'Événement',
     'event.save' => 'Enregistrer',
     'cancel' => 'Annuler',
     'my_tasks' => 'Mes tâches',

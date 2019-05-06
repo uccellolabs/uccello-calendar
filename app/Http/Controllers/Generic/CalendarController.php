@@ -154,6 +154,20 @@ class CalendarController extends Controller
         return redirect(ucroute('calendar.manage', $domain, $module));
     }
 
+    public function getCategories(Domain $domain, $accountId, Module $module)
+    {
+        $this->preProcess($domain, $module, request());
 
+        $account = \Uccello\Calendar\CalendarAccount::findOrFail($accountId);
+
+
+        $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $account->service_name)->get()->first();
+        $calendarClass =  $calendarTypeModel->namespace.'\CalendarController';
+
+        $calendarType = new $calendarClass();
+
+        $account = \Uccello\Calendar\CalendarAccount::where('id', $accountId)->get()->first();
+        return $calendarType->getCategories($domain, $module, $account);
+    }
 
 }

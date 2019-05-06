@@ -63,6 +63,15 @@ class CalendarController extends Controller
         $service->calendars->delete($calendarId);
     }
 
+    public function getCategories(Domain $domain, Module $module, CalendarAccount $account)
+    {
+        $categories = collect();
+
+        // TODO:
+
+        return $categories;
+    }
+
     private function initClient($accountId)
     {
         $accountController = new AccountController();

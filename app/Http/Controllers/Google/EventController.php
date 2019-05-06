@@ -69,6 +69,7 @@ class EventController extends Controller
                             "accountId" => $account->id,
                             "calendarType" => $account->service_name,
                             "editable" => !$calendar->read_only,
+                            "categories" => null, //TODO:
                         ];
                     }
                 }
@@ -189,6 +190,7 @@ class EventController extends Controller
         $returnEvent->entityId =        $entityId;
         $returnEvent->calendarId =      request('calendarId');
         $returnEvent->accountId =       request('accountId');
+        $returnEvent->categories =      null; //TODO:
 
         return json_encode($returnEvent);
     }

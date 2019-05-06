@@ -56,6 +56,10 @@ Route::middleware('web', 'auth')
         ->defaults('module', 'calendar')
         ->name('toggle');
 
+    Route::get($domainParam.'/calendar/categories/{accountId}', 'Generic\CalendarController@getCategories')
+        ->defaults('module', 'calendar')
+        ->name('categories');
+
     //Accounts
     Route::get($domainParam.'/calendar/{type}/signin', 'Generic\AccountController@signin')
         ->defaults('module', 'calendar')

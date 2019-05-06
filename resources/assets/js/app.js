@@ -1,8 +1,6 @@
-// import 'bootstrap' // Mandatory to user $.modal()
 import 'fullcalendar'
 import allLocales from 'fullcalendar/dist/locale-all'
 import 'materialize-css'
-import moment from 'moment'
 import 'daterangepicker'
 
 export class Calendar {
@@ -13,6 +11,7 @@ export class Calendar {
         this.initDeleteButtonListener()
         this.initAllDayCheckboxListener()
         this.initCalendarToogleListener()
+        this.initCalendarSwitcherListener()
     }
 
     initFullCalendar() {
@@ -58,6 +57,7 @@ export class Calendar {
                     $('#addEventModal #end_date').val(end.subtract(1, "days").format(dateFormat)).parent().find('label').addClass('active')
                 }
 
+                $('#addEventModal #all_calendars').change()
                 $('#addEventModal').modal('open')
 
                 this.calendar.fullCalendar('unselect')
@@ -70,6 +70,7 @@ export class Calendar {
                 }
 
                 this.emptyModal()
+                this.showLoader()
 
                 let url = $('meta[name="calendar-retrieve-event-url"]').attr('content')
                 $.get(url, {
@@ -83,13 +84,17 @@ export class Calendar {
                     //Open popup and fill in fields
                     if (json.id) {
                         $('#addEventModal .delete').removeClass('hide')
-                        $('#addEventModal #all_calendars').val(calEvent.calendarId).formSelect()
+                        $('#addEventModal #all_calendars').val(calEvent.calendarId).formSelect().change()
                     }
 
                     let startDate = json.start.split(' ')[0]
                     let startTime = json.start.split(' ')[1]
                     let endDate = json.end.split(' ')[0]
                     let endTime = json.end.split(' ')[1]
+
+                    if (calEvent.categories) {
+                        $(`#addEventModal select.category option[value="${calEvent.categories[0]}"]`).prop('selected', true)
+                    }
 
                     $('#addEventModal #id').val(json.id)
                     $('#addEventModal #start_date').val(startDate).parent().find('label').addClass('active')
@@ -105,6 +110,8 @@ export class Calendar {
                     $('#addEventModal #'+this.jq(json.calendarId)).prop('checked', true)
 
                     $('#addEventModal').modal('open')
+
+                    this.hideLoader()
                 })
             },
             eventDrop: (calEvent) => {
@@ -148,6 +155,7 @@ export class Calendar {
                 id: $('#addEventModal #id').val(),
                 type: $('#all_calendars option:selected').data('calendar-type'),
                 subject: $('#subject').val(),
+                category: $('#addEventModal .category:visible').val(),
                 start_date: startDate,
                 end_date: endDate,
                 location: $('#location').val(),
@@ -201,9 +209,11 @@ export class Calendar {
 
                 $('#start_time').hide()
                 $('#end_time').hide()
+                // $('#end_date').prop('disabled', false)
             } else {
                 $('#start_time').show()
                 $('#end_time').show()
+                // $('#end_date').prop('disabled', true)
             }
         })
     }
@@ -240,6 +250,15 @@ export class Calendar {
 
                 swal(uctrans.trans('uccello::default.dialog.error.title'), uctrans.trans('uccello::default.dialog.error.message'), 'error')
             })
+        })
+    }
+
+    initCalendarSwitcherListener() {
+        $('#all_calendars').on('change', function () {
+            let accountId = $("option:selected", this).attr('data-account-id')
+            $('select.category').hide()
+            $(`#category-${accountId}`).show()
+
         })
     }
 
@@ -289,6 +308,8 @@ export class Calendar {
         $('#addEventModal #entityType').val('').parent().find('label').removeClass('active')
         $('#addEventModal #entityId').val('').parent().find('label').removeClass('active')
         $('#addEventModal #allCalendars').val('').formSelect().parent().find('label').removeClass('active')
+        $('#addEventModal select.category').val('')
+        $('#addEventModal select.category option').prop('selected', false)
     }
 
     jq(myid) {

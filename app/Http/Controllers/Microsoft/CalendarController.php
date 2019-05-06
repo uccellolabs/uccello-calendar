@@ -63,6 +63,73 @@ class CalendarController extends Controller
                         ->execute();
     }
 
+    public function getCategories(Domain $domain, Module $module, CalendarAccount $account)
+    {
+        $categories = collect();
+
+        $graph = $this->initClient($account->id);
+        $response = $graph->createRequest('GET', '/me/outlook/masterCategories')->execute();
+        $body = $response->getBody();
+
+        if ($body['value'] && is_array($body['value'])) {
+            foreach ($body['value'] as $category) {
+                $_category = new \stdClass;
+                $_category->id = $category['id'];
+                $_category->label = $category['displayName'];
+                $_category->value = $category['displayName'];
+                $_category->color = static::getColorByPreset($category['color']);
+
+                $categories->push($_category);
+            }
+        }
+
+        return $categories;
+    }
+
+    public static function getColorByPreset($presetName)
+    {
+        $colors = static::getColors();
+
+        $index = str_replace('preset', '', $presetName);
+
+        if ($index < count($colors)) {
+            return $colors[$index];
+        }
+
+        return null;
+    }
+
+    public static function getColors()
+    {
+        return [
+            '#E74856',
+            '#FF8C00',
+            '#FFAB46',
+            '#FFF100',
+            '#47D041',
+            '#30C6CC',
+            '#73AA24',
+            '#00BCF2',
+            '#8764B8',
+            '#F495BF',
+            '#A0AEB2',
+            '#004B60',
+            '#B1ADAB',
+            '#5D5A58',
+            '#000000',
+            '#750B1C',
+            '#CA5010',
+            '#AB620D',
+            '#C19C00',
+            '#004B1C',
+            '#004B50',
+            '#0B6A0B',
+            '#002050',
+            '#32145A',
+            '#5C005C'
+        ];
+    }
+
     private function initClient($accountId)
     {
         $accountController = new AccountController();

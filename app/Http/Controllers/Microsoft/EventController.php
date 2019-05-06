@@ -34,11 +34,14 @@ class EventController extends Controller
 
         $calendarsFetched = [];
         $accountController = new AccountController();
+        $calendarController = new CalendarController();
 
         foreach ($accounts as $account) {
             $calendarController = new CalendarController();
             $calendars = $calendarController->list($domain, $module, $account->id);
             $calendarsDisabled = (array) \Uccello\Calendar\Http\Controllers\Generic\CalendarController::getDisabledCalendars($account->id);
+
+            $categoriesColorByName = $calendarController->getCategories($domain, $module, $account)->pluck('color', 'label');
 
             foreach($calendars as $calendar)
             {
@@ -77,16 +80,28 @@ class EventController extends Controller
                             // $className = "green";
                         }
 
+                        $categories = $item->getCategories();
+                        if (count($item->getCategories()) > 0) {
+                            $color = $categoriesColorByName[$categories[0]];
+                        } else {
+                            $color = null;
+                        }
+
+                        if (empty($color)) {
+                            $color = $calendar->color;
+                        }
+
                         $events[] = [
                             "id" => $item->getId(),
                             "title" => $item->getSubject() ?? '(no title)',
                             "start" => $dateStartStr,
                             "end" => $dateEndStr,
-                            "color" => $calendar->color,
+                            "color" => $color,
                             "calendarId" => $calendar->id,
                             "accountId" => $account->id,
                             "calendarType" => $account->service_name,
                             "editable" => !$calendar->read_only,
+                            "categories" => $categories,
                         ];
                     }
                 }
@@ -149,6 +164,7 @@ class EventController extends Controller
         $parameters->body = new \StdClass;
         $parameters->body->content = (request('description') ?? '').(request('entityType')!=null && request('entityId')!=null ? ' - '.$uccelloLink : '');
         $parameters->body->contentType = "Text";
+        $parameters->categories = (array) request('category');
 
         $graph->createRequest('POST', '/me/calendars/'.request('calendarId').'/events')
             ->attachBody($parameters)
@@ -219,6 +235,7 @@ class EventController extends Controller
         $returnEvent->entityId =        $entityId;
         $returnEvent->calendarId =      request('calendarId');
         $returnEvent->accountId =       request('accountId');
+        $returnEvent->categories =      $event->getCategories();
 
 
         return json_encode($returnEvent);
@@ -265,6 +282,10 @@ class EventController extends Controller
 
         if (request()->has('subject')) {
             $parameters->subject = request('subject');
+        }
+
+        if(request()->has('category')) {
+            $parameters->categories = (array) request('category');
         }
 
         if (request()->has('location')) {

@@ -49,22 +49,23 @@ class CalendarsController extends Controller
         }
 
         $calendars = [ ];
+        $categories = [ ];
 
         foreach($accounts as $account) {
             $calendars[ $account->id ] = [ ];
 
             $calendarController = new Generic\CalendarController();
             $accountCalendars = $calendarController->list($domain, $account->service_name, $account->id, $module);
+            $accountCategories = $calendarController->getCategories($domain, $account->id, $module);
 
-            foreach($accountCalendars as $calendar)
-            {
-                $calendars[ $account->id ][ ] = $calendar;
-            }
+            $calendars[ $account->id ] = $accountCalendars;
+            $categories[ $account->id] = $accountCategories;
         }
 
         return $this->autoView([
             'accounts' => $accounts,
-            'calendars' => $calendars
+            'calendars' => $calendars,
+            'categories' => $categories,
         ]);
     }
 }

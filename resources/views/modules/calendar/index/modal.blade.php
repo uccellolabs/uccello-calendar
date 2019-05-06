@@ -7,8 +7,8 @@
       <div class="row">
         <form class="col s12">
             <input type="hidden" id="id">
-            <div class="row">
 
+            <div class="row" style="margin-bottom: 0">
                 <div class="input-field col s12 m8">
                     {{-- <i class="material-icons prefix">short_text</i> --}}
                     <input id="subject" type="text" autocomplete="off">
@@ -16,11 +16,42 @@
                 </div>
 
                 <div class="input-field col s12 m4">
+                    <select id="all_calendars">
+                        @foreach ($accounts as $account)
+                        <optgroup label="{{ $account->username }}">
+                            @foreach ($calendars[ $account->id ] as $calendar)
+                                @continue($calendar->disabled || $calendar->read_only)
+                                <option value="{!! $calendar->id !!}"
+                                    data-calendar-type="{{ $calendar->service }}"
+                                    data-account-id="{{ $calendar->accountId }}">{{ $calendar->name }}</option>
+                            @endforeach
+                        </optgroup>
+                        @endforeach
+                    </select>
+                    <label>{{ uctrans('calendar', $module) }}</label>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom: 0">
+                <div class="input-field col s12 m8">
                     {{-- <i class="material-icons prefix">location_on</i> --}}
                     <input id="location" type="text" autocomplete="off">
                     <label for="location">{{ uctrans('field.location', $module) }}</label>
                 </div>
 
+                <div class="input-field col s12 m4">
+                    @foreach ($accounts as $account)
+                        <select id="category-{{$account->id}}" class="category browser-default" data-account-id="{{ $account->id }}" style="display: none">
+                            <option value="">&nbsp;</option>
+                            @foreach ($categories[ $account->id ] as $category)
+                                <option value="{{ $category->value }}">{{ $category->label }}</option>
+                            @endforeach
+                        </select>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom: 0">
                 <div class="input-field col s10 m3 l3">
                     {{-- <i class="material-icons prefix">date_range</i> --}}
                     <input id="start_date" type="text" autocomplete="off" class="datepicker" data-format="{{ config('uccello.format.js.date') }}">
@@ -48,39 +79,9 @@
                         </label>
                     </p>
                 </div>
+            </div>
 
-                <div class="input-field col s12">
-                    <select id="all_calendars">
-                        @foreach ($accounts as $account)
-                        <optgroup label="{{ $account->username }}">
-                            @foreach ($calendars[ $account->id ] as $calendar)
-                                @continue($calendar->disabled || $calendar->read_only)
-                                <option value="{!! $calendar->id !!}"
-                                    data-calendar-type="{{ $calendar->service }}"
-                                    data-account-id="{{ $calendar->accountId }}">{{ $calendar->name }}</option>
-                            @endforeach
-                        </optgroup>
-                        @endforeach
-                    </select>
-                    <label>{{ uctrans('calendar', $module) }}</label>
-                </div>
-
-                <div class="input-field col s3">
-                    {{-- <i class="material-icons prefix">extension</i> --}}
-                    <select id="entityType">
-                        @foreach ($modules as $_module)
-                            @continue(!$_module->model_class || $_module->isAdminModule())
-                            <option value="{{ $_module->id }}">{{ uctrans($_module->name, $_module) }}</option>
-                        @endforeach
-                    </select>
-                    <label for="entityType">{{ uctrans('field.entity_type', $module) }}</label>
-                </div>
-
-                <div class="input-field col s9">
-                    <input id="entityId" type="text">
-                    {{-- <label for="entityId">{{ uctrans('field.entity_id', $module) }}</label> --}}
-                </div>
-
+            <div class="row" style="margin-bottom: 0">
                 <div class="input-field col s12">
                     {{-- <i class="material-icons prefix">subject</i> --}}
                     <textarea id="description" class="materialize-textarea"></textarea>
