@@ -81,6 +81,9 @@
                 </div>
             </div>
 
+            {{-- Possibility to select a related record --}}
+            @yield('related-record')
+
             <div class="row" style="margin-bottom: 0">
                 <div class="input-field col s12">
                     {{-- <i class="material-icons prefix">subject</i> --}}
@@ -91,6 +94,9 @@
                     </span>
                 </div>
             </div>
+
+            <input type="hidden" id="moduleName">
+            <input type="hidden" id="recordId">
         </form>
       </div>
     </div>

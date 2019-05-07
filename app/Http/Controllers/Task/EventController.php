@@ -109,7 +109,7 @@ class EventController extends Controller
         // $parameters->start = new \StdClass;
         // $parameters->end = new \StdClass;
 
-        // $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.$request->input('entityType').'/'.$request->input('entityId');
+        // $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.$request->input('moduleName').'/'.$request->input('recordId');
 
         // if($request->input('allDay')=="true")
         // {
@@ -186,14 +186,14 @@ class EventController extends Controller
 
         // $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
         // $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]+/([a-z]+)/([0-9]+?)`', $event->getBody()->getContent(), $matches);
-        // $entityType = '';
-        // $entityId = '';
+        // $moduleName = '';
+        // $recordId = '';
         // $expression = '';
         // if($regexFound)
         // {
         //     $expression = $matches[0] ?? '';
-        //     $entityType = $matches[1] ?? '';
-        //     $entityId = $matches[2] ?? '';
+        //     $moduleName = $matches[1] ?? '';
+        //     $recordId = $matches[2] ?? '';
         // }
 
         // preg_match_all('/<div class="PlainText">(.+?)<\/div>/', $event->getBody()->getContent(), $matches, PREG_OFFSET_CAPTURE, 0);
@@ -213,8 +213,8 @@ class EventController extends Controller
         // $returnEvent->allDay =          $event->getIsAllDay();
         // $returnEvent->location =        $event->getLocation()->getDisplayName();
         // $returnEvent->description =     preg_replace('`<a .+? href="'.$uccelloUrl.'.+?">.+?</a>`', '', $description);
-        // $returnEvent->entityType =      $entityType;
-        // $returnEvent->entityId =        $entityId;
+        // $returnEvent->moduleName =      $moduleName;
+        // $returnEvent->recordId =        $recordId;
         // $returnEvent->calendarId =      $request->input('calendarId');
         // $returnEvent->accountId =       $request->input('accountId');
 

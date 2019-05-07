@@ -95,7 +95,7 @@ class EventController extends Controller
         $startArray['timeZone'] =config('app.timezone', 'UTC');
         $endArray['timeZone'] = config('app.timezone', 'UTC');
 
-        $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('entityType').'/'.request('entityId');
+        $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
 
         if(preg_match($datetimeRegex, request('start_date')) || preg_match($datetimeRegex, request('end_date')))
             $dateOnly = false;
@@ -122,7 +122,7 @@ class EventController extends Controller
         $event = new \Google_Service_Calendar_Event(array(
             'summary' => request('subject'),
             'location' => request('location'),
-            'description' => (request('description') ?? '').(request('entityType')!=null && request('entityId')!=null ? ' - '.$uccelloLink : ''),
+            'description' => (request('description') ?? '').(request('moduleName')!=null && request('recordId')!=null ? ' - '.$uccelloLink : ''),
             'start' => $startArray,
             'end' => $endArray,
         ));
@@ -170,12 +170,12 @@ class EventController extends Controller
         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
 
         $regexFound = preg_match('` - '.$uccelloUrl.'/[0-9]+/([a-z]+)/([0-9]+)`', $event->description, $matches);
-        $entityType = '';
-        $entityId = '';
+        $moduleName = '';
+        $recordId = '';
         if($regexFound)
         {
-            $entityType = $matches[1] ?? '';
-            $entityId = $matches[2] ?? '';
+            $moduleName = $matches[1] ?? '';
+            $recordId = $matches[2] ?? '';
         }
 
         $returnEvent = new \StdClass;
@@ -186,8 +186,8 @@ class EventController extends Controller
         $returnEvent->allDay =          $event->start->dateTime || $event->end->dateTime ? false : true;
         $returnEvent->location =        $event->location;
         $returnEvent->description =     $regexFound ? str_replace($matches[0],'',$event->description) : $event->description;
-        $returnEvent->entityType =      $entityType;
-        $returnEvent->entityId =        $entityId;
+        $returnEvent->moduleName =      $moduleName;
+        $returnEvent->recordId =        $recordId;
         $returnEvent->calendarId =      request('calendarId');
         $returnEvent->accountId =       request('accountId');
         $returnEvent->categories =      null; //TODO:
@@ -253,10 +253,10 @@ class EventController extends Controller
         }
 
         if (request()->has('description')) {
-            $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('entityType').'/'.request('entityId');
+            $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
 
             $event->setDescription((request('description') ?? '').
-                (request('entityType')!=null && request('entityId')!=null ? ' - '.$uccelloLink : ''));
+                (request('moduleName')!=null && request('recordId')!=null ? ' - '.$uccelloLink : ''));
         }
 
         $event->setStart($start);

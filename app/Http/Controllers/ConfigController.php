@@ -122,7 +122,7 @@ class ConfigController extends Controller
     {
         //If the event needs to be updated
         if(strpos($event->title, ' - ')!=false &&
-            ($event->entityType=="" || $event->entityId=="" || $event->entityType==null || $event->entityId==null))
+            ($event->moduleName=="" || $event->recordId=="" || $event->moduleName==null || $event->recordId==null))
         {
             //If the calendar is writable
             $calendar = (new \Uccello\Calendar\Http\Controllers\Generic\CalendarController)->retrieve($domain, $event->accountId ,$event->calendarId, $module, $request);
@@ -174,8 +174,8 @@ class ConfigController extends Controller
                                 'subject'       => $event->title,
                                 'location'      => $event->location,
                                 'description'   => $event->description,
-                                'entityType'    => $entity_module->name,
-                                'entityId'      => $entity->id,
+                                'moduleName'      => $entity_module->name,
+                                'recordId'      => $entity->id,
                         ));
                         $response = app()->handle($request);
                         break;

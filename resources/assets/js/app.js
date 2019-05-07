@@ -2,6 +2,7 @@ import 'fullcalendar'
 import allLocales from 'fullcalendar/dist/locale-all'
 import 'materialize-css'
 import 'daterangepicker'
+import 'devbridge-autocomplete'
 
 export class Calendar {
     constructor() {
@@ -105,8 +106,8 @@ export class Calendar {
                     $('#addEventModal #all_day').prop('checked', json.allDay).change().parent().find('label').addClass('active')
                     $('#addEventModal #location').val(json.location).parent().find('label').addClass('active')
                     $('#addEventModal #description').val(json.description).parent().find('label').addClass('active')
-                    $('#addEventModal #entityType').val(json.entityType)
-                    $('#addEventModal #entityId').val(json.entityId).parent().find('label').addClass('active')
+                    $('#addEventModal #moduleName').val(json.moduleName)
+                    $('#addEventModal #recordId').val(json.recordId).parent().find('label').addClass('active')
                     $('#addEventModal #'+this.jq(json.calendarId)).prop('checked', true)
 
                     $('#addEventModal').modal('open')
@@ -160,8 +161,8 @@ export class Calendar {
                 end_date: endDate,
                 location: $('#location').val(),
                 description : $('#description').val(),
-                entityType: $('#entityType').val(),
-                entityId: $('#entityId').val(),
+                moduleName: $('#moduleName').val(),
+                recordId: $('#recordId').val(),
                 allDay: $('#all_day').is(':checked'),
                 calendarId: $('#all_calendars').val(),
                 accountId: $('#all_calendars option:selected').data('account-id'),
@@ -296,20 +297,12 @@ export class Calendar {
     }
 
     emptyModal() {
-        $('#addEventModal #id').val('')
-        $('#addEventModal #start_date').val('').parent().find('label').removeClass('active')
-        $('#addEventModal #end_date').val('').parent().find('label').removeClass('active')
-        $('#addEventModal #start_time').val('')
-        $('#addEventModal #end_time').val('')
-        $('#addEventModal #subject').val('').parent().find('label').removeClass('active')
-        $('#addEventModal #all_day').prop('checked', false).change().parent().find('label').removeClass('active')
-        $('#addEventModal #location').val('').parent().find('label').removeClass('active')
-        $('#addEventModal #description').val('').parent().find('label').removeClass('active')
-        $('#addEventModal #entityType').val('').parent().find('label').removeClass('active')
-        $('#addEventModal #entityId').val('').parent().find('label').removeClass('active')
-        $('#addEventModal #allCalendars').val('').formSelect().parent().find('label').removeClass('active')
+        $('#addEventModal input').val('').parent().find('label').removeClass('active')
+        $('#addEventModal select').val('').parent().find('label').removeClass('active')
+        $('#addEventModal textarea').val('').parent().find('label').removeClass('active')
         $('#addEventModal select.category').val('')
         $('#addEventModal select.category option').prop('selected', false)
+        $('#addEventModal #allCalendars').val('').formSelect().parent().find('label').removeClass('active')
     }
 
     jq(myid) {

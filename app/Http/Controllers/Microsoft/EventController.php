@@ -118,15 +118,13 @@ class EventController extends Controller
         $accountController = new AccountController();
         $graph = $accountController->initClient(request('accountId'));
 
-        $datetimeRegex = '/\d{2}\/\d{2}\/\d{4}\ \d{2}\:\d{2}/';
-        $dateOnly = true;
         $startDate = '';
         $endDate = '';
         $parameters = new \StdClass;
         $parameters->start = new \StdClass;
         $parameters->end = new \StdClass;
 
-        $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('entityType').'/'.request('entityId');
+        $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
 
         if(request('allDay') === "true")
         {
@@ -162,7 +160,7 @@ class EventController extends Controller
         $parameters->location = new \StdClass;
         $parameters->location->displayName = request('location') ?? '';
         $parameters->body = new \StdClass;
-        $parameters->body->content = (request('description') ?? '').(request('entityType')!=null && request('entityId')!=null ? ' - '.$uccelloLink : '');
+        $parameters->body->content = (request('description') ?? '').(request('moduleName')!==null && request('recordId')!==null ? ' - '.$uccelloLink : '');
         $parameters->body->contentType = "Text";
         $parameters->categories = (array) request('category');
 
@@ -205,14 +203,14 @@ class EventController extends Controller
 
         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
         $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]+/([a-z]+)/([0-9]+)`', $event->getBody()->getContent(), $matches);
-        $entityType = '';
-        $entityId = '';
+        $moduleName = '';
+        $recordId = '';
         $expression = '';
         if($regexFound)
         {
             $expression = $matches[0] ?? '';
-            $entityType = $matches[1] ?? '';
-            $entityId = $matches[2] ?? '';
+            $moduleName = $matches[1] ?? '';
+            $recordId = $matches[2] ?? '';
         }
 
         preg_match_all('/<div class="PlainText">(.+?)<\/div>/', $event->getBody()->getContent(), $matches, PREG_OFFSET_CAPTURE, 0);
@@ -231,8 +229,8 @@ class EventController extends Controller
         $returnEvent->allDay =          $event->getIsAllDay();
         $returnEvent->location =        $event->getLocation()->getDisplayName();
         $returnEvent->description =     preg_replace('` - <a.+?href="'.$uccelloUrl.'.+?">.+?</a>`', '', $description);
-        $returnEvent->entityType =      $entityType;
-        $returnEvent->entityId =        $entityId;
+        $returnEvent->moduleName =      $moduleName;
+        $returnEvent->recordId =        $recordId;
         $returnEvent->calendarId =      request('calendarId');
         $returnEvent->accountId =       request('accountId');
         $returnEvent->categories =      $event->getCategories();
@@ -294,11 +292,11 @@ class EventController extends Controller
         }
 
         if (request()->has('description')) {
-            $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('entityType').'/'.request('entityId');
+            $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
 
             $parameters->body = new \StdClass;
             $parameters->body->content = (request('description') ?? '').
-                (request('entityType')!=null && request('entityId')!=null ? ' - '.$uccelloLink : '');
+                (request('moduleName')!=null && request('recordId')!=null ? ' - '.$uccelloLink : '');
 
             $parameters->body->contentType = "Text";
         }
