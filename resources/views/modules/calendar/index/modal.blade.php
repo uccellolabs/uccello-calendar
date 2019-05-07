@@ -11,7 +11,7 @@
             <div class="row" style="margin-bottom: 0">
                 <div class="input-field col s12 m8">
                     {{-- <i class="material-icons prefix">short_text</i> --}}
-                    <input id="subject" type="text" autocomplete="off">
+                    <input id="subject" type="text" autocomplete="off" class="emptyable">
                     <label for="subject">{{ uctrans('field.subject', $module) }}</label>
                 </div>
 
@@ -35,19 +35,20 @@
             <div class="row" style="margin-bottom: 0">
                 <div class="input-field col s12 m8">
                     {{-- <i class="material-icons prefix">location_on</i> --}}
-                    <input id="location" type="text" autocomplete="off">
+                    <input id="location" type="text" autocomplete="off" class="emptyable">
                     <label for="location">{{ uctrans('field.location', $module) }}</label>
                 </div>
 
-                <div class="input-field col s12 m4">
+                <div id="categories" class="input-field col s12 m4">
                     @foreach ($accounts as $account)
-                        <select id="category-{{$account->id}}" class="category browser-default" data-account-id="{{ $account->id }}" style="display: none">
+                        <select id="category-{{$account->id}}" class="category emptyable" data-account-id="{{ $account->id }}" style="display: none">
                             <option value="">&nbsp;</option>
                             @foreach ($categories[ $account->id ] as $category)
                                 <option value="{{ $category->value }}">{{ $category->label }}</option>
                             @endforeach
                         </select>
                     @endforeach
+                    <label>{{ uctrans('field.category', $module)}}</label>
                 </div>
             </div>
 
@@ -59,7 +60,7 @@
                 </div>
 
                 <div class="input-field col s2 m1 l2">
-                    <input id="start_time" type="time" autocomplete="off" class="timepicker">
+                    <input id="start_time" type="time" autocomplete="off" class="timepicker emptyable">
                 </div>
 
                 <div class="input-field col s10 m3 l3">
@@ -68,7 +69,7 @@
                 </div>
 
                 <div class="input-field col s2 m1 l2">
-                    <input id="end_time" type="time" autocomplete="off" class="timepicker">
+                    <input id="end_time" type="time" autocomplete="off" class="timepicker emptyable">
                 </div>
 
                 <div class="col s12 m4 l2">
@@ -87,7 +88,7 @@
             <div class="row" style="margin-bottom: 0">
                 <div class="input-field col s12">
                     {{-- <i class="material-icons prefix">subject</i> --}}
-                    <textarea id="description" class="materialize-textarea"></textarea>
+                    <textarea id="description" class="materialize-textarea emptyable"></textarea>
                     <label for="description">{{ uctrans('field.description', $module) }}</label>
                     <span class="helper-text">
                         {{ uctrans('field.info.new_line', $module) }}
@@ -95,8 +96,8 @@
                 </div>
             </div>
 
-            <input type="hidden" id="moduleName">
-            <input type="hidden" id="recordId">
+            <input type="hidden" id="moduleName" class="emptyable">
+            <input type="hidden" id="recordId" class="emptyable">
         </form>
       </div>
     </div>

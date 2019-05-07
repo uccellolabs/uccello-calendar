@@ -6,6 +6,8 @@ import 'devbridge-autocomplete'
 
 export class Calendar {
     constructor() {
+        this.modal = $('#addEventModal')
+
         this.initFullCalendar()
         this.initSaveButtonListener()
         this.initCancelButtonListener()
@@ -13,6 +15,7 @@ export class Calendar {
         this.initAllDayCheckboxListener()
         this.initCalendarToogleListener()
         this.initCalendarSwitcherListener()
+        this.initDateStartListener()
     }
 
     initFullCalendar() {
@@ -42,24 +45,25 @@ export class Calendar {
                 let dateStart = start.format().split('T')
                 let dateEnd = end.format().split('T')
 
-                $('#addEventModal #start_date').val(start.format(dateFormat)).change().parent().find('label').addClass('active')
-
+                $('#start_date', this.modal).val(start.format(dateFormat)).change().parent().find('label').addClass('active')
 
                 if (dateStart.length > 1) {
-                    $('#addEventModal #start_time').val(dateStart[1])
+                    $('#start_time', this.modal).val(dateStart[1])
+                    $('#all_day', this.modal).prop('checked', false).change()
                 } else {
-                    $('#addEventModal #all_day').prop('checked', true).change()
+                    $('#all_day', this.modal).prop('checked', true).change()
                 }
 
                 if (dateEnd.length > 1) {
-                    $('#addEventModal #end_time').val(dateEnd[1])
-                    $('#addEventModal #end_date').val(end.format(dateFormat)).parent().find('label').addClass('active')
+                    $('#end_time', this.modal).val(dateEnd[1])
+                    $('#end_date', this.modal).val(end.format(dateFormat)).parent().find('label').addClass('active')
                 } else {
-                    $('#addEventModal #end_date').val(end.subtract(1, "days").format(dateFormat)).parent().find('label').addClass('active')
+                    $('#end_date', this.modal).val(end.subtract(1, "days").format(dateFormat)).parent().find('label').addClass('active')
                 }
 
-                $('#addEventModal #all_calendars').change()
-                $('#addEventModal').modal('open')
+                $('#all_calendars', this.modal).change()
+                $(this.modal).modal('open')
+                $(this.modal).trigger('modal.open')
 
                 this.calendar.fullCalendar('unselect')
             },
@@ -69,6 +73,9 @@ export class Calendar {
                     M.toast({html: "Cet événement n'est pas modifiable"}) //TODO: Translate
                     return
                 }
+
+                // Dispatch event
+                $('#calendar').trigger('event.selected', [ calEvent ])
 
                 this.emptyModal()
                 this.showLoader()
@@ -84,8 +91,8 @@ export class Calendar {
 
                     //Open popup and fill in fields
                     if (json.id) {
-                        $('#addEventModal .delete').removeClass('hide')
-                        $('#addEventModal #all_calendars').val(calEvent.calendarId).formSelect().change()
+                        $('.delete', this.modal).removeClass('hide')
+                        $('#all_calendars', this.modal).val(calEvent.calendarId).formSelect().change()
                     }
 
                     let startDate = json.start.split(' ')[0]
@@ -94,23 +101,24 @@ export class Calendar {
                     let endTime = json.end.split(' ')[1]
 
                     if (calEvent.categories) {
-                        $(`#addEventModal select.category option[value="${calEvent.categories[0]}"]`).prop('selected', true)
+                        $(`#category-${calEvent.accountId}`, this.modal).val(calEvent.categories[0]).formSelect().change()
                     }
 
-                    $('#addEventModal #id').val(json.id)
-                    $('#addEventModal #start_date').val(startDate).parent().find('label').addClass('active')
-                    $('#addEventModal #start_time').val(startTime)
-                    $('#addEventModal #end_date').val(endDate).parent().find('label').addClass('active')
-                    $('#addEventModal #end_time').val(endTime)
-                    $('#addEventModal #subject').val(json.title).parent().find('label').addClass('active')
-                    $('#addEventModal #all_day').prop('checked', json.allDay).change().parent().find('label').addClass('active')
-                    $('#addEventModal #location').val(json.location).parent().find('label').addClass('active')
-                    $('#addEventModal #description').val(json.description).parent().find('label').addClass('active')
-                    $('#addEventModal #moduleName').val(json.moduleName)
-                    $('#addEventModal #recordId').val(json.recordId).parent().find('label').addClass('active')
-                    $('#addEventModal #'+this.jq(json.calendarId)).prop('checked', true)
+                    $('#id', this.modal).val(json.id)
+                    $('#start_date', this.modal).val(startDate).parent().find('label').addClass('active')
+                    $('#start_time', this.modal).val(startTime)
+                    $('#end_date', this.modal).val(endDate).parent().find('label').addClass('active')
+                    $('#end_time', this.modal).val(endTime)
+                    $('#subject', this.modal).val(json.title).parent().find('label').addClass('active')
+                    $('#all_day', this.modal).prop('checked', json.allDay).change()
+                    $('#location', this.modal).val(json.location).parent().find('label').addClass('active')
+                    $('#description', this.modal).val(json.description).parent().find('label').addClass('active')
+                    $('#moduleName', this.modal).val(json.moduleName)
+                    $('#recordId', this.modal).val(json.recordId)
+                    $('#' + this.jq(json.calendarId), this.modal).prop('checked', true)
 
-                    $('#addEventModal').modal('open')
+                    $(this.modal).modal('open')
+                    $(this.modal).trigger('modal.open')
 
                     this.hideLoader()
                 })
@@ -135,39 +143,41 @@ export class Calendar {
 
     initSaveButtonListener() {
         // Save event
-        $('#addEventModal a.save').on('click', (event) =>{
+        $('a.save', this.modal).on('click', (event) =>{
             this.showLoader()
 
-            let startDate = $('#start_date').val()
-            let endDate = $('#end_date').val()
+            let startDate = $('#start_date', this.modal).val()
+            let endDate = $('#end_date', this.modal).val()
 
-            if(!$('#all_day').is(':checked')) {
-                startDate += ' ' + $('#start_time').val().substr(0, 5)
-                endDate += ' ' + $('#end_time').val().substr(0, 5)
+            if(!$('#all_day', this.modal).is(':checked')) {
+                startDate += ' ' + $('#start_time', this.modal).val().substr(0, 5)
+                endDate += ' ' + $('#end_time', this.modal).val().substr(0, 5)
             }
 
+            let accountId = $('#all_calendars option:selected', this.modal).data('account-id')
+
             let url = $('meta[name="calendar-update-event-url"]').attr('content')
-            if($('#addEventModal #id').val()=='') {
+            if($('#id', this.modal).val()=='') {
                 url = $('meta[name="calendar-create-event-url"]').attr('content')
             }
 
             $.post(url, {
                 _token: $("meta[name='csrf-token']").attr('content'),
-                id: $('#addEventModal #id').val(),
-                type: $('#all_calendars option:selected').data('calendar-type'),
-                subject: $('#subject').val(),
-                category: $('#addEventModal .category:visible').val(),
+                id: $('#id', this.modal).val(),
+                type: $('#all_calendars option:selected', this.modal).data('calendar-type'),
+                subject: $('#subject', this.modal).val(),
+                category: $(`#category-${accountId}`, this.modal).val(),
                 start_date: startDate,
                 end_date: endDate,
-                location: $('#location').val(),
-                description : $('#description').val(),
-                moduleName: $('#moduleName').val(),
-                recordId: $('#recordId').val(),
-                allDay: $('#all_day').is(':checked'),
-                calendarId: $('#all_calendars').val(),
-                accountId: $('#all_calendars option:selected').data('account-id'),
-            }).done(function(){
-                $('#addEventModal').modal('close')
+                location: $('#location', this.modal).val(),
+                description : $('#description', this.modal).val(),
+                moduleName: $('#moduleName', this.modal).val(),
+                recordId: $('#recordId', this.modal).val(),
+                allDay: $('#all_day', this.modal).is(':checked'),
+                calendarId: $('#all_calendars', this.modal).val(),
+                accountId: accountId,
+            }).done(() => {
+                $(this.modal).modal('close')
                 M.toast({html: "L'événement a été sauvegardé !"}) //TODO: Translate
                 $('#calendar').fullCalendar('refetchEvents')
             })
@@ -176,7 +186,7 @@ export class Calendar {
 
     initCancelButtonListener() {
         //Clear HTML
-        $('#addEventModal a.modal-close').on('click', () =>{
+        $('a.modal-close', this.modal).on('click', () =>{
             this.emptyModal()
         })
     }
@@ -190,12 +200,12 @@ export class Calendar {
 
             $.post(url, {
                 _token: $("meta[name='csrf-token']").attr('content'),
-                type: $('#all_calendars option:selected').data('calendar-type'),
-                id: $('#addEventModal #id').val(),
-                calendarId: $('#all_calendars').val(),
-                accountId: $('#all_calendars option:selected').data('account-id'),
-            }).done(function(){
-                $('#addEventModal').modal('close')
+                type: $('#all_calendars option:selected', this.modal).data('calendar-type'),
+                id: $('#id', this.modal).val(),
+                calendarId: $('#all_calendars', this.modal).val(),
+                accountId: $('#all_calendars option:selected', this.modal).data('account-id'),
+            }).done(() => {
+                $(this.modal).modal('close')
                 $("#calendar").fullCalendar('removeEvents', $('#addEventModal #id').val())
             })
         })
@@ -203,24 +213,22 @@ export class Calendar {
 
     initAllDayCheckboxListener() {
         //Update datetime on checkbox checked to remove time
-        $('#all_day').change(function() {
-            if($(this).is(':checked')) {
-                // $('#start_date').val( $('#start_date').val().split(' ')[0])
-                // $('#end_date').val( $('#end_date').val().split(' ')[0])
-
-                $('#start_time').hide()
-                $('#end_time').hide()
-                // $('#end_date').prop('disabled', false)
+        $('#all_day', this.modal).change((event) => {
+            if($(event.currentTarget).is(':checked')) {
+                $('#start_time', this.modal).hide()
+                $('#end_time', this.modal).hide()
+                $('#end_date', this.modal).prop('disabled', false)
             } else {
-                $('#start_time').show()
-                $('#end_time').show()
-                // $('#end_date').prop('disabled', true)
+                $('#start_time', this.modal).show()
+                $('#end_time', this.modal).show()
+                $('#end_date', this.modal).prop('disabled', true)
+                $('#end_date', this.modal).val( $('#start_date', this.modal).val())
             }
         })
     }
 
     initCalendarToogleListener() {
-        $(".calendar-name").on('click', (event) => {
+        $(".calendar-name", this.modal).on('click', (event) => {
 
             event.preventDefault()
 
@@ -255,11 +263,17 @@ export class Calendar {
     }
 
     initCalendarSwitcherListener() {
-        $('#all_calendars').on('change', function () {
-            let accountId = $("option:selected", this).attr('data-account-id')
-            $('select.category').hide()
-            $(`#category-${accountId}`).show()
+        $('#all_calendars', this.modal).on('change', (event) => {
+            let accountId = $("option:selected", event.currentTarget).attr('data-account-id')
+            $('#categories .select-wrapper', this.modal).hide()
+            $(`#category-${accountId}`, this.modal).parent().show()
 
+        })
+    }
+
+    initDateStartListener() {
+        $('#start_date', this.modal).on('focusout', (event) => {
+            $('#end_date', this.modal).val($(event.currentTarget).val())
         })
     }
 
@@ -297,12 +311,10 @@ export class Calendar {
     }
 
     emptyModal() {
-        $('#addEventModal input').val('').parent().find('label').removeClass('active')
-        $('#addEventModal select').val('').parent().find('label').removeClass('active')
-        $('#addEventModal textarea').val('').parent().find('label').removeClass('active')
-        $('#addEventModal select.category').val('')
-        $('#addEventModal select.category option').prop('selected', false)
-        $('#addEventModal #allCalendars').val('').formSelect().parent().find('label').removeClass('active')
+        $('.emptyable', this.modal).val('')
+        $('input.emptyable').parent().find('label').removeClass('active')
+        $('select.category', this.modal).val('').formSelect()
+        // $('#allCalendars', this.modal).val('').formSelect().parent().find('label').removeClass('active')
     }
 
     jq(myid) {
