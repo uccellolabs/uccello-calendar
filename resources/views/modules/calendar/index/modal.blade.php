@@ -6,7 +6,7 @@
         </h4>
       <div class="row">
         <form class="col s12">
-            <input type="hidden" id="id">
+            <input type="hidden" id="id" class="emptyable">
 
             <div class="row" style="margin-bottom: 0">
                 <div class="input-field col s12 m8">
