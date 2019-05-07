@@ -4,6 +4,7 @@ namespace Uccello\Calendar\Http\Controllers\Microsoft;
 
 use Microsoft\Graph\Graph;
 use Microsoft\Graph\Model;
+use Carbon\Carbon;
 use Uccello\Core\Http\Controllers\Core\Controller;
 use Uccello\Calendar\CalendarAccount;
 use Uccello\Core\Models\Domain;
@@ -102,7 +103,7 @@ class AccountController extends Controller
 
     public static function getAccessToken(CalendarAccount $calendarAccount){
 
-        $now = time() + 300;
+        $now = Carbon::now()->timestamp + 300; // Add 5 minutes
 
         if($calendarAccount->expiration <= $now)
         // Token is expired (or very close to it) so let's refresh
