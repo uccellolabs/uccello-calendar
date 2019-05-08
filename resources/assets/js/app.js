@@ -67,7 +67,9 @@ export class Calendar {
 
                 $('#all_calendars', this.modal).change()
                 $(this.modal).modal('open')
-                $(this.modal).trigger('modal.open')
+
+                // Dispatch Event
+                this.dispatchEvent($(this.modal).attr('id'), 'modal.open')
 
                 this.calendar.fullCalendar('unselect')
             },
@@ -79,7 +81,7 @@ export class Calendar {
                 }
 
                 // Dispatch event
-                $('#calendar').trigger('event.selected', [ calEvent ])
+                this.dispatchEvent('calendar', 'event.selected', { calEvent })
 
                 this.emptyModal()
                 this.showLoader()
@@ -108,8 +110,6 @@ export class Calendar {
                         $(`#category-${calEvent.accountId}`, this.modal).val(calEvent.categories[0]).formSelect().change()
                     }
 
-                    console.log(json.description)
-
                     $('#id', this.modal).val(json.id)
                     $('#start_date', this.modal).val(startDate).parent().find('label').addClass('active')
                     $('#start_time', this.modal).val(startTime)
@@ -124,7 +124,9 @@ export class Calendar {
                     $('#' + this.jq(json.calendarId), this.modal).prop('checked', true)
 
                     $(this.modal).modal('open')
-                    $(this.modal).trigger('modal.open')
+
+                    // Dispatch Event
+                    this.dispatchEvent($(this.modal).attr('id'), 'modal.open')
 
                     this.hideLoader()
                 })
@@ -292,6 +294,11 @@ export class Calendar {
             resetCss: true,
             height: 200
         })
+
+        // Add custom event listener
+        document.getElementById($(this.modal).attr('id')).getElementsByClassName('trumbowyg-editor')[0].addEventListener('update.html', (event) => {
+            $('#description', this.modal).trumbowyg('html', event.detail)
+        })
     }
 
     initDateStartListener() {
@@ -346,11 +353,15 @@ export class Calendar {
         $('select.category', this.modal).val('').formSelect()
         $('a.delete').addClass('hide')
         $('#description', this.modal).trumbowyg('empty')
-        // $('#allCalendars', this.modal).val('').formSelect().parent().find('label').removeClass('active')
     }
 
     jq(myid) {
         return myid.replace( /(:|\.|\[|\]|,|=|@)/g, "\\$1" )
+    }
+
+    dispatchEvent(elementId, eventName, data) {
+        let event = new CustomEvent(eventName, { detail: data })
+        document.getElementById(elementId).dispatchEvent(event)
     }
 }
 

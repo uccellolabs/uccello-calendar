@@ -83,7 +83,7 @@
 
             <div class="row" style="margin-bottom: 0">
                 <div class="col s12">
-                    <textarea id="description" class="materialize-textarea emptyable browser-default"></textarea>
+                    <div id="description"></div>
                 </div>
             </div>
 
