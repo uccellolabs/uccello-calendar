@@ -59,6 +59,16 @@ class EventController extends Controller
 
                     foreach ($items as $event) {
 
+                        $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
+                        $regexFound = preg_match('` - '.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)`', $event->description, $matches);
+                        $moduleName = '';
+                        $recordId = '';
+                        if($regexFound)
+                        {
+                            $moduleName = $matches[1] ?? '';
+                            $recordId = $matches[2] ?? '';
+                        }
+
                         $events[] = [
                             "id" => $event->id,
                             "title" => $event->summary ?? '(no title)',
@@ -69,7 +79,9 @@ class EventController extends Controller
                             "accountId" => $account->id,
                             "calendarType" => $account->service_name,
                             "editable" => !$calendar->read_only,
-                            "categories" => null, //TODO:
+                            "moduleName" => $moduleName,
+                            "recordId" => $recordId,
+                            "categories" => null,
                         ];
                     }
                 }
@@ -172,8 +184,7 @@ class EventController extends Controller
         }
 
         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
-
-        $regexFound = preg_match('` - '.$uccelloUrl.'/[0-9]+/([a-z]+)/([0-9]+)`', $event->description, $matches);
+        $regexFound = preg_match('` - '.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)`', $event->description, $matches);
         $moduleName = '';
         $recordId = '';
         if($regexFound)

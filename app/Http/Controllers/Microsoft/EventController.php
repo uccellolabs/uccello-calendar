@@ -91,6 +91,16 @@ class EventController extends Controller
                             $color = $calendar->color;
                         }
 
+                        $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
+                        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)`', $item->getBody()->getContent(), $matches);
+                        $moduleName = '';
+                        $recordId = '';
+                        if($regexFound)
+                        {
+                            $moduleName = $matches[1] ?? '';
+                            $recordId = $matches[2] ?? '';
+                        }
+
                         $events[] = [
                             "id" => $item->getId(),
                             "title" => $item->getSubject() ?? '(no title)',
@@ -102,6 +112,8 @@ class EventController extends Controller
                             "calendarType" => $account->service_name,
                             "editable" => !$calendar->read_only,
                             "categories" => $categories,
+                            "moduleName" => $moduleName,
+                            "recordId" => $recordId,
                         ];
                     }
                 }
@@ -206,13 +218,11 @@ class EventController extends Controller
         }
 
         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
-        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]+/([a-z]+)/([0-9]+)`', $event->getBody()->getContent(), $matches);
+        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)`', $event->getBody()->getContent(), $matches);
         $moduleName = '';
         $recordId = '';
-        $expression = '';
         if($regexFound)
         {
-            $expression = $matches[0] ?? '';
             $moduleName = $matches[1] ?? '';
             $recordId = $matches[2] ?? '';
         }
