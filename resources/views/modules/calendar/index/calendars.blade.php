@@ -7,7 +7,7 @@
     </a>
 </li>
 
-<li>
+<li id="calendars-menu">
     <ul class="collapsible collapsible-accordion">
         @forelse ($accounts as $i => $account)
         <li class="submenu">
@@ -18,7 +18,7 @@
                 <ul>
                     @foreach ($calendars[ $account->id ] as $calendar)
                         <li>
-                            <a href="#" class="calendar-name truncate" data-account-id="{{ $account->id }}" data-calendar-id="{{ $calendar->id }}" data-readonly="{{ $calendar->read_only ? 'true' : 'false' }}" style="margin-left: 0" title="{{ $calendar->name }}">
+                            <a href="javascript:void(0)" class="calendar-name truncate" data-account-id="{{ $account->id }}" data-calendar-id="{{ $calendar->id }}" data-readonly="{{ $calendar->read_only ? 'true' : 'false' }}" style="margin-left: 0" title="{{ $calendar->name }}">
                                 <i class="material-icons is-active">@if($calendar->disabled)check_box_outline_blank @else check_box @endif</i>
                                 <span>{{ $calendar->name }}</span>
                                 <i class="material-icons right" style="color: {{ $calendar->color }}">stop</i>

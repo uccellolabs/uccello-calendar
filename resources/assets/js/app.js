@@ -235,8 +235,7 @@ export class Calendar {
     }
 
     initCalendarToogleListener() {
-        $(".calendar-name", this.modal).on('click', (event) => {
-
+        $("#calendars-menu .calendar-name").on('click', (event) => {
             event.preventDefault()
 
             let element = event.currentTarget
