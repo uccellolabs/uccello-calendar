@@ -3,6 +3,8 @@ import allLocales from 'fullcalendar/dist/locale-all'
 import 'materialize-css'
 import 'daterangepicker'
 import 'devbridge-autocomplete'
+import 'trumbowyg'
+import 'trumbowyg/dist/langs/fr'
 
 export class Calendar {
     constructor() {
@@ -16,6 +18,7 @@ export class Calendar {
         this.initCalendarToogleListener()
         this.initCalendarSwitcherListener()
         this.initDateStartListener()
+        this.initDescriptionWysiwyg()
     }
 
     initFullCalendar() {
@@ -47,12 +50,13 @@ export class Calendar {
 
                 $('#start_date', this.modal).val(start.format(dateFormat)).change().parent().find('label').addClass('active')
 
-                if (dateStart.length > 1) {
-                    $('#start_time', this.modal).val(dateStart[1])
-                    $('#all_day', this.modal).prop('checked', false).change()
-                } else {
-                    $('#all_day', this.modal).prop('checked', true).change()
-                }
+                // if (dateStart.length > 1) {
+                //     $('#start_time', this.modal).val(dateStart[1])
+                //     $('#all_day', this.modal).prop('checked', false).change()
+                // } else {
+                //     $('#all_day', this.modal).prop('checked', true).change()
+                // }
+                $('#all_day', this.modal).prop('checked', false).change() // For not checked
 
                 if (dateEnd.length > 1) {
                     $('#end_time', this.modal).val(dateEnd[1])
@@ -104,6 +108,8 @@ export class Calendar {
                         $(`#category-${calEvent.accountId}`, this.modal).val(calEvent.categories[0]).formSelect().change()
                     }
 
+                    console.log(json.description)
+
                     $('#id', this.modal).val(json.id)
                     $('#start_date', this.modal).val(startDate).parent().find('label').addClass('active')
                     $('#start_time', this.modal).val(startTime)
@@ -112,7 +118,7 @@ export class Calendar {
                     $('#subject', this.modal).val(json.title).parent().find('label').addClass('active')
                     $('#all_day', this.modal).prop('checked', json.allDay).change()
                     $('#location', this.modal).val(json.location).parent().find('label').addClass('active')
-                    $('#description', this.modal).val(json.description).parent().find('label').addClass('active')
+                    $('#description', this.modal).trumbowyg('html', json.description)
                     $('#moduleName', this.modal).val(json.moduleName)
                     $('#recordId', this.modal).val(json.recordId)
                     $('#' + this.jq(json.calendarId), this.modal).prop('checked', true)
@@ -170,7 +176,7 @@ export class Calendar {
                 start_date: startDate,
                 end_date: endDate,
                 location: $('#location', this.modal).val(),
-                description : $('#description', this.modal).val(),
+                description : $('#description', this.modal).trumbowyg('html'),
                 moduleName: $('#moduleName', this.modal).val(),
                 recordId: $('#recordId', this.modal).val(),
                 allDay: $('#all_day', this.modal).is(':checked'),
@@ -266,14 +272,38 @@ export class Calendar {
         $('#all_calendars', this.modal).on('change', (event) => {
             let accountId = $("option:selected", event.currentTarget).attr('data-account-id')
             $('#categories .select-wrapper', this.modal).hide()
-            $(`#category-${accountId}`, this.modal).parent().show()
+            $('#categories').hide()
+            $('#location').parent().removeClass('m8')
 
+            // Show category only if it is not empty
+            if ($(`#category-${accountId}`, this.modal).find('option').length > 1) {
+                $(`#category-${accountId}`, this.modal).parent().show()
+                $('#categories').show()
+                $('#location').parent().addClass('m8')
+            }
+        })
+    }
+
+    initDescriptionWysiwyg() {
+        $.trumbowyg.svgPath = '/vendor/uccello/calendar/images/icons.svg'
+        $('#description', this.modal).trumbowyg({
+            lang: $('html').attr('lang'),
+            btns: [['bold', 'italic'], ['link']],
+            resetCss: true,
+            height: 200
         })
     }
 
     initDateStartListener() {
         $('#start_date', this.modal).on('focusout', (event) => {
             $('#end_date', this.modal).val($(event.currentTarget).val())
+        })
+
+        $('#start_time', this.modal).on('change', (event) => {
+            let startTime = $(event.currentTarget).val()
+            let endTime = moment(startTime, 'HH:mm').add(1, 'hours').format('HH:mm')
+
+            $('#end_time', this.modal).val(endTime)
         })
     }
 
@@ -314,6 +344,8 @@ export class Calendar {
         $('.emptyable', this.modal).val('')
         $('input.emptyable').parent().find('label').removeClass('active')
         $('select.category', this.modal).val('').formSelect()
+        $('a.delete').addClass('hide')
+        $('#description', this.modal).trumbowyg('empty')
         // $('#allCalendars', this.modal).val('').formSelect().parent().find('label').removeClass('active')
     }
 

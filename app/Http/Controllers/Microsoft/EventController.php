@@ -65,8 +65,8 @@ class EventController extends Controller
                                     ->execute();
 
                     foreach ($items as $item) {
-                        $dateStart = new Carbon($item->getStart()->getDateTime());
-                        $dateEnd = new Carbon($item->getEnd()->getDateTime());
+                        $dateStart = (new Carbon($item->getStart()->getDateTime()))->setTimezone(config('app.timezone', 'UTC'));
+                        $dateEnd = (new Carbon($item->getEnd()->getDateTime()))->setTimezone(config('app.timezone', 'UTC'));
 
                         if ($dateStart->toTimeString() === '00:00:00' && $dateEnd->toTimeString() === '00:00:00') {
                             $dateStartStr = $dateStart->toDateString();
@@ -124,7 +124,11 @@ class EventController extends Controller
         $parameters->start = new \StdClass;
         $parameters->end = new \StdClass;
 
-        $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
+        if (uccello()->useMultiDomains()) {
+            $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
+        } else {
+            $uccelloLink = env('APP_URL').'/'.request('moduleName').'/'.request('recordId');
+        }
 
         if(request('allDay') === "true")
         {
@@ -185,9 +189,9 @@ class EventController extends Controller
                         ->execute();
 
 
-        $startDate = new Carbon($event->getStart()->getDateTime());
+        $startDate = new Carbon($event->getStart()->getDateTime(), config('app.timezone', 'UTC'));
 
-        $endDate = new Carbon($event->getEnd()->getDateTime());
+        $endDate = new Carbon($event->getEnd()->getDateTime(), config('app.timezone', 'UTC'));
 
         if(!$event->getIsAllDay())
         {
@@ -228,7 +232,7 @@ class EventController extends Controller
         $returnEvent->end =             $end;
         $returnEvent->allDay =          $event->getIsAllDay();
         $returnEvent->location =        $event->getLocation()->getDisplayName();
-        $returnEvent->description =     preg_replace('` - <a.+?href="'.$uccelloUrl.'.+?">.+?</a>`', '', $description);
+        $returnEvent->description =     html_entity_decode(preg_replace('` - <a.+?href="'.$uccelloUrl.'.+?">.+?</a>`', '', $description));
         $returnEvent->moduleName =      $moduleName;
         $returnEvent->recordId =        $recordId;
         $returnEvent->calendarId =      request('calendarId');
@@ -292,7 +296,11 @@ class EventController extends Controller
         }
 
         if (request()->has('description')) {
-            $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
+            if (uccello()->useMultiDomains()) {
+                $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
+            } else {
+                $uccelloLink = env('APP_URL').'/'.request('moduleName').'/'.request('recordId');
+            }
 
             $parameters->body = new \StdClass;
             $parameters->body->content = (request('description') ?? '').

@@ -1,6 +1,7 @@
 @import url('https://use.fontawesome.com/releases/v5.8.1/css/all.css');
 
 @import '~fullcalendar/dist/fullcalendar.min.css';
+@import '~trumbowyg/dist/ui/trumbowyg.css';
 @import 'material-full-calendar.scss';
 
 .fc-unthemed {
@@ -30,4 +31,26 @@
     button:focus {
         background-color: rgba(158, 158, 158, 0.2)
     }
+}
+
+#addEventModal {
+    .input-field {
+        margin-bottom: 0.2rem;
+    }
+}
+
+.trumbowyg {
+    margin-bottom: 0;
+
+    strong {
+        font-weight: bold;
+    }
+}
+
+.trumbowyg-box, .trumbowyg-editor {
+    min-height: 80px;
+}
+
+.trumbowyg-textarea {
+    min-height: 100px;
 }

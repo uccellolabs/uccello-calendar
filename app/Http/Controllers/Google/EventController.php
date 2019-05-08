@@ -95,7 +95,11 @@ class EventController extends Controller
         $startArray['timeZone'] =config('app.timezone', 'UTC');
         $endArray['timeZone'] = config('app.timezone', 'UTC');
 
-        $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
+        if (uccello()->useMultiDomains()) {
+            $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
+        } else {
+            $uccelloLink = env('APP_URL').'/'.request('moduleName').'/'.request('recordId');
+        }
 
         if(preg_match($datetimeRegex, request('start_date')) || preg_match($datetimeRegex, request('end_date')))
             $dateOnly = false;
@@ -253,7 +257,11 @@ class EventController extends Controller
         }
 
         if (request()->has('description')) {
-            $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
+            if (uccello()->useMultiDomains()) {
+                $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
+            } else {
+                $uccelloLink = env('APP_URL').'/'.request('moduleName').'/'.request('recordId');
+            }
 
             $event->setDescription((request('description') ?? '').
                 (request('moduleName')!=null && request('recordId')!=null ? ' - '.$uccelloLink : ''));
