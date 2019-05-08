@@ -2,7 +2,6 @@ import 'fullcalendar'
 import allLocales from 'fullcalendar/dist/locale-all'
 import 'materialize-css'
 import 'daterangepicker'
-import 'devbridge-autocomplete'
 import 'trumbowyg'
 import 'trumbowyg/dist/langs/fr'
 
