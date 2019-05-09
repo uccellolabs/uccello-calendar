@@ -81,7 +81,7 @@ class EventController extends Controller
                         }
 
                         $categories = $item->getCategories();
-                        if (count($item->getCategories()) > 0) {
+                        if (count($item->getCategories()) > 0 && !empty($categoriesColorByName[$categories[0]])) {
                             $color = $categoriesColorByName[$categories[0]];
                         } else {
                             $color = null;
