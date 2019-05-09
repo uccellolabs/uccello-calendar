@@ -65,8 +65,8 @@ class EventController extends Controller
                                     ->execute();
 
                     foreach ($items as $item) {
-                        $dateStart = (new Carbon($item->getStart()->getDateTime()))->setTimezone(config('app.timezone', 'UTC'));
-                        $dateEnd = (new Carbon($item->getEnd()->getDateTime()))->setTimezone(config('app.timezone', 'UTC'));
+                        $dateStart = (new Carbon($item->getStart()->getDateTime(), 'UTC'))->setTimezone(config('app.timezone', 'UTC'));
+                        $dateEnd = (new Carbon($item->getEnd()->getDateTime(), 'UTC'))->setTimezone(config('app.timezone', 'UTC'));
 
                         if ($dateStart->toTimeString() === '00:00:00' && $dateEnd->toTimeString() === '00:00:00') {
                             $dateStartStr = $dateStart->toDateString();
@@ -201,20 +201,20 @@ class EventController extends Controller
                         ->execute();
 
 
-        $startDate = new Carbon($event->getStart()->getDateTime(), config('app.timezone', 'UTC'));
+        $startDate = new Carbon($event->getStart()->getDateTime(), 'UTC');
 
-        $endDate = new Carbon($event->getEnd()->getDateTime(), config('app.timezone', 'UTC'));
+        $endDate = new Carbon($event->getEnd()->getDateTime(), 'UTC');
 
         if(!$event->getIsAllDay())
         {
-            $start = $startDate->format(config('uccello.format.php.datetime'));
-            $end = $endDate->format(config('uccello.format.php.datetime'));
+            $start = $startDate->setTimezone(config('app.timezone', 'UTC'))->format(config('uccello.format.php.datetime'));
+            $end = $endDate->setTimezone(config('app.timezone', 'UTC'))->format(config('uccello.format.php.datetime'));
         }
         else
         {
             $endDate->addDay(-1);
             $start = $startDate->format(config('uccello.format.php.date'));
-            $end = $endDate->format(config('uccello.format.php.date'));
+            $end = $endDate->setTimezone(config('app.timezone', 'UTC'))->format(config('uccello.format.php.date'));
         }
 
         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
