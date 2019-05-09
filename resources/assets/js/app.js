@@ -97,7 +97,7 @@ export class Calendar {
                     //Open popup and fill in fields
                     if (json.id) {
                         $('.delete', this.modal).removeClass('hide')
-                        $('#all_calendars', this.modal).val(calEvent.calendarId).formSelect().change()
+                        $('#all_calendars', this.modal).val(calEvent.calendarId).prop('disabled', true).formSelect().change()
                     }
 
                     let startDate = json.start.split(' ')[0]
@@ -351,6 +351,7 @@ export class Calendar {
         $('select.category', this.modal).val('').formSelect()
         $('a.delete').addClass('hide')
         $('#description', this.modal).trumbowyg('empty')
+        $('#all_calendars', this.modal).prop('disabled', false).formSelect()
     }
 
     jq(myid) {
