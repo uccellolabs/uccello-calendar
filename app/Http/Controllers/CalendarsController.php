@@ -15,7 +15,7 @@ class CalendarsController extends Controller
         $this->preProcess($domain, $module, $request);
 
         $calendarsType = \Uccello\Calendar\CalendarTypes::all();
-        $accounts = \Uccello\Calendar\CalendarAccount::all();
+        $accounts = \Uccello\Calendar\CalendarAccount::where('user_id', auth()->id())->get();
 
         $calendars = [];
 
@@ -42,7 +42,7 @@ class CalendarsController extends Controller
         $this->viewName = 'index.main';
 
         // $calendarsType = \Uccello\Calendar\CalendarTypes::all();
-        $accounts = \Uccello\Calendar\CalendarAccount::all();
+        $accounts = \Uccello\Calendar\CalendarAccount::where('user_id', auth()->id())->get();
 
         if ($accounts->count() === 0) {
             return redirect(ucroute('calendar.manage', $domain));
