@@ -49,12 +49,12 @@ export class Calendar {
 
                 $('#start_date', this.modal).val(start.format(dateFormat)).change().parent().find('label').addClass('active')
 
-                // if (dateStart.length > 1) {
-                //     $('#start_time', this.modal).val(dateStart[1])
-                //     $('#all_day', this.modal).prop('checked', false).change()
-                // } else {
-                //     $('#all_day', this.modal).prop('checked', true).change()
-                // }
+                if (dateStart.length > 1) {
+                    $('#start_time', this.modal).val(dateStart[1])
+                    // $('#all_day', this.modal).prop('checked', false).change()
+                } else {
+                    // $('#all_day', this.modal).prop('checked', true).change()
+                }
                 $('#all_day', this.modal).prop('checked', false).change() // For not checked
 
                 if (dateEnd.length > 1) {
