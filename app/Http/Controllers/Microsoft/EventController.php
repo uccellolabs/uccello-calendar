@@ -65,8 +65,8 @@ class EventController extends Controller
                                     ->execute();
 
                     foreach ($items as $item) {
-                        $dateStart = (new Carbon($item->getStart()->getDateTime(), 'UTC'))->setTimezone(config('app.timezone', 'UTC'));
-                        $dateEnd = (new Carbon($item->getEnd()->getDateTime(), 'UTC'))->setTimezone(config('app.timezone', 'UTC'));
+                        $dateStart = (new Carbon($item->getStart()->getDateTime(), 'UTC'));
+                        $dateEnd = (new Carbon($item->getEnd()->getDateTime(), 'UTC'));
 
                         if ($dateStart->toTimeString() === '00:00:00' && $dateEnd->toTimeString() === '00:00:00') {
                             $dateStartStr = $dateStart->toDateString();
@@ -74,8 +74,8 @@ class EventController extends Controller
                             // $color = '#D32F2F';
                             // $className = "primary";
                         } else {
-                            $dateStartStr = str_replace(' ', 'T', $dateStart->toDateTimeString());
-                            $dateEndStr = str_replace(' ', 'T', $dateEnd->toDateTimeString());
+                            $dateStartStr = str_replace(' ', 'T', $dateStart->setTimezone(config('app.timezone', 'UTC'))->toDateTimeString());
+                            $dateEndStr = str_replace(' ', 'T', $dateEnd->setTimezone(config('app.timezone', 'UTC'))->toDateTimeString());
                             // $color = '#7B1FA2';
                             // $className = "green";
                         }
