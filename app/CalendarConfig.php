@@ -3,6 +3,8 @@
 namespace Uccello\Calendar;
 
 use Illuminate\Database\Eloquent\Model;
+use Uccello\Core\Models\Domain;
+use App\User;
 
 class CalendarConfig extends Model
 {
