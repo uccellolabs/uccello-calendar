@@ -23,7 +23,7 @@ return [
     'google' => 'Google Calendar',
     'tasks' => 'Tâches',
     'module' => 'Module',
-    'field' => 'Champ',
+    '_field' => 'Champ',
     'calendar.config' => 'Configurateur de liaison d\'événements du calendrier',
     'calendar.rules' => 'Parametrer les règles pour la liaison automatique d\'événements du calendrier avec des entités du CRM. Les règles doivent être paramétrées par ordre de priorité',
     'calendar.rule' => 'Règle',
@@ -42,6 +42,7 @@ return [
         'category' => 'Catégorie',
         'location' => 'Lieu',
         'description' => 'Description',
+        'project' => 'Projet'
     ],
 
     'button' => [

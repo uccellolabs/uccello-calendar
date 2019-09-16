@@ -92,7 +92,7 @@ class EventController extends Controller
                         }
 
                         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
-                        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)`', $item->getBody()->getContent(), $matches);
+                        $regexFound = preg_match('`'.$uccelloUrl.'/to/[0-9]*/?([a-z]+)/([0-9]+)`', $item->getBody()->getContent(), $matches);
                         $moduleName = '';
                         $recordId = '';
                         if($regexFound)
@@ -137,9 +137,9 @@ class EventController extends Controller
         $parameters->end = new \StdClass;
 
         if (uccello()->useMultiDomains()) {
-            $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
+            $uccelloLink = env('APP_URL').'/to/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
         } else {
-            $uccelloLink = env('APP_URL').'/'.request('moduleName').'/'.request('recordId');
+            $uccelloLink = env('APP_URL').'/to/'.request('moduleName').'/'.request('recordId');
         }
 
         if(request('allDay') === "true")
@@ -218,7 +218,7 @@ class EventController extends Controller
         }
 
         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
-        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)`', $event->getBody()->getContent(), $matches);
+        $regexFound = preg_match('`'.$uccelloUrl.'/to/[0-9]*/?([a-z]+)/([0-9]+)`', $event->getBody()->getContent(), $matches);
         $moduleName = '';
         $recordId = '';
         if($regexFound)
@@ -307,9 +307,9 @@ class EventController extends Controller
 
         if (request()->has('description')) {
             if (uccello()->useMultiDomains()) {
-                $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
+                $uccelloLink = env('APP_URL').'/to/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
             } else {
-                $uccelloLink = env('APP_URL').'/'.request('moduleName').'/'.request('recordId');
+                $uccelloLink = env('APP_URL').'/to/'.request('moduleName').'/'.request('recordId');
             }
 
             $parameters->body = new \StdClass;

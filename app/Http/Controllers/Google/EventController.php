@@ -60,7 +60,7 @@ class EventController extends Controller
                     foreach ($items as $event) {
 
                         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
-                        $regexFound = preg_match('` - '.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)`', $event->description, $matches);
+                        $regexFound = preg_match('` - '.$uccelloUrl.'/to/[0-9]*/?([a-z]+)/([0-9]+)`', $event->description, $matches);
                         $moduleName = '';
                         $recordId = '';
                         if($regexFound)
@@ -108,9 +108,9 @@ class EventController extends Controller
         $endArray['timeZone'] = config('app.timezone', 'UTC');
 
         if (uccello()->useMultiDomains()) {
-            $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
+            $uccelloLink = env('APP_URL').'/to/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
         } else {
-            $uccelloLink = env('APP_URL').'/'.request('moduleName').'/'.request('recordId');
+            $uccelloLink = env('APP_URL').'/to/'.request('moduleName').'/'.request('recordId');
         }
 
         if(preg_match($datetimeRegex, request('start_date')) || preg_match($datetimeRegex, request('end_date')))
@@ -184,7 +184,7 @@ class EventController extends Controller
         }
 
         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
-        $regexFound = preg_match('` - '.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)`', $event->description, $matches);
+        $regexFound = preg_match('` - '.$uccelloUrl.'/to/[0-9]*/?([a-z]+)/([0-9]+)`', $event->description, $matches);
         $moduleName = '';
         $recordId = '';
         if($regexFound)
