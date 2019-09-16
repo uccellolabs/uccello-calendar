@@ -288,7 +288,8 @@ export class Calendar {
         $.trumbowyg.svgPath = '/vendor/uccello/calendar/images/icons.svg'
         $('#description', this.modal).trumbowyg({
             lang: $('html').attr('lang'),
-            btns: [['bold', 'italic'], ['link']],
+            //btns: [['bold', 'italic'], ['link']],
+            semantic: false,
             resetCss: true,
             height: 200
         })
