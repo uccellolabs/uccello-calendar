@@ -14,6 +14,7 @@ return [
     'manage' => 'Gérer les calendriers',
     'manage_accounts' => 'Gérer les comptes',
     'event.allday' => 'Journée entière',
+    'event.meeting' => 'Organiser une réunion',
     'event.add' => 'Événement',
     'event.save' => 'Enregistrer',
     'cancel' => 'Annuler',
