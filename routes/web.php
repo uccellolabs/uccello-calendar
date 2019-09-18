@@ -111,4 +111,5 @@ Route::middleware('web', 'auth')
 
 Route::get($domainParam.'/calendar/{type}/authorize', 'Generic\AccountController@gettoken')
         ->defaults('module', 'calendar')
+        ->middleware('web')
         ->name('calendar.account.gettoken');
