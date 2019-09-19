@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateEntityEventsTable extends Migration
+class CreateCalendarEntityEventsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateEntityEventsTable extends Migration
      */
     public function up()
     {
-        Schema::create('entity_events', function (Blueprint $table) {
+        Schema::create('calendar_entity_events', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('entity_id');
             $table->string('entity_class');
@@ -29,6 +29,6 @@ class CreateEntityEventsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('entity_events');
+        Schema::dropIfExists('calendar_entity_events');
     }
 }

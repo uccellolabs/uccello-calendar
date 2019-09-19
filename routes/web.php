@@ -107,6 +107,9 @@ Route::middleware('web', 'auth')
     Route::get($domainParam.'/calendar/config/process', 'ConfigController@processAutomaticAssignment')
         ->defaults('module', 'calendar')
         ->name('config.process');
+
+    Route::get($domainParam.'/{module}/{id}/link', 'Core\DetailControllerSpecific@processSpecific')
+        ->name('entity.detail');
 });
 
 Route::get($domainParam.'/calendar/{type}/authorize', 'Generic\AccountController@gettoken')

@@ -2,7 +2,7 @@
 
 namespace Uccello\Calendar\Http\Controllers\Generic;
 
-use Uccello\Calendar\EntityEvent;
+use Uccello\Calendar\CalendarEntityEvent;
 use Illuminate\Http\Request;
 use stdClass;
 use Uccello\Core\Http\Controllers\Core\Controller;
@@ -94,13 +94,20 @@ class EventController extends Controller
 
     public static function generateEntityLink(Domain $domain)
     {
-        $uccelloLink = '<br/>#Generé par Ginkgo - Ne pas effacer : ';
+        $module = Module::where('name', 'calendar')->first();
+        $uccelloLink = '';
+        if(config('calendar.event.comment'))
+            $uccelloLink = '<br/>#'.uctrans('before_url', $module).env('APP_NAME').' :';
+
         if (uccello()->useMultiDomains()) {
-            $uccelloLink.= env('APP_URL').'/to/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
+            $uccelloLink.= ' '.env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId').'/link';
         } else {
-            $uccelloLink.= env('APP_URL').'/to/'.request('moduleName').'/'.request('recordId');
+            $uccelloLink.= env('APP_URL').'/'.request('moduleName').'/'.request('recordId').'/link';
         }
-        $uccelloLink.=' - Fin de génération.#';
+
+        if(config('calendar.event.comment'))
+            $uccelloLink.=' - '.uctrans('after_url', $module).'.#';
+
         return $uccelloLink;
     }
 
@@ -125,10 +132,11 @@ class EventController extends Controller
             }
 
             foreach($events as $event)
-            {
+            {                
                 if($event->moduleName && $event->recordId)
                 {
-                    $entityevent = EntityEvent::firstOrNew([
+                    
+                    $entityevent = CalendarEntityEvent::firstOrNew([
                         'entity_id' => $event->recordId,
                         'entity_class' => $event->moduleName]);
                     if(!$entityevent->events || $entityevent==null)
@@ -178,7 +186,7 @@ class EventController extends Controller
     {
         if($request->input('entity_class') && $request->input('entity_id'))
         {
-            $entityEvent = EntityEvent::where([
+            $entityEvent = CalendarEntityEvent::where([
                 'entity_class' => $request->input('entity_class'),
                 'entity_id' => $request->input('entity_id')
             ])->first();

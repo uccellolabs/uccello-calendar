@@ -1,4 +1,4 @@
-<div id="addEventModal" class="modal">
+<div id="addEventModal" class="modal" style="width: 80%">
     <div class="modal-content">
         <form>
             <input type="hidden" id="id" class="emptyable">

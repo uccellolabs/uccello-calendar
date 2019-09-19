@@ -60,7 +60,7 @@ class EventController extends Controller
                     foreach ($items as $event) {
 
                         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
-                        $regexFound = preg_match('`'.$uccelloUrl.'/to/[0-9]*/?([a-z]+)/([0-9]+)`', $event->description, $matches);
+                        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)/link`', $event->description, $matches);
                         $moduleName = '';
                         $recordId = '';
                         if($regexFound)
@@ -195,7 +195,7 @@ class EventController extends Controller
         }
 
         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
-        $regexFound = preg_match('`'.$uccelloUrl.'/to/[0-9]*/?([a-z]+)/([0-9]+)`', $event->description, $matches);
+        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)/link`', $event->description, $matches);
         $moduleName = '';
         $recordId = '';
         if($regexFound)

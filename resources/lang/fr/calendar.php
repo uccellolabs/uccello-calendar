@@ -30,6 +30,8 @@ return [
     'calendar.rule' => 'Règle',
     'save' => 'ENREGISTRER',
     'calendar.config.cron_delay' => 'Délai entre deux exécutions',
+    'before_url' => 'Généré par ',
+    'after_url' => 'Fin de génération',
 
     'empty' => [
         'account' => 'Aucun compte pour le moment.',

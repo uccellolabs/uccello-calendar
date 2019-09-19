@@ -52,11 +52,11 @@ export class Calendar {
 
                 if (dateStart.length > 1) {
                     $('#start_time', this.modal).val(dateStart[1])
-                    // $('#all_day', this.modal).prop('checked', false).change()
+                    $('#all_day', this.modal).prop('checked', false).change() // For not checked
                 } else {
-                    // $('#all_day', this.modal).prop('checked', true).change()
+                    $('#all_day', this.modal).prop('checked', true).change()
                 }
-                $('#all_day', this.modal).prop('checked', false).change() // For not checked
+                
 
                 if (dateEnd.length > 1) {
                     $('#end_time', this.modal).val(dateEnd[1])
@@ -263,9 +263,6 @@ export class Calendar {
         $('.chips-autocomplete').chips({
             autocompleteOptions: {
               data: {
-                'Apple': null,
-                'Microsoft': null,
-                'Google': null
               },
               limit: Infinity,
               minLength: 1

@@ -4,14 +4,14 @@ namespace Uccello\Calendar;
 
 use Illuminate\Database\Eloquent\Model;
 
-class EntityEvent extends Model
+class CalendarEntityEvent extends Model
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'entity_events';
+    protected $table = 'calendar_entity_events';
 
     protected $casts = [
         'events' => 'array',

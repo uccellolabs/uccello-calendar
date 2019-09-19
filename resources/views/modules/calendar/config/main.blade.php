@@ -59,6 +59,5 @@
 @endsection
 
 @section('extra-script')
-    {{ Html::script(ucasset('js/config.js', 'uccello/calendar')) }}
     {{ Html::style(ucasset('css/rangeslider.css', 'uccello/calendar')) }}
 @endsection
