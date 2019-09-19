@@ -14,7 +14,6 @@ return [
     'manage' => 'Gérer les calendriers',
     'manage_accounts' => 'Gérer les comptes',
     'event.allday' => 'Journée entière',
-    'event.meeting' => 'Organiser une réunion',
     'event.add' => 'Événement',
     'event.save' => 'Enregistrer',
     'cancel' => 'Annuler',
@@ -24,7 +23,7 @@ return [
     'google' => 'Google Calendar',
     'tasks' => 'Tâches',
     'module' => 'Module',
-    '_field' => 'Champ',
+    'field' => 'Champ',
     'calendar.config' => 'Configurateur de liaison d\'événements du calendrier',
     'calendar.rules' => 'Parametrer les règles pour la liaison automatique d\'événements du calendrier avec des entités du CRM. Les règles doivent être paramétrées par ordre de priorité',
     'calendar.rule' => 'Règle',
@@ -43,7 +42,6 @@ return [
         'category' => 'Catégorie',
         'location' => 'Lieu',
         'description' => 'Description',
-        'project' => 'Projet'
     ],
 
     'button' => [
