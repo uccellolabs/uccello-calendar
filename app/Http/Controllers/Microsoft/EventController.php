@@ -92,7 +92,7 @@ class EventController extends Controller
                         }
 
                         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
-                        $regexFound = preg_match('`'.$uccelloUrl.'/to/[0-9]*/?([a-z]+)/([0-9]+)`', $item->getBody()->getContent(), $matches);
+                        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)`', $item->getBody()->getContent(), $matches);
                         $moduleName = '';
                         $recordId = '';
                         if($regexFound)
@@ -136,8 +136,11 @@ class EventController extends Controller
         $parameters->start = new \StdClass;
         $parameters->end = new \StdClass;
 
-        $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink($domain);
-
+        if (uccello()->useMultiDomains()) {
+            $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
+        } else {
+            $uccelloLink = env('APP_URL').'/'.request('moduleName').'/'.request('recordId');
+        }
 
         if(request('allDay') === "true")
         {
@@ -173,29 +176,9 @@ class EventController extends Controller
         $parameters->location = new \StdClass;
         $parameters->location->displayName = request('location') ?? '';
         $parameters->body = new \StdClass;
-        $parameters->body->content = (request('description') ?? '').(request('moduleName')!==null && request('recordId')!==null ? $uccelloLink : '');
+        $parameters->body->content = (request('description') ?? '').(request('moduleName')!==null && request('recordId')!==null ? ' - '.$uccelloLink : '');
         $parameters->body->contentType = "Text";
         $parameters->categories = (array) request('category');
-
-        if(request('attendees') && count(request('attendees'))>0)
-        {
-            $parameters->attendees = [];
-            foreach(request('attendees') as $a_attendee)
-            {
-                $attendee = new \StdClass;
-                $attendee->emailAddress = new \StdClass;
-                $attendee->emailAddress->address = $a_attendee;
-
-                $calendarAccount = CalendarAccount::where('username', $a_attendee)->first();
-                if($calendarAccount)
-                    $attendee->emailAddress->name = $calendarAccount->user->name;
-
-                $attendee->type = 'required';
-
-                $parameters->attendees[] = $attendee;
-            }
-        }
-
 
         $graph->createRequest('POST', '/me/calendars/'.request('calendarId').'/events')
             ->attachBody($parameters)
@@ -205,7 +188,7 @@ class EventController extends Controller
         return [ 'success' => true ];
     }
 
-    public function retrieve(Domain $domain, Module $module, $returnJson = true)
+    public function retrieve(Domain $domain, Module $module)
     {
         //https://docs.microsoft.com/en-us/graph/api/group-get-event?view=graph-rest-1.0
 
@@ -216,6 +199,7 @@ class EventController extends Controller
         $event = $graph->createRequest('GET', $getEventUrl)
                         ->setReturnType(Model\Event::class)
                         ->execute();
+
 
         $startDate = new Carbon($event->getStart()->getDateTime(), 'UTC');
 
@@ -234,7 +218,7 @@ class EventController extends Controller
         }
 
         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
-        $regexFound = preg_match('`'.$uccelloUrl.'/to/[0-9]*/?([a-z]+)/([0-9]+)`', $event->getBody()->getContent(), $matches);
+        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)`', $event->getBody()->getContent(), $matches);
         $moduleName = '';
         $recordId = '';
         if($regexFound)
@@ -251,25 +235,6 @@ class EventController extends Controller
             $description.=$div[0]."\n";
         }
 
-        $attendees = [];
-        foreach($event->getAttendees() as $a_attendee)
-        {
-            $attendee = new \StdClass;
-            $attendee->email = $a_attendee['emailAddress']['address'];
-            $user = CalendarAccount::where('username', $attendee->email)->first();
-            if($user)
-            {
-                $attendee->name = $a_attendee['emailAddress']['name'];        
-                $attendee->img = asset(CalendarAccount::where('username', $attendee->email)->first()->user->image);
-            }      
-            else
-            {
-                $attendee->name = $a_attendee['emailAddress']['address'];        
-                $attendee->img = '';
-            }
-            $attendees[] = $attendee;
-        }
-
         $returnEvent = new \StdClass;
         $returnEvent->id =              $event->getId();
         $returnEvent->title =           $event->getSubject() ?? '(no title)';
@@ -281,15 +246,11 @@ class EventController extends Controller
         $returnEvent->moduleName =      $moduleName;
         $returnEvent->recordId =        $recordId;
         $returnEvent->calendarId =      request('calendarId');
-        $returnEvent->calendarType =    'microsoft';
         $returnEvent->accountId =       request('accountId');
         $returnEvent->categories =      $event->getCategories();
-        $returnEvent->attendees =       $attendees;
 
-        if($returnJson)
-            return json_encode($returnEvent);
-        else
-            return $returnEvent;
+
+        return json_encode($returnEvent);
     }
 
     public function update(Domain $domain, Module $module)
@@ -345,33 +306,17 @@ class EventController extends Controller
         }
 
         if (request()->has('description')) {
-
-            $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink($domain);
+            if (uccello()->useMultiDomains()) {
+                $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
+            } else {
+                $uccelloLink = env('APP_URL').'/'.request('moduleName').'/'.request('recordId');
+            }
 
             $parameters->body = new \StdClass;
             $parameters->body->content = (request('description') ?? '').
-                (request('moduleName')!=null && request('recordId')!=null ? $uccelloLink : '');
+                (request('moduleName')!=null && request('recordId')!=null ? ' - '.$uccelloLink : '');
 
             $parameters->body->contentType = "Text";
-        }
-
-        if(request('attendees') && count(request('attendees'))>0)
-        {
-            $parameters->attendees = [];
-            foreach(request('attendees') as $a_attendee)
-            {
-                $attendee = new \StdClass;
-                $attendee->emailAddress = new \StdClass;
-                $attendee->emailAddress->address = $a_attendee;
-
-                $calendarAccount = CalendarAccount::where('username', $a_attendee)->first();
-                if($calendarAccount)
-                    $attendee->emailAddress->name = $calendarAccount->user->name;
-
-                $attendee->type = 'required';
-
-                $parameters->attendees[] = $attendee;
-            }
         }
 
         $graph->createRequest('PATCH', '/me/calendars/'.request('calendarId').'/events/'.request('id'))

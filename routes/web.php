@@ -1,14 +1,5 @@
 <?php
 
-// This makes it possible to adapt the parameters according to the use or not of the multi domains
-if (!uccello()->useMultiDomains()) {
-    $domainParam = '';
-    $domainAndModuleParams = '{module}';
-} else {
-    $domainParam = '{domain}';
-    $domainAndModuleParams = '{domain}/{module}';
-}
-
 Route::middleware('web', 'auth')
 ->name('calendar.')
 ->group(function() {
@@ -47,14 +38,6 @@ Route::middleware('web', 'auth')
         ->defaults('module', 'calendar')
         ->name('events.delete');
 
-    Route::get($domainParam.'/calendar/events/classify', 'Generic\EventController@classify')
-        ->defaults('module', 'calendar')
-        ->name('events.classify');
-
-    Route::get($domainParam.'/calendar/events/related', 'Generic\EventController@related')
-        ->defaults('module', 'calendar')
-        ->name('events.related');
-
 
     //Calendars
     Route::get($domainParam.'/calendar/{type}/calendars/{accountId}', 'Generic\CalendarController@list')
@@ -82,6 +65,10 @@ Route::middleware('web', 'auth')
         ->defaults('module', 'calendar')
         ->name('account.signin');
 
+    Route::get($domainParam.'/calendar/{type}/authorize', 'Generic\AccountController@gettoken')
+        ->defaults('module', 'calendar')
+        ->name('account.gettoken');
+
     Route::get($domainParam.'/calendar/account/remove', 'Generic\AccountController@destroy')
         ->defaults('module', 'calendar')
         ->name('account.remove');
@@ -108,8 +95,3 @@ Route::middleware('web', 'auth')
         ->defaults('module', 'calendar')
         ->name('config.process');
 });
-
-Route::get($domainParam.'/calendar/{type}/authorize', 'Generic\AccountController@gettoken')
-        ->defaults('module', 'calendar')
-        ->middleware('web')
-        ->name('calendar.account.gettoken');

@@ -9,18 +9,6 @@ use Uccello\Core\Models\Module;
 
 class AccountController extends Controller
 {
-
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        // Check user permissions
-        $this->checkPermissions();
-    }
-
     public function signin(Domain $domain, $type)
     {
         $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $type)->get()->first();
