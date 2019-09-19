@@ -14,6 +14,7 @@ export class Calendar {
         this.initCancelButtonListener()
         this.initDeleteButtonListener()
         this.initAllDayCheckboxListener()
+        this.initMeetingCheckboxListener()
         this.initCalendarToogleListener()
         this.initCalendarSwitcherListener()
         this.initDateStartListener()
@@ -121,6 +122,14 @@ export class Calendar {
                     $('#moduleName', this.modal).val(json.moduleName)
                     $('#recordId', this.modal).val(json.recordId)
                     $('#' + this.jq(json.calendarId), this.modal).prop('checked', true)
+                    $('#meeting', this.modal).prop('checked', json.attendees.length>0).change()
+
+                    json.attendees.forEach(element => {
+                        this.chipInstance.addChip({
+                            tag: element.email,
+                            image: element.img
+                        })
+                    });
 
                     $(this.modal).modal('open')
 
@@ -151,6 +160,12 @@ export class Calendar {
     initSaveButtonListener() {
         // Save event
         $('a.save', this.modal).on('click', (event) =>{
+
+            var attendees = [];
+            this.chipInstance.chipsData.forEach(element => {
+                attendees.push(element.tag)
+            });
+
             this.showLoader()
 
             let startDate = $('#start_date', this.modal).val()
@@ -183,6 +198,7 @@ export class Calendar {
                 allDay: $('#all_day', this.modal).is(':checked'),
                 calendarId: $('#all_calendars', this.modal).val(),
                 accountId: accountId,
+                attendees: attendees
             }).done(() => {
                 $(this.modal).modal('close')
                 M.toast({html: "L'événement a été sauvegardé !"}) //TODO: Translate
@@ -232,6 +248,30 @@ export class Calendar {
                 $('#end_date', this.modal).val( $('#start_date', this.modal).val())
             }
         })
+    }
+
+    initMeetingCheckboxListener(){
+        $('#meeting', this.modal).change((event) => {
+            if($(event.currentTarget).is(':checked')) {
+                $('.chips', this.modal).show();
+            }
+            else
+            {
+                $('.chips', this.modal).hide()
+            }
+        });
+        $('.chips-autocomplete').chips({
+            autocompleteOptions: {
+              data: {
+                'Apple': null,
+                'Microsoft': null,
+                'Google': null
+              },
+              limit: Infinity,
+              minLength: 1
+            }
+        });
+        this.chipInstance = M.Chips.getInstance($(".chips", this.modal));
     }
 
     initCalendarToogleListener() {
@@ -288,7 +328,8 @@ export class Calendar {
         $.trumbowyg.svgPath = '/vendor/uccello/calendar/images/icons.svg'
         $('#description', this.modal).trumbowyg({
             lang: $('html').attr('lang'),
-            btns: [['bold', 'italic'], ['link']],
+            //btns: [['bold', 'italic'], ['link']],
+            semantic: false,
             resetCss: true,
             height: 200
         })
@@ -352,6 +393,12 @@ export class Calendar {
         $('a.delete').addClass('hide')
         $('#description', this.modal).trumbowyg('empty')
         $('#all_calendars', this.modal).prop('disabled', false).formSelect()
+        $('#meeting', this.modal).prop('checked', false)
+
+        for(var i = this.chipInstance.chipsData.length ; i>=0 ; i--)
+        {
+            this.chipInstance.deleteChip(i);
+        }
     }
 
     jq(myid) {
