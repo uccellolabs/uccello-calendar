@@ -2,7 +2,9 @@
 
 namespace Uccello\Calendar\Http\Controllers\Generic;
 
+use Uccello\Calendar\CalendarEntityEvent;
 use Illuminate\Http\Request;
+use stdClass;
 use Uccello\Core\Http\Controllers\Core\Controller;
 use Uccello\Core\Models\Domain;
 use Uccello\Core\Models\Module;
@@ -59,14 +61,15 @@ class EventController extends Controller
         return $calendarType->create($domain, $module);
     }
 
-    public function retrieve(Domain $domain, Module $module)
+    public function retrieve(Domain $domain, Module $module, $returnJson = true)
     {
+        
         $type = request('type');
         $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $type)->get()->first();
         $calendarClass = $calendarTypeModel->namespace.'\EventController';
 
         $calendarType = new $calendarClass();
-        return $calendarType->retrieve($domain, $module);
+        return $calendarType->retrieve($domain, $module, $returnJson);
     }
 
     protected function update(Domain $domain, Module $module)
@@ -87,5 +90,107 @@ class EventController extends Controller
 
         $calendarType = new $calendarClass();
         return $calendarType->delete($domain, $module);
+    }
+
+    public static function generateEntityLink(Domain $domain)
+    {
+        $module = Module::where('name', 'calendar')->first();
+        $uccelloLink = '';
+        if(config('calendar.event.comment'))
+            $uccelloLink = '<br/>#'.uctrans('before_url', $module).env('APP_NAME').' :';
+
+        if (uccello()->useMultiDomains()) {
+            $uccelloLink.= ' '.env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId').'/link';
+        } else {
+            $uccelloLink.= env('APP_URL').'/'.request('moduleName').'/'.request('recordId').'/link';
+        }
+
+        if(config('calendar.event.comment'))
+            $uccelloLink.=' - '.uctrans('after_url', $module).'.#';
+
+        return $uccelloLink;
+    }
+
+    public function classify(Domain $d, Module $module, Request $request)
+    {
+
+        if($request->input('start') && $request->input('end'))
+        {
+            $events = [];
+            $domains = Domain::all();
+            foreach($domains as $domain)
+            {
+                $dom_events = $this->all($domain, $module);
+                foreach($dom_events as $event)
+                {
+                    $request->merge(['calendarId' => $event['calendarId']]);
+                    $request->merge(['accountId' => $event['accountId']]);
+                    $request->merge(['id' => $event['id']]);
+                    $request->merge(['type' => $event['calendarType']]);
+                    $events[] = $this->retrieve($domain, $module, false);
+                }
+            }
+
+            foreach($events as $event)
+            {                
+                if($event->moduleName && $event->recordId)
+                {
+                    
+                    $entityevent = CalendarEntityEvent::firstOrNew([
+                        'entity_id' => $event->recordId,
+                        'entity_class' => $event->moduleName]);
+                    if(!$entityevent->events || $entityevent==null)
+                    {
+                        $minifiyed_event = new stdClass;
+                        $minifiyed_event->id = $event->id;
+                        $minifiyed_event->calendarId = $event->calendarId;
+                        $minifiyed_event->calendarType = $event->calendarType;
+
+                        $array = [];
+                        $array[] = $minifiyed_event;
+
+                        $entityevent->events = $array;
+                    }
+                    else
+                    {
+                        $exists = false;
+                        foreach($entityevent->events as $a_event)
+                        {
+
+                            if($a_event['id'] == $event->id)
+                            {
+                                $exists = true;
+                                break;
+                            }
+                        }
+
+                        if(!$exists)
+                        {
+                            $minifiyed_event = new stdClass;
+                            $minifiyed_event->id = $event->id;
+                            $minifiyed_event->calendarId = $event->calendarId;
+                            $minifiyed_event->calendarType = $event->calendarType;
+                            $allEvents = $entityevent->events;
+                            $allEvents[] = $minifiyed_event;
+                            $entityevent->events = $allEvents;
+                        }
+                    }
+
+                    $entityevent->save();
+                }
+            }
+        }
+    }
+
+    public function related(Domain $d, Module $module, Request $request)
+    {
+        if($request->input('entity_class') && $request->input('entity_id'))
+        {
+            $entityEvent = CalendarEntityEvent::where([
+                'entity_class' => $request->input('entity_class'),
+                'entity_id' => $request->input('entity_id')
+            ])->first();
+            return $entityEvent->events;
+        }
     }
 }

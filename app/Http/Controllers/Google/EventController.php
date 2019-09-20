@@ -60,7 +60,7 @@ class EventController extends Controller
                     foreach ($items as $event) {
 
                         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
-                        $regexFound = preg_match('` - '.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)`', $event->description, $matches);
+                        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)/link`', $event->description, $matches);
                         $moduleName = '';
                         $recordId = '';
                         if($regexFound)
@@ -107,11 +107,7 @@ class EventController extends Controller
         $startArray['timeZone'] =config('app.timezone', 'UTC');
         $endArray['timeZone'] = config('app.timezone', 'UTC');
 
-        if (uccello()->useMultiDomains()) {
-            $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
-        } else {
-            $uccelloLink = env('APP_URL').'/'.request('moduleName').'/'.request('recordId');
-        }
+        $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink($domain);
 
         if(preg_match($datetimeRegex, request('start_date')) || preg_match($datetimeRegex, request('end_date')))
             $dateOnly = false;
@@ -135,12 +131,27 @@ class EventController extends Controller
             $endArray['dateTime'] =  $endDate->toAtomString();
         }
 
+        $attendees = [];
+        if(request('attendees') && count(request('attendees'))>0)
+        {
+            foreach(request('attendees') as $a_attendee)
+            {
+                $attendee = [];
+                $attendee['email'] = $a_attendee;
+                $calendarAccount = CalendarAccount::where('username', $a_attendee)->first();
+                if($calendarAccount)
+                    $attendee['displayName'] = $calendarAccount->user->name;
+                $attendees[] = $attendee;
+            }
+        }
+
         $event = new \Google_Service_Calendar_Event(array(
             'summary' => request('subject'),
             'location' => request('location'),
-            'description' => (request('description') ?? '').(request('moduleName')!=null && request('recordId')!=null ? ' - '.$uccelloLink : ''),
+            'description' => (request('description') ?? '').(request('moduleName')!=null && request('recordId')!=null ? $uccelloLink : ''),
             'start' => $startArray,
             'end' => $endArray,
+            'attendees' => $attendees,
         ));
 
         $calendarId = request('calendarId');
@@ -149,7 +160,7 @@ class EventController extends Controller
         return [ 'success' => true];
     }
 
-    public function retrieve(Domain $domain, Module $module)
+    public function retrieve(Domain $domain, Module $module, $returnJson = true)
     {
         $accountController = new AccountController();
         $oauthClient = $accountController->initClient(request('accountId'));
@@ -184,13 +195,23 @@ class EventController extends Controller
         }
 
         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
-        $regexFound = preg_match('` - '.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)`', $event->description, $matches);
+        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)/link`', $event->description, $matches);
         $moduleName = '';
         $recordId = '';
         if($regexFound)
         {
             $moduleName = $matches[1] ?? '';
             $recordId = $matches[2] ?? '';
+        }
+
+        $attendees = [];
+        foreach($event->getAttendees() as $a_attendee)
+        {
+            $attendee = new \StdClass;
+            $attendee->email = $a_attendee->email;
+            $attendee->name = $a_attendee->displayName;
+            $attendee->img = asset(CalendarAccount::where('username', $attendee->email)->first()->user->image) ?? '';
+            $attendees[] = $attendee;
         }
 
         $returnEvent = new \StdClass;
@@ -204,10 +225,15 @@ class EventController extends Controller
         $returnEvent->moduleName =      $moduleName;
         $returnEvent->recordId =        $recordId;
         $returnEvent->calendarId =      request('calendarId');
+        $returnEvent->calendarType =    'microsoft';
         $returnEvent->accountId =       request('accountId');
         $returnEvent->categories =      null; //TODO:
+        $returnEvent->attendees =       $attendees;
 
-        return json_encode($returnEvent);
+        if($returnJson)
+            return json_encode($returnEvent);
+        else
+            return $returnEvent;
     }
 
     public function update(Domain $domain, Module $module)
@@ -268,18 +294,29 @@ class EventController extends Controller
         }
 
         if (request()->has('description')) {
-            if (uccello()->useMultiDomains()) {
-                $uccelloLink = env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId');
-            } else {
-                $uccelloLink = env('APP_URL').'/'.request('moduleName').'/'.request('recordId');
-            }
+            $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink($domain);
 
             $event->setDescription((request('description') ?? '').
-                (request('moduleName')!=null && request('recordId')!=null ? ' - '.$uccelloLink : ''));
+                (request('moduleName')!=null && request('recordId')!=null ? $uccelloLink : ''));
         }
 
         $event->setStart($start);
         $event->setEnd($end);
+
+        $attendees = [];
+        if(request('attendees') && count(request('attendees'))>0)
+        {
+            foreach(request('attendees') as $a_attendee)
+            {
+                $attendee = [];
+                $attendee['email'] = $a_attendee;
+                $calendarAccount = CalendarAccount::where('username', $a_attendee)->first();
+                if($calendarAccount)
+                    $attendee['displayName'] = $calendarAccount->user->name;
+                $attendees[] = $attendee;
+            }
+        }
+        $event->setAttendees($attendees);
 
         $event = $service->events->update(request('calendarId'), $event->getId(), $event);
 

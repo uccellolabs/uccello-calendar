@@ -1,4 +1,4 @@
-<div id="addEventModal" class="modal">
+<div id="addEventModal" class="modal" style="width: 80%">
     <div class="modal-content">
         <form>
             <input type="hidden" id="id" class="emptyable">
@@ -76,6 +76,19 @@
                             <span>{{ uctrans('event.allday', $module) }}</span>
                         </label>
                     </p>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom: 0">
+                <div class="input-field col s4" style="height: 3rem;">
+                    <i class="material-icons prefix primary-text">people</i>
+                    <label>
+                            <input id="meeting" type="checkbox" />
+                            <span>{{ uctrans('event.meeting', $module) }}</span>
+                    </label>
+                </div>
+                <div class="input-field col s8">
+                    <div class="chips chips-autocomplete input-field" style="margin: 0; display:none;" ></div>
                 </div>
             </div>
 
