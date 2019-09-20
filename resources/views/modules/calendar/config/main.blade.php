@@ -59,5 +59,5 @@
 @endsection
 
 @section('extra-script')
-    {{ Html::style(ucasset('css/rangeslider.css', 'uccello/calendar')) }}
+    {{ Html::style(mix('css/rangeslider.css', 'vendor/uccello/calendar')) }}
 @endsection

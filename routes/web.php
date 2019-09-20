@@ -108,7 +108,7 @@ Route::middleware('web', 'auth')
         ->defaults('module', 'calendar')
         ->name('config.process');
 
-    Route::get($domainParam.'/{module}/{id}/link', 'Core\DetailControllerSpecific@processSpecific')
+    Route::get($domainParam.'/{module}/{id}/link', 'Core\DetailController@processSpecific')
         ->name('entity.detail');
 });
 
