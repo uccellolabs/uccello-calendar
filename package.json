@@ -27,5 +27,6 @@
         "trumbowyg": "^2.16.2",
         "uccello-datatable": "^0.0.1",
         "vue": "^2.5.17"
-    }
+    },
+    "dependencies": {}
 }
