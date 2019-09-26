@@ -38,6 +38,15 @@ Route::middleware('web', 'auth')
         ->defaults('module', 'calendar')
         ->name('events.delete');
 
+    // Datatable
+    Route::get($domainParam.'/calendar/events/list', 'Generic\ListController@process')
+        ->defaults('module', 'calendar')
+        ->name('events.list');
+
+    Route::post($domainParam.'/calendar/list/content', 'Generic\ListController@processForContent')
+        ->defaults('module', 'calendar')
+        ->name('events.list.content');
+
 
     //Calendars
     Route::get($domainParam.'/calendar/{type}/calendars/{accountId}', 'Generic\CalendarController@list')
