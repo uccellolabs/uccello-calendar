@@ -61,15 +61,18 @@ class EventController extends Controller
         return $calendarType->create($domain, $module);
     }
 
-    public function retrieve(Domain $domain, Module $module, $returnJson = true)
+    public function retrieve(Domain $domain, Module $module, $returnJson = true, $params)
     {
-        
-        $type = request('type');
+        if(request()->has('type'))
+            $type = request('type');
+        else
+            $type = $params['type'];
+
         $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $type)->get()->first();
         $calendarClass = $calendarTypeModel->namespace.'\EventController';
 
         $calendarType = new $calendarClass();
-        return $calendarType->retrieve($domain, $module, $returnJson);
+        return $calendarType->retrieve($domain, $module, $returnJson, $params);
     }
 
     protected function update(Domain $domain, Module $module)
@@ -123,11 +126,12 @@ class EventController extends Controller
                 $dom_events = $this->all($domain, $module);
                 foreach($dom_events as $event)
                 {
-                    $request->merge(['calendarId' => $event['calendarId']]);
-                    $request->merge(['accountId' => $event['accountId']]);
-                    $request->merge(['id' => $event['id']]);
-                    $request->merge(['type' => $event['calendarType']]);
-                    $events[] = $this->retrieve($domain, $module, false);
+                    $params = [];
+                    $params['calendarId']   = $event['calendarId'];
+                    $params['accountId']    = $event['accountId'];
+                    $params['eventId']      = $event['id'];
+                    $params['type']         = $event['calendarType'];
+                    $events[] = $this->retrieve($domain, $module, false, $params);
                 }
             }
 
@@ -145,6 +149,7 @@ class EventController extends Controller
                         $minifiyed_event->id = $event->id;
                         $minifiyed_event->calendarId = $event->calendarId;
                         $minifiyed_event->calendarType = $event->calendarType;
+                        $minifiyed_event->accountId = $event->accountId;
 
                         $array = [];
                         $array[] = $minifiyed_event;
@@ -170,6 +175,7 @@ class EventController extends Controller
                             $minifiyed_event->id = $event->id;
                             $minifiyed_event->calendarId = $event->calendarId;
                             $minifiyed_event->calendarType = $event->calendarType;
+                            $minifiyed_event->accountId = $event->accountId;
                             $allEvents = $entityevent->events;
                             $allEvents[] = $minifiyed_event;
                             $entityevent->events = $allEvents;
@@ -180,6 +186,8 @@ class EventController extends Controller
                 }
             }
         }
+        else
+            return "'stard' date and 'end' date are requiered";
     }
 
     public function related(Domain $d, Module $module, Request $request)

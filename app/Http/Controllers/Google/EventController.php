@@ -161,13 +161,33 @@ class EventController extends Controller
         return [ 'success' => true];
     }
 
-    public function retrieve(Domain $domain, Module $module, $returnJson = true)
+    public function retrieve(Domain $domain, Module $module, $returnJson = true, $params)
     {
+        if(request()->has('accountId'))
+            $accountId = request('accountId');
+        else
+            $accountId = $params['accountId'];
+
+        if(request()->has('calendarId'))
+            $calendarId = request('calendarId');
+        else
+            $calendarId = $params['calendarId'];
+
+        if(request()->has('id'))
+            $id = request('id');
+        else
+            $id = $params['eventId'];
+
         $accountController = new AccountController();
-        $oauthClient = $accountController->initClient(request('accountId'));
+        $oauthClient = $accountController->initClient($accountId);
         $service = new \Google_Service_Calendar($oauthClient);
 
-        $event = $service->events->get(request('calendarId'), request('id'));
+        try{
+        $event = $service->events->get($calendarId, $id);
+        }catch(Exception $e)
+        {
+            return null;
+        }
 
         if($event->start->dateTime)
         {
@@ -225,9 +245,9 @@ class EventController extends Controller
         $returnEvent->description =     $regexFound ? str_replace($matches[0],'',$event->description) : $event->description;
         $returnEvent->moduleName =      $moduleName;
         $returnEvent->recordId =        $recordId;
-        $returnEvent->calendarId =      request('calendarId');
+        $returnEvent->calendarId =      $calendarId;
         $returnEvent->calendarType =    'microsoft';
-        $returnEvent->accountId =       request('accountId');
+        $returnEvent->accountId =       $accountId;
         $returnEvent->categories =      null; //TODO:
         $returnEvent->attendees =       $attendees;
 
