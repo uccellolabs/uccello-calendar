@@ -47,6 +47,14 @@ Route::middleware('web', 'auth')
         ->defaults('module', 'calendar')
         ->name('events.delete');
 
+    Route::get($domainParam.'/calendar/events/list', 'Generic\ListController@process')
+        ->defaults('module', 'calendar')
+        ->name('events.list');
+
+    Route::post($domainParam.'/calendar/list/content', 'Generic\ListController@processForContent')
+        ->defaults('module', 'calendar')
+        ->name('events.list.content');
+
     Route::get($domainParam.'/calendar/events/classify', 'Generic\EventController@classify')
         ->defaults('module', 'calendar')
         ->name('events.classify');

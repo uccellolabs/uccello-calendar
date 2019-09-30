@@ -74,6 +74,7 @@ class EventController extends Controller
                             "title" => $event->summary ?? '(no title)',
                             "start" => $event->start->dateTime ?? $event->start->date,
                             "end" => $event->end->dateTime ?? $event->end->date,
+                            "location" => $event->location,
                             "color" => $calendar->color,
                             "calendarId" => $calendar->id,
                             "accountId" => $account->id,

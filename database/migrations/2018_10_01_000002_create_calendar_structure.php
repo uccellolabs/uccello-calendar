@@ -2,8 +2,12 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Uccello\Core\Database\Migrations\Traits\TablePrefixTrait;
+use Uccello\Core\Models\Block;
 use Uccello\Core\Models\Module;
 use Uccello\Core\Models\Domain;
+use Uccello\Core\Models\Field;
+use Uccello\Core\Models\Filter;
+use Uccello\Core\Models\Tab;
 
 class CreateCalendarStructure extends Migration
 {
@@ -18,6 +22,8 @@ class CreateCalendarStructure extends Migration
     {
         $module = $this->createModule();
         $this->activateModuleOnDomains($module);
+        $this->createTabsBlocksFields($module);
+        $this->createFilters($module);
     }
 
     /**
@@ -48,5 +54,145 @@ class CreateCalendarStructure extends Migration
         foreach ($domains as $domain) {
             $domain->modules()->attach($module);
         }
+    }
+
+    protected function createTabsBlocksFields($module)
+    {
+        // Tab tab.main
+        $tab = new Tab([
+            'module_id' => $module->id,
+            'label' => 'tab.main',
+            'icon' => null,
+            'sequence' => 0,
+            'data' => null
+        ]);
+        $tab->save();
+
+        // Block block.general
+        $block = new Block([
+            'module_id' => $module->id,
+            'tab_id' => $tab->id,
+            'label' => 'block.general',
+            'icon' => 'info',
+            'sequence' => 0,
+            'data' => null
+        ]);
+        $block->save();
+
+        // Field subject
+        $field = new Field([
+            'module_id' => $module->id,
+            'block_id' => $block->id,
+            'name' => 'subject',
+            'uitype_id' => uitype('text')->id,
+            'displaytype_id' => displaytype('everywhere')->id,
+            'sequence' => 0,
+            'data' => json_decode('{"rules":"required","default":"Appel"}')
+        ]);
+        $field->save();
+
+        // Field category
+        $field = new Field([
+            'module_id' => $module->id,
+            'block_id' => $block->id,
+            'name' => 'category',
+            'uitype_id' => uitype('text')->id,
+            'displaytype_id' => displaytype('everywhere')->id,
+            'sequence' => 0,
+            'data' => null
+        ]);
+        $field->save();
+
+        // Field date_start
+        $field = new Field([
+            'module_id' => $module->id,
+            'block_id' => $block->id,
+            'name' => 'date_start',
+            'uitype_id' => uitype('datetime')->id,
+            'displaytype_id' => displaytype('everywhere')->id,
+            'sequence' => 1,
+            'data' => json_decode('{"rules":"required"}')
+        ]);
+        $field->save();
+
+        // Field date_end
+        $field = new Field([
+            'module_id' => $module->id,
+            'block_id' => $block->id,
+            'name' => 'date_end',
+            'uitype_id' => uitype('datetime')->id,
+            'displaytype_id' => displaytype('everywhere')->id,
+            'sequence' => 2,
+            'data' => json_decode('{"rules":"required"}')
+        ]);
+        $field->save();
+
+        // Field location
+        $field = new Field([
+            'module_id' => $module->id,
+            'block_id' => $block->id,
+            'name' => 'location',
+            'uitype_id' => uitype('text')->id,
+            'displaytype_id' => displaytype('everywhere')->id,
+            'sequence' => 3,
+            'data' => null
+        ]);
+        $field->save();
+
+        // Field assigned_user
+        $field = new Field([
+            'module_id' => $module->id,
+            'block_id' => $block->id,
+            'name' => 'assigned_user',
+            'uitype_id' => uitype('assigned_user')->id,
+            'displaytype_id' => displaytype('everywhere')->id,
+            'sequence' => 4,
+            'data' => json_decode('{"rules":"required"}')
+        ]);
+        $field->save();
+
+        // Field description
+        $field = new Field([
+            'module_id' => $module->id,
+            'block_id' => $block->id,
+            'name' => 'description',
+            'uitype_id' => uitype('textarea')->id,
+            'displaytype_id' => displaytype('everywhere')->id,
+            'sequence' => 5,
+            'data' => json_decode('{"large":true}')
+        ]);
+        $field->save();
+    }
+
+    protected function createFilters($module)
+    {
+        // Filter
+        $filter = new Filter([
+            'module_id' => $module->id,
+            'domain_id' => null,
+            'user_id' => null,
+            'name' => 'filter.all',
+            'type' => 'list',
+            'columns' => ['subject', 'start_date', 'end_date', 'category', 'location', 'assigned_user'],
+            'conditions' => null,
+            'order_by' => null,
+            'is_default' => true,
+            'is_public' => false
+        ]);
+        $filter->save();
+
+        $filter = new Filter([
+            'module_id' => $module->id,
+            'domain_id' => null,
+            'user_id' => null,
+            'name' => 'filter.related-list',
+            'type' => 'related-list',
+            'columns' => ['subject', 'start_date', 'end_date', 'category', 'assigned_user'],
+            'conditions' => null,
+            'order_by' => null,
+            'is_default' => true,
+            'is_public' => false
+        ]);
+        $filter->save();
     }
 }

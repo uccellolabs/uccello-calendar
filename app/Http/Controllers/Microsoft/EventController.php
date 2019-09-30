@@ -106,6 +106,7 @@ class EventController extends Controller
                             "title" => $item->getSubject() ?? '(no title)',
                             "start" => $dateStartStr,
                             "end" => $dateEndStr,
+                            "location" => $item->getLocation()->getDisplayName(),
                             "color" => $color,
                             "calendarId" => $calendar->id,
                             "accountId" => $account->id,
