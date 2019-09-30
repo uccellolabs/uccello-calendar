@@ -45,7 +45,8 @@ return [
         'category' => 'Catégorie',
         'location' => 'Lieu',
         'description' => 'Description',
-        'project' => 'Projet'
+        'project' => 'Projet',
+        'assigned_user' => 'Utilisateur',
     ],
 
     'button' => [

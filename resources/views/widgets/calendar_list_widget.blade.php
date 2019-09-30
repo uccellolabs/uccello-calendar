@@ -2,6 +2,7 @@
     $datatableId = 'calendar-list-widget';
     $relatedModule = ucmodule('calendar');
     $datatableColumns = Uccello::getDatatableColumns($relatedModule, null, 'related-list');
+    $datatableContentUrl = ucroute('uccello.list.content', $domain, $relatedModule, ['id' => $recordId, 'src_module' => $module->name])
 ?>
 <div class="card" style="margin: 0;">
     <div class="card-content">
@@ -35,7 +36,7 @@
         </span>
 
         {{-- Table --}}
-        @include('uccello::modules.default.detail.relatedlists.table', [ 'datatableId' => $datatableId, 'datatableColumns' => $datatableColumns, 'relatedModule' => $relatedModule ])
+        @include('uccello::modules.default.detail.relatedlists.table', [ 'datatableId' => $datatableId, 'datatableColumns' => $datatableColumns, 'relatedModule' => $relatedModule, 'datatableContentUrl' => $datatableContentUrl ])
     </div>
 </div>
 

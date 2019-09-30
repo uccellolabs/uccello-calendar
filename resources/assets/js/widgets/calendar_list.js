@@ -49,7 +49,7 @@ export class CalendarList {
     }
 
     refreshDatatable() {
-        let newUrl = `${this.initialContentUrl}?start=${this.dateStart}&end=${this.dateEnd}&user_id=${this.userId}`
+        let newUrl = `${this.initialContentUrl}&start=${this.dateStart}&end=${this.dateEnd}&user_id=${this.userId}`
         $('table#calendar-list-widget').attr('data-content-url', newUrl)
         this.datatable.makeQuery()
     }
