@@ -62,7 +62,7 @@ class ListController extends DefaultListController
             request()->merge(['end' => (new Carbon())->endOfWeek()->format('Y-m-d')]);
         }
 
-        $calendarEvents = $this->getCalendarEvents(request('id'));
+        $calendarEvents = $this->getCalendarEvents(request('id'), request('src_module'));
 
         $tasks = [];
         $tasks['data'] = $calendarEvents;
@@ -74,7 +74,7 @@ class ListController extends DefaultListController
         return $records;
     }
 
-    protected function getCalendarEvents($recordId) {
+    protected function getCalendarEvents($recordId, $moduleName) {
         $records = [];
 
         $eventController = new EventController();
@@ -85,7 +85,8 @@ class ListController extends DefaultListController
             $relatedUser = $calendarAccount ? $calendarAccount->user : null;
 
             $records[] = [
-                'subject_html' => '<i class="material-icons primary-text left">people</i>'.$event['title'],
+                // 'subject_html' => '<i class="material-icons primary-text left">people</i>'.$event['title'],
+                'subject_html' => $event['title'],
                 'category_html' => !empty($event['categories']) ? implode(',', $event['categories']) : '',
                 'start_date_html' => (new Carbon($event['start']))->format(config('uccello.format.php.datetime')),
                 'end_date_html' => (new Carbon($event['end']))->format(config('uccello.format.php.datetime')),
