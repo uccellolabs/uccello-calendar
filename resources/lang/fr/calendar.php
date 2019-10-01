@@ -46,11 +46,19 @@ return [
         'location' => 'Lieu',
         'description' => 'Description',
         'project' => 'Projet',
-        'assigned_user' => 'Utilisateur',
+        'calendar' => 'Calendrier',
     ],
 
     'button' => [
         'add_account' => 'Ajouter un compte',
         'delete_account' => 'Supprimer ce compte',
+    ],
+
+    'period' => [
+        'all' => 'Tout',
+        'today' => 'Aujourd\' hui',
+        'week' => 'Semaine',
+        'month' => 'Mois',
+        'quarter' => 'Trimestre',
     ],
 ];

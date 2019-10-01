@@ -14,10 +14,12 @@ class CalendarEntityEvent extends Model
     protected $table = 'calendar_entity_events';
 
     protected $casts = [
-        'events' => 'array',
+        'events' => 'object',
     ];
 
-    protected $fillable=[
-        'entity_id', 'entity_class', 'events'
+    protected $fillable = [
+        'entity_id',
+        'module_id',
+        'events'
     ];
 }

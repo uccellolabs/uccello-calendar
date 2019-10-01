@@ -139,12 +139,12 @@ class CreateCalendarStructure extends Migration
         ]);
         $field->save();
 
-        // Field assigned_user
+        // Field calendar
         $field = new Field([
             'module_id' => $module->id,
             'block_id' => $block->id,
-            'name' => 'assigned_user',
-            'uitype_id' => uitype('assigned_user')->id,
+            'name' => 'calendar',
+            'uitype_id' => uitype('text')->id,
             'displaytype_id' => displaytype('everywhere')->id,
             'sequence' => 4,
             'data' => json_decode('{"rules":"required"}')
@@ -173,7 +173,7 @@ class CreateCalendarStructure extends Migration
             'user_id' => null,
             'name' => 'filter.all',
             'type' => 'list',
-            'columns' => ['subject', 'start_date', 'end_date', 'category', 'location', 'assigned_user'],
+            'columns' => ['subject', 'start_date', 'end_date', 'category', 'location', 'calendar'],
             'conditions' => null,
             'order_by' => null,
             'is_default' => true,
@@ -187,7 +187,7 @@ class CreateCalendarStructure extends Migration
             'user_id' => null,
             'name' => 'filter.related-list',
             'type' => 'related-list',
-            'columns' => ['subject', 'start_date', 'end_date', 'category', 'assigned_user'],
+            'columns' => ['subject', 'start_date', 'end_date', 'category', 'calendar'],
             'conditions' => null,
             'order_by' => null,
             'is_default' => true,

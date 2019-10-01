@@ -53,64 +53,79 @@ class ListController extends DefaultListController
         // Pre-process
         $this->preProcess($domain, $module, $request);
 
-        // Set start date if not defined
-        if (!request('start')) {
-            request()->merge(['start' => (new Carbon())->startOfWeek()->format('Y-m-d')]);
+        $itemByPage = (int) request('length', 15);
+        $page = (int) request('page', 1);
+
+        $calendarEvents = $this->getCalendarEvents(request('id'), request('src_module'));
+        $dateFilteredEvents = collect();
+
+        if (request('start') && request('end')) {
+            foreach($calendarEvents as $event) {
+                $start = Carbon::createFromFormat('d/m/Y', $event->start);
+                $end = Carbon::createFromFormat('d/m/Y', $event->end);
+                $start_max = Carbon::createFromFormat('Y-m-d', request('start'));
+                $end_max = Carbon::createFromFormat('Y-m-d', request('end'));
+
+                if($start<=$end_max && $end>=$start_max) {
+                    $dateFilteredEvents[] = $event;
+                }
+            }
+        } else {
+            $dateFilteredEvents = collect($calendarEvents);
         }
 
-        // Set end date if not defined
-        if (!request('end')) {
-            request()->merge(['end' => (new Carbon())->endOfWeek()->format('Y-m-d')]);
-        }
+        $countTotal = $dateFilteredEvents->count();
 
-        $itemByPage = 5;
-        $page = 1;//à mettre à jour : prendre en compte la page affichée
+        $limitStart = ($page-1)*$itemByPage;
 
-        $calendarEvents = $this->getCalendarEvents(request('id'), request('src_module'), $domain, $module, $request);
-        $dateFilteredEvents = [];
-        foreach($calendarEvents as $event)
-        {
-            
-            $start = Carbon::createFromFormat('d/m/Y', $event->start);
-            $end = Carbon::createFromFormat('d/m/Y', $event->end);
-            $start_max = Carbon::createFromFormat('Y-m-d', request('start'));
-            $end_max = Carbon::createFromFormat('Y-m-d', request('end'));
-            if($start<=$end_max && $end>=$start_max)
-                $dateFilteredEvents[] = $event;
-        }
-        $countTotal = count($dateFilteredEvents);
-
-        $pageFilteredEvents = array_slice($dateFilteredEvents, $page*$itemByPage, $itemByPage);
+        $pageFilteredEvents = $dateFilteredEvents->slice($limitStart)->take($itemByPage);
         $pageFilteredEvents = $this->setUpEvents($pageFilteredEvents);
+
+        $pageTotal = ceil($countTotal / $itemByPage);
 
         $records = [];
         $records['data'] = $pageFilteredEvents;
-        $records['to'] = $itemByPage*$page; // TODO: set good data
+        $records['current_page'] = $page;
+        $records['last_page'] = $pageTotal;
+        $records['first_page_url'] = ucroute('calendar.events.list.content', $domain, $module, ['page' => 1]);
+        $records['last_page_url'] = ucroute('calendar.events.list.content', $domain, $module, ['page' => $pageTotal]);
+        $records['prev_page_url'] = $page > 1 ? ucroute('calendar.events.list.content', $domain, $module, ['page' => $page-1]) : null;
+        $records['next_page_url'] = $page < $pageTotal ? ucroute('calendar.events.list.content', $domain, $module, ['page' => $page+1]) : null;
+        $records['page'] = ucroute('calendar.events.list.content', $domain, $module);
+        $records['from'] = $limitStart;
+        $records['to'] = $itemByPage*$page;
         $records['total'] = $countTotal;
+        $records['per_page'] = $itemByPage;
 
         return $records;
     }
 
-    protected function getCalendarEvents($recordId, $moduleName, Domain $domain, Module $module, Request $request) {
+    protected function getCalendarEvents($recordId, $moduleId) {
         $events = [];
 
         $calEntityEvent = CalendarEntityEvent::where([
             'entity_id' => $recordId,
-            'entity_class' => $moduleName
+            'module_id' => $moduleId
         ])->first();
 
-        $eventController = new EventController();
+        if ($calEntityEvent) {
+            $eventController = new EventController();
 
-        foreach($calEntityEvent->events as $event)
-        {
-            $event['type'] = $event['calendarType'];
-            $event['eventId'] = $event['id'];
-            $rEvent = $eventController->retrieve($domain, $module, false, $event);
-            if($rEvent!=null)
-                $events[] = $rEvent;
+            foreach ($calEntityEvent->events as $event)
+            {
+                $params = [
+                    'type' => $event->calendarType,
+                    'eventId' => $event->id,
+                    'accountId' => $event->accountId,
+                    'calendarId' => $event->calendarId,
+                ];
+
+                $_event = $eventController->retrieve($this->domain, $this->module, false, $params);
+                if ($_event !== null) {
+                    $events[] = $_event;
+                }
+            }
         }
-
-        
 
         return $events;
     }
@@ -127,6 +142,9 @@ class ListController extends DefaultListController
             else
                 $format= config('uccello.format.php.datetime');
 
+            $calendarController = new \Uccello\Calendar\Http\Controllers\Generic\CalendarController();
+            $calendar = $calendarController->retrieve($this->domain, $event->accountId, $event->calendarId, $this->module);
+
             $records[] = [
                 // 'subject_html' => '<i class="material-icons primary-text left">people</i>'.$event['title'],
                 'subject_html' => $event->title,
@@ -134,7 +152,8 @@ class ListController extends DefaultListController
                 'start_date_html' => Carbon::createFromFormat($format, $event->start)->format($format),
                 'end_date_html' => Carbon::createFromFormat($format, $event->end)->format($format),
                 'location_html' => $event->location,
-                'assigned_user_html' => $relatedUser ? '<a href="'.ucroute('uccello.detail', $this->domain, ucmodule('user'), [ 'id' => $relatedUser->getKey()]).'" class="primary-text">'.$relatedUser->recordLabel.'</a>' : '',
+                'calendar_html' => $calendar->name,
+                // 'assigned_user_html' => $relatedUser ? '<a href="'.ucroute('uccello.detail', $this->domain, ucmodule('user'), [ 'id' => $relatedUser->getKey()]).'" class="primary-text">'.$relatedUser->recordLabel.'</a>' : '',
             ];
         }
         return $records;
