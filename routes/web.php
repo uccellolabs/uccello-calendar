@@ -63,6 +63,7 @@ Route::middleware('web', 'auth')
         ->defaults('module', 'calendar')
         ->name('events.related');
 
+
     //Calendars
     Route::get($domainParam.'/calendar/{type}/calendars/{accountId}', 'Generic\CalendarController@list')
         ->defaults('module', 'calendar')

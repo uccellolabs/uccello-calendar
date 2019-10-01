@@ -11,6 +11,7 @@ use Uccello\Core\Models\Relatedlist;
 use Uccello\Calendar\Http\Controllers\Generic\EventController;
 use Uccello\Calendar\CalendarAccount;
 use Carbon\Carbon;
+use Uccello\Calendar\CalendarEntityEvent;
 use Uccello\Core\Helpers\Uccello;
 
 class ListController extends DefaultListController
@@ -62,39 +63,80 @@ class ListController extends DefaultListController
             request()->merge(['end' => (new Carbon())->endOfWeek()->format('Y-m-d')]);
         }
 
-        $calendarEvents = $this->getCalendarEvents(request('id'), request('src_module'));
+        $itemByPage = 5;
+        $page = 1;//à mettre à jour : prendre en compte la page affichée
 
-        $tasks = [];
-        $tasks['data'] = $calendarEvents;
-        $tasks['to'] = count($calendarEvents); // TODO: set good data
-        $tasks['total'] = count($calendarEvents); // TODO: set good data
+        $calendarEvents = $this->getCalendarEvents(request('id'), request('src_module'), $domain, $module, $request);
+        $dateFilteredEvents = [];
+        foreach($calendarEvents as $event)
+        {
+            
+            $start = Carbon::createFromFormat('d/m/Y', $event->start);
+            $end = Carbon::createFromFormat('d/m/Y', $event->end);
+            $start_max = Carbon::createFromFormat('Y-m-d', request('start'));
+            $end_max = Carbon::createFromFormat('Y-m-d', request('end'));
+            if($start<=$end_max && $end>=$start_max)
+                $dateFilteredEvents[] = $event;
+        }
+        $countTotal = count($dateFilteredEvents);
 
-        $records = $tasks;
+        $pageFilteredEvents = array_slice($dateFilteredEvents, $page*$itemByPage, $itemByPage);
+        $pageFilteredEvents = $this->setUpEvents($pageFilteredEvents);
+
+        $records = [];
+        $records['data'] = $pageFilteredEvents;
+        $records['to'] = $itemByPage*$page; // TODO: set good data
+        $records['total'] = $countTotal;
 
         return $records;
     }
 
-    protected function getCalendarEvents($recordId, $moduleName) {
-        $records = [];
+    protected function getCalendarEvents($recordId, $moduleName, Domain $domain, Module $module, Request $request) {
+        $events = [];
+
+        $calEntityEvent = CalendarEntityEvent::where([
+            'entity_id' => $recordId,
+            'entity_class' => $moduleName
+        ])->first();
 
         $eventController = new EventController();
-        $events = $eventController->all($this->domain, $this->module); //TODO: Retrieve all events related to $recordId
 
+        foreach($calEntityEvent->events as $event)
+        {
+            $event['type'] = $event['calendarType'];
+            $event['eventId'] = $event['id'];
+            $rEvent = $eventController->retrieve($domain, $module, false, $event);
+            if($rEvent!=null)
+                $events[] = $rEvent;
+        }
+
+        
+
+        return $events;
+    }
+
+    protected function setUpEvents($events)
+    {
+        $records = [];
         foreach ($events as $event) {
-            $calendarAccount = CalendarAccount::find($event['accountId']);
+            $calendarAccount = CalendarAccount::find($event->accountId);
             $relatedUser = $calendarAccount ? $calendarAccount->user : null;
+
+            if($event->allDay)
+                $format= config('uccello.format.php.date');
+            else
+                $format= config('uccello.format.php.datetime');
 
             $records[] = [
                 // 'subject_html' => '<i class="material-icons primary-text left">people</i>'.$event['title'],
-                'subject_html' => $event['title'],
-                'category_html' => !empty($event['categories']) ? implode(',', $event['categories']) : '',
-                'start_date_html' => (new Carbon($event['start']))->format(config('uccello.format.php.datetime')),
-                'end_date_html' => (new Carbon($event['end']))->format(config('uccello.format.php.datetime')),
-                'location_html' => $event['location'],
+                'subject_html' => $event->title,
+                'category_html' => !empty($event->categories) ? implode(',', $event->categories) : '',
+                'start_date_html' => Carbon::createFromFormat($format, $event->start)->format($format),
+                'end_date_html' => Carbon::createFromFormat($format, $event->end)->format($format),
+                'location_html' => $event->location,
                 'assigned_user_html' => $relatedUser ? '<a href="'.ucroute('uccello.detail', $this->domain, ucmodule('user'), [ 'id' => $relatedUser->getKey()]).'" class="primary-text">'.$relatedUser->recordLabel.'</a>' : '',
             ];
         }
-
         return $records;
     }
 

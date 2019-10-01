@@ -10,7 +10,7 @@ use Uccello\Core\Models\Domain;
 use Uccello\Core\Models\Module;
 use Uccello\Calendar\CalendarAccount;
 use Carbon\Carbon;
-
+use GuzzleHttp\Exception\RequestException;
 
 class EventController extends Controller
 {
@@ -206,17 +206,38 @@ class EventController extends Controller
         return [ 'success' => true ];
     }
 
-    public function retrieve(Domain $domain, Module $module, $returnJson = true)
+    public function retrieve(Domain $domain, Module $module, $returnJson = true, $params)
     {
         //https://docs.microsoft.com/en-us/graph/api/group-get-event?view=graph-rest-1.0
 
-        $accountController = new AccountController();
-        $graph = $accountController->initClient(request('accountId'));
 
-        $getEventUrl = '/me/calendars/'.request('calendarId').'/events/'.request('id');//.http_build_query($eventsQueryParams);
+        if(request()->has('accountId'))
+            $accountId = request('accountId');
+        else
+            $accountId = $params['accountId'];
+
+        if(request()->has('calendarId'))
+            $calendarId = request('calendarId');
+        else
+            $calendarId = $params['calendarId'];
+
+        if(array_key_exists("eventId",$params))
+            $id = $params['eventId'];
+        else
+            $id = request('id');
+
+        $accountController = new AccountController();
+        $graph = $accountController->initClient($accountId);
+
+        $getEventUrl = '/me/calendars/'.$calendarId.'/events/'.$id;//.http_build_query($eventsQueryParams);
+        try{
         $event = $graph->createRequest('GET', $getEventUrl)
                         ->setReturnType(Model\Event::class)
                         ->execute();
+        }catch(RequestException $e)
+        {
+            return;
+        }
 
         $startDate = new Carbon($event->getStart()->getDateTime(), 'UTC');
 
@@ -281,9 +302,9 @@ class EventController extends Controller
         $returnEvent->description =     html_entity_decode(preg_replace('` - <a.+?href="'.$uccelloUrl.'.+?">.+?</a>`', '', $description));
         $returnEvent->moduleName =      $moduleName;
         $returnEvent->recordId =        $recordId;
-        $returnEvent->calendarId =      request('calendarId');
+        $returnEvent->calendarId =      $calendarId;
         $returnEvent->calendarType =    'microsoft';
-        $returnEvent->accountId =       request('accountId');
+        $returnEvent->accountId =       $accountId;
         $returnEvent->categories =      $event->getCategories();
         $returnEvent->attendees =       $attendees;
 
