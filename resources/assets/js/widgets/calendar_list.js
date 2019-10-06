@@ -14,7 +14,7 @@ export class CalendarList {
         this.dateStart = ''
         this.dateEnd = ''
 
-        this.refreshDatatable()
+        this.datatable.makeQuery()
 
         $('#calendar-user-id').on('change', (ev) => {
             this.userId = $(ev.currentTarget).val()
@@ -38,6 +38,11 @@ export class CalendarList {
                     this.dateEnd = moment().lang($('html').attr('lang')).endOf('week').format('YYYY-MM-DD')
                 break
 
+                case 'quarter':
+                    this.dateStart = moment().lang($('html').attr('lang')).startOf('quarter').format('YYYY-MM-DD')
+                    this.dateEnd = moment().lang($('html').attr('lang')).endOf('quarter').format('YYYY-MM-DD')
+                break
+
                 default:
                     this.dateStart = ''
                     this.dateEnd = ''
@@ -50,6 +55,7 @@ export class CalendarList {
 
     refreshDatatable() {
         let newUrl = `${this.initialContentUrl}&start=${this.dateStart}&end=${this.dateEnd}&user_id=${this.userId}`
+        console.log(newUrl)
         $('table#calendar-list-widget').attr('data-content-url', newUrl)
         this.datatable.makeQuery()
     }

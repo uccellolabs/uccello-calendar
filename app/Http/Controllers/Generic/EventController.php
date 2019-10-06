@@ -61,7 +61,7 @@ class EventController extends Controller
         return $calendarType->create($domain, $module);
     }
 
-    public function retrieve(Domain $domain, Module $module, $returnJson = true, $params)
+    public function retrieve(Domain $domain, Module $module, $returnJson=true, $params=[])
     {
         if(request()->has('type'))
             $type = request('type');
@@ -136,13 +136,13 @@ class EventController extends Controller
             }
 
             foreach($events as $event)
-            {                
+            {
                 if($event->moduleName && $event->recordId)
                 {
-                    
+
                     $entityevent = CalendarEntityEvent::firstOrNew([
                         'entity_id' => $event->recordId,
-                        'entity_class' => $event->moduleName]);
+                        'module_id' => ucmodule($event->moduleName)->id]);
                     if(!$entityevent->events || $entityevent==null)
                     {
                         $minifiyed_event = new stdClass;
@@ -162,7 +162,7 @@ class EventController extends Controller
                         foreach($entityevent->events as $a_event)
                         {
 
-                            if($a_event['id'] == $event->id)
+                            if($a_event->id === $event->id)
                             {
                                 $exists = true;
                                 break;
@@ -192,10 +192,10 @@ class EventController extends Controller
 
     public function related(Domain $d, Module $module, Request $request)
     {
-        if($request->input('entity_class') && $request->input('entity_id'))
+        if($request->input('module_id') && $request->input('entity_id'))
         {
             $entityEvent = CalendarEntityEvent::where([
-                'entity_class' => $request->input('entity_class'),
+                'module_id' => $request->input('module_id'),
                 'entity_id' => $request->input('entity_id')
             ])->first();
             return $entityEvent->events;
