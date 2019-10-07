@@ -11,6 +11,7 @@ use Uccello\Core\Models\Module;
 use Uccello\Calendar\CalendarAccount;
 use Carbon\Carbon;
 use GuzzleHttp\Exception\RequestException;
+use Uccello\Calendar\Events\CalendarEventSaved;
 
 class EventController extends Controller
 {
@@ -22,12 +23,12 @@ class EventController extends Controller
      * @param \Uccello\Core\Models\Module $module
      * @return array
      */
-    public function list(Domain $domain, Module $module)
+    public function list(Domain $domain, Module $module, $params=[])
     {
 
         $accounts = \Uccello\Calendar\CalendarAccount::where([
             'service_name'  => 'microsoft',
-            'user_id'       => auth()->id(),
+            'user_id'       => $params['user_id'],
         ])->get();
 
         $events = [];
@@ -47,12 +48,12 @@ class EventController extends Controller
             {
                 if(!in_array($calendar->id, $calendarsFetched) && !in_array($calendar->id, $calendarsDisabled))
                 {
-                    $graph = $accountController->initClient($account->id);
+                    $graph = $accountController->initClient($account->id, $params['user_id']);
 
                     $eventsQueryParams = array (
                         // // Only return Subject, Start, and End fields
                         "\$select" => "*",
-                        "\$filter" => 'Start/DateTime ge \''.request('start').'\' and Start/DateTime le \''.request('end').'\'',
+                        "\$filter" => 'Start/DateTime ge \''.$params['start'].'\' and Start/DateTime le \''.$params['end'].'\'',
                         // Sort by Start, oldest first
                         "\$orderby" => "Start/DateTime",
                         // Return at most 100 results
@@ -198,10 +199,13 @@ class EventController extends Controller
         }
 
 
-        $graph->createRequest('POST', '/me/calendars/'.request('calendarId').'/events')
+        $event = $graph->createRequest('POST', '/me/calendars/'.request('calendarId').'/events')
             ->attachBody($parameters)
             ->setReturnType(Model\Event::class)
             ->execute();
+
+        $returnEvent = $this->event($event, request('calendarId'), request('accountId'));
+        event(new CalendarEventSaved($returnEvent));
 
         return [ 'success' => true ];
     }
@@ -226,92 +230,29 @@ class EventController extends Controller
         else
             $id = request('id');
 
-        $accountController = new AccountController();
-        $graph = $accountController->initClient($accountId);
 
-        $getEventUrl = '/me/calendars/'.$calendarId.'/events/'.$id;//.http_build_query($eventsQueryParams);
-        try{
-        $event = $graph->createRequest('GET', $getEventUrl)
-                        ->setReturnType(Model\Event::class)
-                        ->execute();
-        }catch(RequestException $e)
+        if($accountId && CalendarAccount::find($accountId))
         {
-            return;
-        }
+            $accountController = new AccountController();
+            $graph = $accountController->initClient($accountId);
 
-        $startDate = new Carbon($event->getStart()->getDateTime(), 'UTC');
-
-        $endDate = new Carbon($event->getEnd()->getDateTime(), 'UTC');
-
-        if(!$event->getIsAllDay())
-        {
-            $start = $startDate->setTimezone(config('app.timezone', 'UTC'))->format(config('uccello.format.php.datetime'));
-            $end = $endDate->setTimezone(config('app.timezone', 'UTC'))->format(config('uccello.format.php.datetime'));
-        }
-        else
-        {
-            $endDate->addDay(-1);
-            $start = $startDate->format(config('uccello.format.php.date'));
-            $end = $endDate->setTimezone(config('app.timezone', 'UTC'))->format(config('uccello.format.php.date'));
-        }
-
-        $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
-        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)/link`', $event->getBody()->getContent(), $matches);
-        $moduleName = '';
-        $recordId = '';
-        if($regexFound)
-        {
-            $moduleName = $matches[1] ?? '';
-            $recordId = $matches[2] ?? '';
-        }
-
-        preg_match_all('/<div class="PlainText">(.+?)<\/div>/', $event->getBody()->getContent(), $matches, PREG_OFFSET_CAPTURE, 0);
-
-        $description = '';
-        foreach($matches[1] as $div)
-        {
-            $description.=$div[0]."\n";
-        }
-
-        $attendees = [];
-        foreach($event->getAttendees() as $a_attendee)
-        {
-            $attendee = new \StdClass;
-            $attendee->email = $a_attendee['emailAddress']['address'];
-            $user = CalendarAccount::where('username', $attendee->email)->first();
-            if($user)
+            $getEventUrl = '/me/calendars/'.$calendarId.'/events/'.$id;//.http_build_query($eventsQueryParams);
+            try{
+            $event = $graph->createRequest('GET', $getEventUrl)
+                            ->setReturnType(Model\Event::class)
+                            ->execute();
+            }catch(RequestException $e)
             {
-                $attendee->name = $a_attendee['emailAddress']['name'];        
-                $attendee->img = asset(CalendarAccount::where('username', $attendee->email)->first()->user->image);
-            }      
-            else
-            {
-                $attendee->name = $a_attendee['emailAddress']['address'];        
-                $attendee->img = '';
+                return;
             }
-            $attendees[] = $attendee;
+
+            $returnEvent = $this->event($event, $calendarId, $accountId);
+
+            if($returnJson)
+                return json_encode($returnEvent);
+            else
+                return $returnEvent;
         }
-
-        $returnEvent = new \StdClass;
-        $returnEvent->id =              $event->getId();
-        $returnEvent->title =           $event->getSubject() ?? '(no title)';
-        $returnEvent->start =           $start;
-        $returnEvent->end =             $end;
-        $returnEvent->allDay =          $event->getIsAllDay();
-        $returnEvent->location =        $event->getLocation()->getDisplayName();
-        $returnEvent->description =     html_entity_decode(preg_replace('` - <a.+?href="'.$uccelloUrl.'.+?">.+?</a>`', '', $description));
-        $returnEvent->moduleName =      $moduleName;
-        $returnEvent->recordId =        $recordId;
-        $returnEvent->calendarId =      $calendarId;
-        $returnEvent->calendarType =    'microsoft';
-        $returnEvent->accountId =       $accountId;
-        $returnEvent->categories =      $event->getCategories();
-        $returnEvent->attendees =       $attendees;
-
-        if($returnJson)
-            return json_encode($returnEvent);
-        else
-            return $returnEvent;
     }
 
     public function update(Domain $domain, Module $module)
@@ -396,10 +337,13 @@ class EventController extends Controller
             }
         }
 
-        $graph->createRequest('PATCH', '/me/calendars/'.request('calendarId').'/events/'.request('id'))
+        $event = $graph->createRequest('PATCH', '/me/calendars/'.request('calendarId').'/events/'.request('id'))
                     ->attachBody($parameters)
                     ->setReturnType(Model\Event::class)
                     ->execute();
+
+        $returnEvent = $this->event($event, request('calendarId'), request('accountId'));
+        event(new CalendarEventSaved($returnEvent));
 
         return ['success' => true];
     }
@@ -414,5 +358,79 @@ class EventController extends Controller
         $getEventUrl = '/me/calendars/'.request('calendarId').'/events/'.request('id');
         $returnData = $graph->createRequest('DELETE', $getEventUrl)
                         ->execute();
+    }
+
+    private function event($graphEvent, $calendarId, $accountId){
+
+        $startDate = new Carbon($graphEvent->getStart()->getDateTime(), 'UTC');
+
+        $endDate = new Carbon($graphEvent->getEnd()->getDateTime(), 'UTC');
+
+        if(!$graphEvent->getIsAllDay())
+        {
+            $start = $startDate->setTimezone(config('app.timezone', 'UTC'))->format(config('uccello.format.php.datetime'));
+            $end = $endDate->setTimezone(config('app.timezone', 'UTC'))->format(config('uccello.format.php.datetime'));
+        }
+        else
+        {
+            $endDate->addDay(-1);
+            $start = $startDate->format(config('uccello.format.php.date'));
+            $end = $endDate->setTimezone(config('app.timezone', 'UTC'))->format(config('uccello.format.php.date'));
+        }
+
+        $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
+        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)/link`', $graphEvent->getBody()->getContent(), $matches);
+        $moduleName = '';
+        $recordId = '';
+        if($regexFound)
+        {
+            $moduleName = $matches[1] ?? '';
+            $recordId = $matches[2] ?? '';
+        }
+
+        preg_match_all('/<div class="PlainText">(.+?)<\/div>/', $graphEvent->getBody()->getContent(), $matches, PREG_OFFSET_CAPTURE, 0);
+
+        $description = '';
+        foreach($matches[1] as $div)
+        {
+            $description.=$div[0]."\n";
+        }
+
+        $attendees = [];
+        foreach($graphEvent->getAttendees() as $a_attendee)
+        {
+            $attendee = new \StdClass;
+            $attendee->email = $a_attendee['emailAddress']['address'];
+            $user = CalendarAccount::where('username', $attendee->email)->first();
+            if($user)
+            {
+                $attendee->name = $a_attendee['emailAddress']['name'];        
+                $attendee->img = asset(CalendarAccount::where('username', $attendee->email)->first()->user->image);
+            }      
+            else
+            {
+                $attendee->name = $a_attendee['emailAddress']['address'];        
+                $attendee->img = '';
+            }
+            $attendees[] = $attendee;
+        }
+
+        $returnEvent = new \StdClass;
+        $returnEvent->id =              $graphEvent->getId();
+        $returnEvent->title =           $graphEvent->getSubject() ?? '(no title)';
+        $returnEvent->start =           $start;
+        $returnEvent->end =             $end;
+        $returnEvent->allDay =          $graphEvent->getIsAllDay();
+        $returnEvent->location =        $graphEvent->getLocation()->getDisplayName();
+        $returnEvent->description =     html_entity_decode(preg_replace('` - <a.+?href="'.$uccelloUrl.'.+?">.+?</a>`', '', $description));
+        $returnEvent->moduleName =      $moduleName;
+        $returnEvent->recordId =        $recordId;
+        $returnEvent->calendarId =      $calendarId;
+        $returnEvent->calendarType =    'microsoft';
+        $returnEvent->accountId =       $accountId;
+        $returnEvent->categories =      $graphEvent->getCategories();
+        $returnEvent->attendees =       $attendees;  
+
+        return $returnEvent;
     }
 }

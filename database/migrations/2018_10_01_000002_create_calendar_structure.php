@@ -103,11 +103,11 @@ class CreateCalendarStructure extends Migration
         ]);
         $field->save();
 
-        // Field date_start
+        // Field start_date
         $field = new Field([
             'module_id' => $module->id,
             'block_id' => $block->id,
-            'name' => 'date_start',
+            'name' => 'start_date',
             'uitype_id' => uitype('datetime')->id,
             'displaytype_id' => displaytype('everywhere')->id,
             'sequence' => 1,
@@ -115,11 +115,11 @@ class CreateCalendarStructure extends Migration
         ]);
         $field->save();
 
-        // Field date_end
+        // Field end_date
         $field = new Field([
             'module_id' => $module->id,
             'block_id' => $block->id,
-            'name' => 'date_end',
+            'name' => 'end_date',
             'uitype_id' => uitype('datetime')->id,
             'displaytype_id' => displaytype('everywhere')->id,
             'sequence' => 2,
