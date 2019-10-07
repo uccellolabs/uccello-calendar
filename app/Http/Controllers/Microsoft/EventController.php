@@ -22,12 +22,12 @@ class EventController extends Controller
      * @param \Uccello\Core\Models\Module $module
      * @return array
      */
-    public function list(Domain $domain, Module $module)
+    public function list(Domain $domain, Module $module, $params=[])
     {
 
         $accounts = \Uccello\Calendar\CalendarAccount::where([
             'service_name'  => 'microsoft',
-            'user_id'       => auth()->id(),
+            'user_id'       => $params['user_id'],
         ])->get();
 
         $events = [];
@@ -47,12 +47,12 @@ class EventController extends Controller
             {
                 if(!in_array($calendar->id, $calendarsFetched) && !in_array($calendar->id, $calendarsDisabled))
                 {
-                    $graph = $accountController->initClient($account->id);
+                    $graph = $accountController->initClient($account->id, $params['user_id']);
 
                     $eventsQueryParams = array (
                         // // Only return Subject, Start, and End fields
                         "\$select" => "*",
-                        "\$filter" => 'Start/DateTime ge \''.request('start').'\' and Start/DateTime le \''.request('end').'\'',
+                        "\$filter" => 'Start/DateTime ge \''.$params['start'].'\' and Start/DateTime le \''.$params['end'].'\'',
                         // Sort by Start, oldest first
                         "\$orderby" => "Start/DateTime",
                         // Return at most 100 results

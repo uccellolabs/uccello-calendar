@@ -36,6 +36,8 @@ class AppServiceProvider extends ServiceProvider
 
   public function register()
   {
-
+    $this->commands([
+      \Uccello\Calendar\Console\Commands\ClassifyEvents::class
+    ]);
   }
 }

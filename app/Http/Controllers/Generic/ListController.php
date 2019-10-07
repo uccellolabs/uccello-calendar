@@ -154,7 +154,6 @@ class ListController extends DefaultListController
                 'location_html' => $event->location,
                 'calendar_html' => $calendar->name,
                 // 'assigned_user_html' => $relatedUser ? '<a href="'.ucroute('uccello.detail', $this->domain, ucmodule('user'), [ 'id' => $relatedUser->getKey()]).'" class="primary-text">'.$relatedUser->recordLabel.'</a>' : '',
->>>>>>> 9015796622095e007b6d2043d1dc1efd4e06be80
             ];
         }
         return $records;

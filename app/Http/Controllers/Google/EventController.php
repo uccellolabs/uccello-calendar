@@ -15,11 +15,11 @@ use Google\Client;
 
 class EventController extends Controller
 {
-    public function list(Domain $domain, Module $module)
+    public function list(Domain $domain, Module $module, $params=[])
     {
         $accounts = \Uccello\Calendar\CalendarAccount::where([
             'service_name'  => 'google',
-            'user_id'       => auth()->id(),
+            'user_id'       => $params['user_id'],
         ])->get();
 
         $events = [];
@@ -39,12 +39,12 @@ class EventController extends Controller
                 if(!in_array($calendar->id, $calendarsFetched) && !in_array($calendar->id, $calendarsDisabled))
                 {
                     $calendarsFetched[] = $calendar->id;
-                    $oauthClient = $accountController->initClient($account->id);
+                    $oauthClient = $accountController->initClient($account->id, $params['user_id']);
                     $service = new \Google_Service_Calendar($oauthClient);
 
                     // Print the next 10 events on the user's calendar.
-                    $start = new Carbon(request('start'));
-                    $end = new Carbon(request('end'));
+                    $start = new Carbon($params['start']);
+                    $end = new Carbon($params['end']);
 
                     $optParams = array(
                         'orderBy' => 'startTime',
