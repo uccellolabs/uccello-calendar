@@ -16,11 +16,11 @@
 
             <div class="right-align right">
                 <select id="calendar-period">
-                    <option value="all" selected>{{ uctrans('period.all', $module) }}</option>
-                    <option value="today">{{ uctrans('period.today', $module) }}</option>
-                    <option value="week">{{ uctrans('period.week', $module) }}</option>
-                    <option value="month">{{ uctrans('period.month', $module) }}</option>
-                    <option value="quarter">{{ uctrans('period.quarter', $module) }}</option>
+                    <option value="all" selected>{{ trans('calendar::calendar.period.all') }}</option>
+                    <option value="today">{{ trans('calendar::calendar.period.today') }}</option>
+                    <option value="week">{{ trans('calendar::calendar.period.week') }}</option>
+                    <option value="month">{{ trans('calendar::calendar.period.month') }}</option>
+                    <option value="quarter">{{ trans('calendar::calendar.period.quarter') }}</option>
                 </select>
             </div>
         </span>
