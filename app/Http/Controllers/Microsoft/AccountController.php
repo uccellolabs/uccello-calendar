@@ -144,11 +144,8 @@ class AccountController extends Controller
 
     public function initClient($accountId)
     {
-        $tokenDb = \Uccello\Calendar\CalendarAccount::where([
-            'service_name'  => 'microsoft',
-            'user_id'       => auth()->id(),
-            'id'            => $accountId,
-        ])->first();
+
+        $tokenDb = \Uccello\Calendar\CalendarAccount::find($accountId);
 
         $graph = new Graph();
         $graph->setAccessToken(

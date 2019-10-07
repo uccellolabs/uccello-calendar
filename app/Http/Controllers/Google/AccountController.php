@@ -117,6 +117,7 @@ class AccountController extends Controller
 
     public function initClient($accountId)
     {
+
         // Initialize the OAuth client
         $oauthClient = new \Google_Client([
             'application_name'          => env('APP_NAME'),
@@ -127,11 +128,7 @@ class AccountController extends Controller
         $oauthClient->addScope(\Google_Service_Calendar::CALENDAR);
         $oauthClient->setAccessType('offline');
 
-        $account = \Uccello\Calendar\CalendarAccount::where([
-            'service_name'  => 'google',
-            'user_id'       => auth()->id(),
-            'id'            => $accountId,
-        ])->first();
+        $account = \Uccello\Calendar\CalendarAccount::find($accountId);
 
         $oauthClient->setAccessToken(
             AccountController::getAccessToken($account)
