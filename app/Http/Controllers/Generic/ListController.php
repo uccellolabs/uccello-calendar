@@ -111,6 +111,7 @@ class ListController extends DefaultListController
         if ($calEntityEvent) {
             $eventController = new EventController();
 
+            $updatedEvent = [];
             foreach ($calEntityEvent->events as $event)
             {
                 $params = [
@@ -122,9 +123,12 @@ class ListController extends DefaultListController
 
                 $_event = $eventController->retrieve($this->domain, $this->module, false, $params);
                 if ($_event !== null) {
+                    $updatedEvent[] = $event;
                     $events[] = $_event;
                 }
             }
+            $calEntityEvent->events = $updatedEvent;
+            $calEntityEvent->save();
         }
 
         return $events;

@@ -11,7 +11,7 @@ use Uccello\Core\Models\Module;
 use Uccello\Calendar\CalendarAccount;
 use Carbon\Carbon;
 use Google\Client;
-
+use Uccello\Calendar\Events\CalendarEventSaved;
 
 class EventController extends Controller
 {
@@ -158,6 +158,10 @@ class EventController extends Controller
         $calendarId = request('calendarId');
         $event = $service->events->insert($calendarId, $event);
 
+        $returnEvent = $this->event($event, $calendarId, request('accountId'));
+        
+        event(new CalendarEventSaved($returnEvent));
+
         return [ 'success' => true];
     }
 
@@ -173,88 +177,33 @@ class EventController extends Controller
         else
             $calendarId = $params['calendarId'];
 
-        if(request()->has('id'))
-            $id = request('id');
-        else
+        if(array_key_exists("eventId",$params))
             $id = $params['eventId'];
-
-        $accountController = new AccountController();
-        $oauthClient = $accountController->initClient($accountId);
-        $service = new \Google_Service_Calendar($oauthClient);
-
-        try{
-        $event = $service->events->get($calendarId, $id);
-        }catch(Exception $e)
-        {
-            return null;
-        }
-
-        if($event->start->dateTime)
-        {
-            $startDate = Carbon::createFromFormat(\DateTime::ISO8601, $event->start->dateTime)
-                ->setTimezone($event->start->timeZone ?? config('app.timezone', 'UTC'));
-            $start = $startDate->format(config('uccello.format.php.datetime'));
-        }
         else
-        {
-            $startDate = Carbon::createFromFormat('Y-m-d', $event->start->date)
-                ->setTimezone($event->start->timeZone ?? config('app.timezone', 'UTC'));
-            $start = $startDate->format(config('uccello.format.php.date'));
-        }
+            $id = request('id');
 
-        if($event->end->dateTime)
+        if($accountId && CalendarAccount::find($accountId))
         {
-            $endDate = Carbon::createFromFormat(\DateTime::ISO8601, $event->end->dateTime)
-                ->setTimezone($event->end->timeZone ?? config('app.timezone', 'UTC'));
-            $end = $endDate->format(config('uccello.format.php.datetime'));
-        }
-        else
-        {
-            $endDate = Carbon::createFromFormat('Y-m-d', $event->end->date)
-                ->setTimezone($event->end->timeZone ?? config('app.timezone', 'UTC'));
-            $end = $endDate->format(config('uccello.format.php.date'));
-        }
 
-        $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
-        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)/link`', $event->description, $matches);
-        $moduleName = '';
-        $recordId = '';
-        if($regexFound)
-        {
-            $moduleName = $matches[1] ?? '';
-            $recordId = $matches[2] ?? '';
+            $accountController = new AccountController();
+            $oauthClient = $accountController->initClient($accountId);
+            $service = new \Google_Service_Calendar($oauthClient);
+
+            try{
+                $event = $service->events->get($calendarId, $id);
+            }catch(Exception $e)
+            {
+                return null;
+            }
+
+            $returnEvent = $this->event($event, $calendarId, $accountId);
+            
+
+            if($returnJson)
+                return json_encode($returnEvent);
+            else
+                return $returnEvent;
         }
-
-        $attendees = [];
-        foreach($event->getAttendees() as $a_attendee)
-        {
-            $attendee = new \StdClass;
-            $attendee->email = $a_attendee->email;
-            $attendee->name = $a_attendee->displayName;
-            $attendee->img = asset(CalendarAccount::where('username', $attendee->email)->first()->user->image) ?? '';
-            $attendees[] = $attendee;
-        }
-
-        $returnEvent = new \StdClass;
-        $returnEvent->id =              $event->id;
-        $returnEvent->title =           $event->summary ?? '(no title)';
-        $returnEvent->start =           $start;
-        $returnEvent->end =             $end;
-        $returnEvent->allDay =          $event->start->dateTime || $event->end->dateTime ? false : true;
-        $returnEvent->location =        $event->location;
-        $returnEvent->description =     $regexFound ? str_replace($matches[0],'',$event->description) : $event->description;
-        $returnEvent->moduleName =      $moduleName;
-        $returnEvent->recordId =        $recordId;
-        $returnEvent->calendarId =      $calendarId;
-        $returnEvent->calendarType =    'microsoft';
-        $returnEvent->accountId =       $accountId;
-        $returnEvent->categories =      null; //TODO:
-        $returnEvent->attendees =       $attendees;
-
-        if($returnJson)
-            return json_encode($returnEvent);
-        else
-            return $returnEvent;
     }
 
     public function update(Domain $domain, Module $module)
@@ -341,6 +290,9 @@ class EventController extends Controller
 
         $event = $service->events->update(request('calendarId'), $event->getId(), $event);
 
+        $returnEvent = $this->event($event, request('calendarId'), request('accountId'));
+        event(new CalendarEventSaved($returnEvent));
+
         return ['success' => true];
     }
 
@@ -352,5 +304,75 @@ class EventController extends Controller
         $service = new \Google_Service_Calendar($oauthClient);
 
         $service->events->delete(request('calendarId'), request('id'));
+    }
+
+    private function event($event, $calendarId, $accountId){
+
+        if($event->start->dateTime)
+        {
+            $startDate = Carbon::createFromFormat(\DateTime::ISO8601, $event->start->dateTime)
+                ->setTimezone($event->start->timeZone ?? config('app.timezone', 'UTC'));
+            $start = $startDate->format(config('uccello.format.php.datetime'));
+        }
+        else
+        {
+            $startDate = Carbon::createFromFormat('Y-m-d', $event->start->date)
+                ->setTimezone($event->start->timeZone ?? config('app.timezone', 'UTC'));
+            $start = $startDate->format(config('uccello.format.php.date'));
+        }
+
+        if($event->end->dateTime)
+        {
+            $endDate = Carbon::createFromFormat(\DateTime::ISO8601, $event->end->dateTime)
+                ->setTimezone($event->end->timeZone ?? config('app.timezone', 'UTC'));
+            $end = $endDate->format(config('uccello.format.php.datetime'));
+        }
+        else
+        {
+            $endDate = Carbon::createFromFormat('Y-m-d', $event->end->date)
+                ->setTimezone($event->end->timeZone ?? config('app.timezone', 'UTC'));
+            $end = $endDate->format(config('uccello.format.php.date'));
+        }
+
+        $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
+        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)/link`', $event->description, $matches);
+        $moduleName = '';
+        $recordId = '';
+        if($regexFound)
+        {
+            $moduleName = $matches[1] ?? '';
+            $recordId = $matches[2] ?? '';
+        }
+
+        $attendees = [];
+        foreach($event->getAttendees() as $a_attendee)
+        {
+            $attendee = new \StdClass;
+            $attendee->email = $a_attendee->email;
+            $attendee->name = $a_attendee->displayName;
+            if(CalendarAccount::where('username', $attendee->email)->first())
+                $attendee->img = asset(CalendarAccount::where('username', $attendee->email)->first()->user->image) ?? '';
+            else
+                $attendee->img = '';
+            $attendees[] = $attendee;
+        }
+
+        $returnEvent = new \StdClass;
+        $returnEvent->id =              $event->id;
+        $returnEvent->title =           $event->summary ?? '(no title)';
+        $returnEvent->start =           $start;
+        $returnEvent->end =             $end;
+        $returnEvent->allDay =          $event->start->dateTime || $event->end->dateTime ? false : true;
+        $returnEvent->location =        $event->location;
+        $returnEvent->description =     $regexFound ? str_replace($matches[0],'',$event->description) : $event->description;
+        $returnEvent->moduleName =      $moduleName;
+        $returnEvent->recordId =        $recordId;
+        $returnEvent->calendarId =      $calendarId;
+        $returnEvent->calendarType =    'google';
+        $returnEvent->accountId =       $accountId;
+        $returnEvent->categories =      null; //TODO:
+        $returnEvent->attendees =       $attendees;
+
+        return $returnEvent;
     }
 }

@@ -29,7 +29,8 @@
         "laravel": {
             "providers": [
                 "Uccello\\Calendar\\Providers\\AppServiceProvider",
-                "Uccello\\Calendar\\Providers\\RouteServiceProvider"
+                "Uccello\\Calendar\\Providers\\RouteServiceProvider",
+                "Uccello\\Calendar\\Providers\\EventServiceProvider"
             ]
         }
     },
