@@ -176,7 +176,7 @@ class EventController extends Controller
         $parameters->location->displayName = request('location') ?? '';
         $parameters->body = new \StdClass;
         $parameters->body->content = (request('description') ?? '').(request('moduleName')!==null && request('recordId')!==null ? $uccelloLink : '');
-        $parameters->body->contentType = "Text";
+        $parameters->body->contentType = "HTML";
         $parameters->categories = (array) request('category');
 
         if(request('attendees') && count(request('attendees'))>0)
@@ -315,7 +315,7 @@ class EventController extends Controller
             $parameters->body->content = (request('description') ?? '').
                 (request('moduleName')!=null && request('recordId')!=null ? $uccelloLink : '');
 
-            $parameters->body->contentType = "Text";
+            $parameters->body->contentType = "HTML";
         }
 
         if(request('attendees') && count(request('attendees'))>0)
@@ -379,7 +379,7 @@ class EventController extends Controller
         }
 
         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
-        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)/link`', $graphEvent->getBody()->getContent(), $matches);
+        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)/link`', $graphEvent->getBodyPreview(), $matches);
         $moduleName = '';
         $recordId = '';
         if($regexFound)
@@ -388,14 +388,9 @@ class EventController extends Controller
             $recordId = $matches[2] ?? '';
         }
 
-        preg_match_all('/<div class="PlainText">(.+?)<\/div>/', $graphEvent->getBody()->getContent(), $matches, PREG_OFFSET_CAPTURE, 0);
+        $description = \Uccello\Calendar\Http\Controllers\Generic\EventController::cleanedDescription($graphEvent->getBodyPreview());
 
-        $description = '';
-        foreach($matches[1] as $div)
-        {
-            $description.=$div[0]."\n";
-        }
-
+        
         $attendees = [];
         foreach($graphEvent->getAttendees() as $a_attendee)
         {
@@ -415,7 +410,6 @@ class EventController extends Controller
             $attendees[] = $attendee;
         }
 
-        $description = \Uccello\Calendar\Http\Controllers\Generic\EventController::cleanedDescription($description);
 
         $returnEvent = new \StdClass;
         $returnEvent->id =              $graphEvent->getId();
