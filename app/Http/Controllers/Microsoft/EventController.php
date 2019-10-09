@@ -380,6 +380,7 @@ class EventController extends Controller
 
         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
         $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)/link`', $graphEvent->getBodyPreview(), $matches);
+
         $moduleName = '';
         $recordId = '';
         if($regexFound)
@@ -390,7 +391,6 @@ class EventController extends Controller
 
         $description = \Uccello\Calendar\Http\Controllers\Generic\EventController::cleanedDescription($graphEvent->getBodyPreview());
 
-        
         $attendees = [];
         foreach($graphEvent->getAttendees() as $a_attendee)
         {
@@ -409,7 +409,6 @@ class EventController extends Controller
             }
             $attendees[] = $attendee;
         }
-
 
         $returnEvent = new \StdClass;
         $returnEvent->id =              $graphEvent->getId();

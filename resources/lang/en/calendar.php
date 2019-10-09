@@ -56,7 +56,7 @@ return [
 
     'period' => [
         'all' => 'All',
-        'today' => 'Tody',
+        'today' => 'Today',
         'week' => 'Week',
         'month' => 'Month',
         'quarter' => 'Quarter',
