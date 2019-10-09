@@ -138,7 +138,7 @@ class EventController extends Controller
         $parameters->start = new \StdClass;
         $parameters->end = new \StdClass;
 
-        $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink($domain);
+        $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink(request('moduleName'), request('recordId'), $domain);
 
 
         if(request('allDay') === "true")
@@ -309,7 +309,7 @@ class EventController extends Controller
 
         if (request()->has('description')) {
 
-            $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink($domain);
+            $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink(request('moduleName'), request('recordId'), $domain);
 
             $parameters->body = new \StdClass;
             $parameters->body->content = (request('description') ?? '').
@@ -415,6 +415,8 @@ class EventController extends Controller
             $attendees[] = $attendee;
         }
 
+        $description = \Uccello\Calendar\Http\Controllers\Generic\EventController::cleanedDescription($description);
+
         $returnEvent = new \StdClass;
         $returnEvent->id =              $graphEvent->getId();
         $returnEvent->title =           $graphEvent->getSubject() ?? '(no title)';
@@ -422,7 +424,7 @@ class EventController extends Controller
         $returnEvent->end =             $end;
         $returnEvent->allDay =          $graphEvent->getIsAllDay();
         $returnEvent->location =        $graphEvent->getLocation()->getDisplayName();
-        $returnEvent->description =     html_entity_decode(preg_replace('` - <a.+?href="'.$uccelloUrl.'.+?">.+?</a>`', '', $description));
+        $returnEvent->description =     html_entity_decode($description);
         $returnEvent->moduleName =      $moduleName;
         $returnEvent->recordId =        $recordId;
         $returnEvent->calendarId =      $calendarId;
