@@ -175,7 +175,7 @@ class CreateCalendarStructure extends Migration
             'type' => 'list',
             'columns' => ['subject', 'start_date', 'end_date', 'category', 'location', 'calendar'],
             'conditions' => null,
-            'order_by' => null,
+            'order' => null,
             'is_default' => true,
             'is_public' => false
         ]);
@@ -189,7 +189,7 @@ class CreateCalendarStructure extends Migration
             'type' => 'related-list',
             'columns' => ['subject', 'start_date', 'end_date', 'category', 'calendar'],
             'conditions' => null,
-            'order_by' => null,
+            'order' => null,
             'is_default' => true,
             'is_public' => false
         ]);
