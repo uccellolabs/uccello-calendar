@@ -108,7 +108,7 @@ class EventController extends Controller
         $startArray['timeZone'] =config('app.timezone', 'UTC');
         $endArray['timeZone'] = config('app.timezone', 'UTC');
 
-        $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink($domain);
+        $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink(request('moduleName'), request('recordId'), $domain);
 
         if(preg_match($datetimeRegex, request('start_date')) || preg_match($datetimeRegex, request('end_date')))
             $dateOnly = false;
@@ -268,7 +268,7 @@ class EventController extends Controller
         }
 
         if (request()->has('description')) {
-            $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink($domain);
+            $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink(request('moduleName'), request('recordId'), $domain);
 
             $event->setDescription((request('description') ?? '').
                 (request('moduleName')!=null && request('recordId')!=null ? $uccelloLink : ''));
@@ -368,7 +368,7 @@ class EventController extends Controller
         $returnEvent->end =             $end;
         $returnEvent->allDay =          $event->start->dateTime || $event->end->dateTime ? false : true;
         $returnEvent->location =        $event->location;
-        $returnEvent->description =     $regexFound ? str_replace($matches[0],'',$event->description) : $event->description;
+        $returnEvent->description =     \Uccello\Calendar\Http\Controllers\Generic\EventController::cleanedDescription($event->description);
         $returnEvent->moduleName =      $moduleName;
         $returnEvent->recordId =        $recordId;
         $returnEvent->calendarId =      $calendarId;

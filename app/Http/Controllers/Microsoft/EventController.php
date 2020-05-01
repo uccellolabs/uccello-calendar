@@ -143,7 +143,7 @@ class EventController extends Controller
         $parameters->start = new \StdClass;
         $parameters->end = new \StdClass;
 
-        $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink($domain);
+        $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink(request('moduleName'), request('recordId'), $domain);
 
 
         if(request('allDay') === "true")
@@ -181,7 +181,7 @@ class EventController extends Controller
         $parameters->location->displayName = request('location') ?? '';
         $parameters->body = new \StdClass;
         $parameters->body->content = (request('description') ?? '').(request('moduleName')!==null && request('recordId')!==null ? $uccelloLink : '');
-        $parameters->body->contentType = "Text";
+        $parameters->body->contentType = "HTML";
         $parameters->categories = (array) request('category');
 
         if(request('attendees') && count(request('attendees'))>0)
@@ -323,13 +323,13 @@ class EventController extends Controller
         }
 
         if (array_key_exists('description', $params)) {
-            $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink($domain, $params);
+            $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink($params['moduleName'], $params['recordId'], $domain);
 
             $parameters->body = new \StdClass;
             $parameters->body->content = ($params['description'] ?? '').
                 ($params['moduleName']!=null && $params['recordId']!=null ? $uccelloLink : '');
 
-            $parameters->body->contentType = "Text";
+            $parameters->body->contentType = "HTML";
         }
 
         if (array_key_exists('attendees', $params) && count($params['attendees'])>0) {
@@ -392,7 +392,7 @@ class EventController extends Controller
         }
 
         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
-        $regexFound = preg_match('`'.$uccelloUrl.'/?[a-z]+/?([a-z]+)/([0-9]+)/link`', $graphEvent->getBody()->getContent(), $matches);
+        $regexFound = preg_match('`'.$uccelloUrl.'/?[a-z]+/?([a-z]+)/([0-9]+)/link`', $graphEvent->getBodyPreview(), $matches);
         $moduleName = '';
         $recordId = '';
         if($regexFound)
@@ -401,13 +401,7 @@ class EventController extends Controller
             $recordId = $matches[2] ?? '';
         }
 
-        preg_match_all('/<div class="PlainText">(.+?)<\/div>/', $graphEvent->getBody()->getContent(), $matches, PREG_OFFSET_CAPTURE, 0);
-
-        $description = '';
-        foreach($matches[1] as $div)
-        {
-            $description.=$div[0]."\n";
-        }
+        $description = \Uccello\Calendar\Http\Controllers\Generic\EventController::cleanedDescription($graphEvent->getBodyPreview());
 
         $attendees = [];
         foreach($graphEvent->getAttendees() as $a_attendee)
@@ -432,7 +426,7 @@ class EventController extends Controller
         $returnEvent->end =             $end;
         $returnEvent->allDay =          $graphEvent->getIsAllDay();
         $returnEvent->location =        $graphEvent->getLocation()->getDisplayName();
-        $returnEvent->description =     html_entity_decode(preg_replace('` - <a.+?href="'.$uccelloUrl.'.+?">.+?</a>`', '', $description));
+        $returnEvent->description =     html_entity_decode($description);
         $returnEvent->moduleName =      $moduleName;
         $returnEvent->recordId =        $recordId;
         $returnEvent->calendarId =      $calendarId;
