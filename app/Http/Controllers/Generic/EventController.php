@@ -30,7 +30,7 @@ class EventController extends Controller
      * @param Module $module
      * @return array
      */
-    protected function list(Domain $domain, $type, Module $module, $params=[])
+    public function list(Domain $domain, $type, Module $module, $params = [])
     {
         if(request()->has('start'))
             $params['start'] = request('start');
@@ -85,14 +85,17 @@ class EventController extends Controller
         return $calendarType->retrieve($domain, $module, $returnJson, $params);
     }
 
-    protected function update(Domain $domain, Module $module)
+    public function update(Domain $domain, Module $module, $params = [])
     {
-        $type = request('type');
-        $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $type)->get()->first();
+        if (request()->has('type')) {
+            $params['type'] = request('type');
+        }
+
+        $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $params['type'])->get()->first();
         $calendarClass = $calendarTypeModel->namespace.'\EventController';
 
         $calendarType = new $calendarClass();
-        return $calendarType->update($domain, $module);
+        return $calendarType->update($domain, $module, $params);
     }
 
     protected function delete(Domain $domain, Module $module)
@@ -105,17 +108,26 @@ class EventController extends Controller
         return $calendarType->delete($domain, $module);
     }
 
-    public static function generateEntityLink(Domain $domain)
+    public static function generateEntityLink(Domain $domain, $params = [])
     {
+
+        $availableParams = ['moduleName', 'recordId'];
+
+        foreach ($availableParams as $param) {
+            if (request()->has($param)) {
+                $params[$param] = request($param);
+            }
+        }
+
         $module = Module::where('name', 'calendar')->first();
         $uccelloLink = '';
         if(config('calendar.event.comment'))
             $uccelloLink = '<br/>#'.uctrans('before_url', $module).env('APP_NAME').' :';
 
         if (uccello()->useMultiDomains()) {
-            $uccelloLink.= ' '.env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId').'/link';
+            $uccelloLink.= ' '.env('APP_URL').'/'.$domain->slug.'/'.$params['moduleName'].'/'.$params['recordId'].'/link';
         } else {
-            $uccelloLink.= env('APP_URL').'/'.request('moduleName').'/'.request('recordId').'/link';
+            $uccelloLink.= env('APP_URL').'/'.$params['moduleName'].'/'.$params['recordId'].'/link';
         }
 
         if(config('calendar.event.comment'))
