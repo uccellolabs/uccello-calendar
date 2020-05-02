@@ -20,14 +20,9 @@ class CalendarListWidget extends AbstractWidget
      */
     public function run()
     {
-        $domain = ucdomain($this->config['domain']);
-
-        $users = User::orderBy('name')->get();
-
         return view('calendar::widgets.calendar_list_widget', [
             'recordId' => request('id'),
             'config' => $this->config,
-            'users' => $users,
         ]);
     }
 }

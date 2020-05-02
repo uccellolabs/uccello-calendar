@@ -26,7 +26,7 @@
         </span>
 
         {{-- Table --}}
-        @include('uccello::modules.default.detail.relatedlists.table', [ 'datatableId' => $datatableId, 'datatableColumns' => $datatableColumns, 'relatedModule' => $relatedModule, 'datatableContentUrl' => $datatableContentUrl ])
+        @include('calendar::modules.calendar.detail.relatedlists.table', [ 'datatableId' => $datatableId, 'datatableColumns' => $datatableColumns, 'relatedModule' => $relatedModule, 'datatableContentUrl' => $datatableContentUrl ])
     </div>
 </div>
 

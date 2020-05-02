@@ -23,7 +23,7 @@ class EventController extends Controller
      * @param \Uccello\Core\Models\Module $module
      * @return array
      */
-    public function list(Domain $domain, Module $module, $params=[])
+    public function list(Domain $domain, Module $module, $params = [])
     {
 
         $accounts = \Uccello\Calendar\CalendarAccount::where([
@@ -59,11 +59,6 @@ class EventController extends Controller
                         // Return at most 100 results
                         "\$top" => "100"
                     );
-                    if (array_key_exists('search', $params)) {
-                        $eventsQueryParams['$search'] = '"Subject:'.$params['search'].'"';
-                    }
-
-                    // dd($eventsQueryParams);
 
                     $getEventsUrl = '/me/calendars/'.$calendar->id.'/events?'.http_build_query($eventsQueryParams);
                     $items = $graph->createRequest('GET', $getEventsUrl)
@@ -433,7 +428,8 @@ class EventController extends Controller
         $returnEvent->calendarType =    'microsoft';
         $returnEvent->accountId =       $accountId;
         $returnEvent->categories =      $graphEvent->getCategories();
-        $returnEvent->attendees =       $attendees;  
+        $returnEvent->attendees =       $attendees;
+        $returnEvent->webLink =         $graphEvent->getWebLink();
 
         return $returnEvent;
     }

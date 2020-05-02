@@ -376,6 +376,7 @@ class EventController extends Controller
         $returnEvent->accountId =       $accountId;
         $returnEvent->categories =      null; //TODO:
         $returnEvent->attendees =       $attendees;
+        $returnEvent->webLink =         $event->htmlLink;
 
         return $returnEvent;
     }

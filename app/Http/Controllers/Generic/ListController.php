@@ -151,12 +151,14 @@ class ListController extends DefaultListController
 
             $records[] = [
                 // 'subject_html' => '<i class="material-icons primary-text left">people</i>'.$event['title'],
+                'id' => $event->webLink,
                 'subject_html' => $event->title,
                 'category_html' => !empty($event->categories) ? implode(',', $event->categories) : '',
                 'start_date_html' => Carbon::createFromFormat($format, $event->start)->format($format),
                 'end_date_html' => Carbon::createFromFormat($format, $event->end)->format($format),
                 'location_html' => $event->location,
                 'calendar_html' => $calendar->name,
+                'webLink' => $event->webLink,
                 // 'assigned_user_html' => $relatedUser ? '<a href="'.ucroute('uccello.detail', $this->domain, ucmodule('user'), [ 'id' => $relatedUser->getKey()]).'" class="primary-text">'.$relatedUser->recordLabel.'</a>' : '',
             ];
         }
