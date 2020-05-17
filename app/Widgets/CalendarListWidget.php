@@ -20,6 +20,7 @@ class CalendarListWidget extends AbstractWidget
      */
     public function run()
     {
+        
         return view('calendar::widgets.calendar_list_widget', [
             'recordId' => request('id'),
             'config' => $this->config,

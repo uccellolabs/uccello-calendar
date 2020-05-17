@@ -15,6 +15,7 @@
             {{ uctrans($relatedModule->name, $relatedModule) }}
 
             <div class="right-align right">
+                @section('calendar.custom.buttons')
                 <select id="calendar-period">
                     <option value="all" selected>{{ trans('calendar::calendar.period.all') }}</option>
                     <option value="today">{{ trans('calendar::calendar.period.today') }}</option>
@@ -22,7 +23,9 @@
                     <option value="month">{{ trans('calendar::calendar.period.month') }}</option>
                     <option value="quarter">{{ trans('calendar::calendar.period.quarter') }}</option>
                 </select>
+                @show
             </div>
+
         </span>
 
         {{-- Table --}}

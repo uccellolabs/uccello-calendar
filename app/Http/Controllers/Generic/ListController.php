@@ -61,10 +61,17 @@ class ListController extends DefaultListController
 
         if (request('start') && request('end')) {
             foreach($calendarEvents as $event) {
-                $start = Carbon::createFromFormat('d/m/Y', $event->start);
-                $end = Carbon::createFromFormat('d/m/Y', $event->end);
-                $start_max = Carbon::createFromFormat('Y-m-d', request('start'));
-                $end_max = Carbon::createFromFormat('Y-m-d', request('end'));
+                $start = Carbon::createFromFormat(
+                    $event->allDay ? 
+                    config('uccello.format.php.date') : 
+                    config('uccello.format.php.datetime'
+                ), $event->start);
+                $end = Carbon::createFromFormat($event->allDay ? 
+                    config('uccello.format.php.date') : 
+                    config('uccello.format.php.datetime'
+                ), $event->end);
+                $start_max = Carbon::createFromFormat('Y-m-d', request('start'))->setTime(0,0);
+                $end_max = Carbon::createFromFormat('Y-m-d', request('end'))->setTime(23,59,59);
 
                 if($start<=$end_max && $end>=$start_max) {
                     $dateFilteredEvents[] = $event;
