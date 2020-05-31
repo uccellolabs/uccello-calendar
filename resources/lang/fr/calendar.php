@@ -11,6 +11,7 @@ return [
     'color' => 'Couleur',
     'accounts.stored' => 'Comptes enregistrés',
     'create' => 'Créer',
+    'create.event' => 'Créer un événement',
     'manage' => 'Gérer les calendriers',
     'manage_accounts' => 'Gérer les comptes',
     'event.allday' => 'Journée entière',

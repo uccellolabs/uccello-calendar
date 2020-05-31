@@ -44,15 +44,13 @@ class ClassifyEvents extends Command
         $module = ucmodule('calendar');
         $events = [];
         $domains = Domain::all();
-        foreach($domains as $domain)
-        {
+        foreach ($domains as $domain) {
             $params = [];
             $params['start']        = $this->argument('start');
             $params['end']          = $this->argument('end');
             $params['user_id']      = $this->argument('user_id');
             $dom_events = $eventController->all($domain, $module, $params);
-            foreach($dom_events as $event)
-            {
+            foreach ($dom_events as $event) {
                 $params['calendarId']   = $event['calendarId'];
                 $params['accountId']    = $event['accountId'];
                 $params['eventId']      = $event['id'];
@@ -61,16 +59,12 @@ class ClassifyEvents extends Command
             }
         }
 
-        foreach($events as $event)
-        {
-            if($event->moduleName && $event->recordId)
-            {
-
+        foreach ($events as $event) {
+            if ($event->moduleName && $event->recordId) {
                 $entityevent = CalendarEntityEvent::firstOrNew([
                     'entity_id' => $event->recordId,
                     'module_id' => ucmodule($event->moduleName)->id]);
-                if(!$entityevent->events || $entityevent==null)
-                {
+                if (!$entityevent->events || $entityevent==null) {
                     $minifiyed_event = new stdClass;
                     $minifiyed_event->id = $event->id;
                     $minifiyed_event->calendarId = $event->calendarId;
@@ -81,22 +75,16 @@ class ClassifyEvents extends Command
                     $array[] = $minifiyed_event;
 
                     $entityevent->events = $array;
-                }
-                else
-                {
+                } else {
                     $exists = false;
-                    foreach($entityevent->events as $a_event)
-                    {
-
-                        if($a_event->id === $event->id)
-                        {
+                    foreach ($entityevent->events as $a_event) {
+                        if ($a_event->id === $event->id) {
                             $exists = true;
                             break;
                         }
                     }
 
-                    if(!$exists)
-                    {
+                    if (!$exists) {
                         $minifiyed_event = new stdClass;
                         $minifiyed_event->id = $event->id;
                         $minifiyed_event->calendarId = $event->calendarId;
