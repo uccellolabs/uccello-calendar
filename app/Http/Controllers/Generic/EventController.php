@@ -30,7 +30,7 @@ class EventController extends Controller
      * @param Module $module
      * @return array
      */
-    protected function list(Domain $domain, $type, Module $module, $params=[])
+    public function list(Domain $domain, $type, Module $module, $params = [])
     {
         if(request()->has('start'))
             $params['start'] = request('start');
@@ -85,14 +85,17 @@ class EventController extends Controller
         return $calendarType->retrieve($domain, $module, $returnJson, $params);
     }
 
-    protected function update(Domain $domain, Module $module)
+    public function update(Domain $domain, Module $module, $params = [])
     {
-        $type = request('type');
-        $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $type)->get()->first();
+        if (request()->has('type')) {
+            $params['type'] = request('type');
+        }
+
+        $calendarTypeModel = \Uccello\Calendar\CalendarTypes::where('name', $params['type'])->get()->first();
         $calendarClass = $calendarTypeModel->namespace.'\EventController';
 
         $calendarType = new $calendarClass();
-        return $calendarType->update($domain, $module);
+        return $calendarType->update($domain, $module, $params);
     }
 
     protected function delete(Domain $domain, Module $module)
@@ -105,7 +108,7 @@ class EventController extends Controller
         return $calendarType->delete($domain, $module);
     }
 
-    public static function generateEntityLink(Domain $domain)
+    public static function generateEntityLink($moduleName, $recordId, Domain $domain)
     {
         $module = Module::where('name', 'calendar')->first();
         $uccelloLink = '';
@@ -113,15 +116,26 @@ class EventController extends Controller
             $uccelloLink = '<br/>#'.uctrans('before_url', $module).env('APP_NAME').' :';
 
         if (uccello()->useMultiDomains()) {
-            $uccelloLink.= ' '.env('APP_URL').'/'.$domain->id.'/'.request('moduleName').'/'.request('recordId').'/link';
+            $uccelloLink.= ' '.env('APP_URL').'/'.$domain->slug.'/'.$moduleName.'/'.$recordId.'/link';
         } else {
-            $uccelloLink.= env('APP_URL').'/'.request('moduleName').'/'.request('recordId').'/link';
+            $uccelloLink.= env('APP_URL').'/'.$moduleName.'/'.$recordId.'/link';
         }
 
         if(config('calendar.event.comment'))
             $uccelloLink.=' - '.uctrans('after_url', $module).'.#';
 
         return $uccelloLink;
+    }
+
+    public static function cleanedDescription($description)
+    {
+        if (config('calendar.event.comment')) {
+            $description = preg_replace('`(\#.*?\#)`', '', $description);
+        } else {
+            $uccelloUrl = str_replace('.', '\.', env('APP_URL'));
+            $description = preg_replace('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)/link`', '', $description);
+        }
+        return $description;
     }
 
     public function classify(Domain $d, Module $module, Request $request)

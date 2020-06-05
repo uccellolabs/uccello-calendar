@@ -92,41 +92,41 @@ class CalendarController extends Controller
 
         $index = str_replace('preset', '', $presetName);
 
-        if ($index < count($colors)) {
+        if (is_numeric($index) && $index < count($colors)) {
             return $colors[$index];
         }
 
-        return null;
+        return "#FFFFFF";
     }
 
     public static function getColors()
     {
         return [
-            '#E74856',
-            '#FF8C00',
-            '#FFAB46',
-            '#FFF100',
-            '#47D041',
-            '#30C6CC',
-            '#73AA24',
-            '#00BCF2',
-            '#8764B8',
-            '#F495BF',
-            '#A0AEB2',
-            '#004B60',
-            '#B1ADAB',
-            '#5D5A58',
-            '#000000',
-            '#750B1C',
-            '#CA5010',
-            '#AB620D',
-            '#C19C00',
-            '#004B1C',
-            '#004B50',
-            '#0B6A0B',
-            '#002050',
-            '#32145A',
-            '#5C005C'
+            '#D6252E',
+            '#F06C15',
+            '#FFCA4C',
+            '#FFFE3D',
+            '#4AB63F',
+            '#40BD95',
+            '#859A52',
+            '#3267B8',
+            '#613DB4',
+            '#A34E78',
+            '#C4CCDD',
+            '#8C9CBD',
+            '#C4C4C4',
+            '#A5A5A5',
+            '#1C1C1C',
+            '#AF1E25',
+            '#B14F0D',
+            '#AB7B05',
+            '#999400',
+            '#35792B',
+            '#2E7D64',
+            '#5F6C3A',
+            '#2A5191',
+            '#50328F',
+            '#82375F'
         ];
     }
 

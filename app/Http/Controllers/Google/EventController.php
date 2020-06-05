@@ -60,7 +60,7 @@ class EventController extends Controller
                     foreach ($items as $event) {
 
                         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
-                        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)/link`', $event->description, $matches);
+                        $regexFound = preg_match('`'.$uccelloUrl.'/?[a-z]+/?([a-z]+)/([0-9]+)/link`', $event->description, $matches);
                         $moduleName = '';
                         $recordId = '';
                         if($regexFound)
@@ -108,7 +108,7 @@ class EventController extends Controller
         $startArray['timeZone'] =config('app.timezone', 'UTC');
         $endArray['timeZone'] = config('app.timezone', 'UTC');
 
-        $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink($domain);
+        $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink(request('moduleName'), request('recordId'), $domain);
 
         if(preg_match($datetimeRegex, request('start_date')) || preg_match($datetimeRegex, request('end_date')))
             $dateOnly = false;
@@ -206,8 +206,10 @@ class EventController extends Controller
         }
     }
 
-    public function update(Domain $domain, Module $module)
+    public function update(Domain $domain, Module $module, $params = [])
     {
+        //TODO : call this function through request() or $params
+
         $accountController = new AccountController();
         $oauthClient = $accountController->initClient(request('accountId'));
         $service = new \Google_Service_Calendar($oauthClient);
@@ -223,36 +225,38 @@ class EventController extends Controller
         $start->setTimeZone(config('app.timezone', 'UTC'));
         $end->setTimeZone(config('app.timezone', 'UTC'));
 
-        if(preg_match($datetimeRegex, request('start_date')) || preg_match($datetimeRegex, request('end_date'))) {
-            $dateOnly = false;
-        }
+        if (request()->has('start_date') && request()->has('end_date')) {
+            if(preg_match($datetimeRegex, request('start_date')) || preg_match($datetimeRegex, request('end_date'))) {
+                $dateOnly = false;
+            }
 
-        if($dateOnly) {
-            $start->setDateTime(null);
-            $end->setDateTime(null);
+            if($dateOnly) {
+                $start->setDateTime(null);
+                $end->setDateTime(null);
 
-            $startDate = Carbon::createFromFormat(config('uccello.format.php.date'), request('start_date'))
-                ->setTime(0,0,0)
-                ->setTimezone(config('app.timezone', 'UTC'));
+                $startDate = Carbon::createFromFormat(config('uccello.format.php.date'), request('start_date'))
+                    ->setTime(0,0,0)
+                    ->setTimezone(config('app.timezone', 'UTC'));
 
-            $endDate = Carbon::createFromFormat(config('uccello.format.php.date'), request('end_date'))
-                ->setTime(0,0,0)
-                ->setTimezone(config('app.timezone', 'UTC'));
+                $endDate = Carbon::createFromFormat(config('uccello.format.php.date'), request('end_date'))
+                    ->setTime(0,0,0)
+                    ->setTimezone(config('app.timezone', 'UTC'));
 
-            $start->setDate($startDate->toDateString());
-            $end->setDate($endDate->toDateString());
+                $start->setDate($startDate->toDateString());
+                $end->setDate($endDate->toDateString());
 
-        } else {
-            $start->setDate(null);
-            $end->setDate(null);
+            } else {
+                $start->setDate(null);
+                $end->setDate(null);
 
-            $startDate = Carbon::createFromFormat(config('uccello.format.php.datetime'), request('start_date'))
-                ->setTimezone(config('app.timezone', 'UTC'));
-            $endDate = Carbon::createFromFormat(config('uccello.format.php.datetime'), request('end_date'))
-                ->setTimezone(config('app.timezone', 'UTC'));
+                $startDate = Carbon::createFromFormat(config('uccello.format.php.datetime'), request('start_date'))
+                    ->setTimezone(config('app.timezone', 'UTC'));
+                $endDate = Carbon::createFromFormat(config('uccello.format.php.datetime'), request('end_date'))
+                    ->setTimezone(config('app.timezone', 'UTC'));
 
-            $start->setDateTime($startDate->toAtomString());
-            $end->setDateTime($endDate->toAtomString());
+                $start->setDateTime($startDate->toAtomString());
+                $end->setDateTime($endDate->toAtomString());
+            }
         }
 
         if (request()->has('subject')) {
@@ -264,7 +268,7 @@ class EventController extends Controller
         }
 
         if (request()->has('description')) {
-            $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink($domain);
+            $uccelloLink = \Uccello\Calendar\Http\Controllers\Generic\EventController::generateEntityLink(request('moduleName'), request('recordId'), $domain);
 
             $event->setDescription((request('description') ?? '').
                 (request('moduleName')!=null && request('recordId')!=null ? $uccelloLink : ''));
@@ -335,7 +339,7 @@ class EventController extends Controller
         }
 
         $uccelloUrl = str_replace('.', '\.',env('APP_URL'));
-        $regexFound = preg_match('`'.$uccelloUrl.'/[0-9]*/?([a-z]+)/([0-9]+)/link`', $event->description, $matches);
+        $regexFound = preg_match('`'.$uccelloUrl.'/?[a-z]+/?([a-z]+)/([0-9]+)/link`', $event->description, $matches);
         $moduleName = '';
         $recordId = '';
         if($regexFound)
@@ -364,7 +368,7 @@ class EventController extends Controller
         $returnEvent->end =             $end;
         $returnEvent->allDay =          $event->start->dateTime || $event->end->dateTime ? false : true;
         $returnEvent->location =        $event->location;
-        $returnEvent->description =     $regexFound ? str_replace($matches[0],'',$event->description) : $event->description;
+        $returnEvent->description =     \Uccello\Calendar\Http\Controllers\Generic\EventController::cleanedDescription($event->description);
         $returnEvent->moduleName =      $moduleName;
         $returnEvent->recordId =        $recordId;
         $returnEvent->calendarId =      $calendarId;
@@ -372,6 +376,7 @@ class EventController extends Controller
         $returnEvent->accountId =       $accountId;
         $returnEvent->categories =      null; //TODO:
         $returnEvent->attendees =       $attendees;
+        $returnEvent->webLink =         $event->htmlLink;
 
         return $returnEvent;
     }

@@ -61,10 +61,17 @@ class ListController extends DefaultListController
 
         if (request('start') && request('end')) {
             foreach($calendarEvents as $event) {
-                $start = Carbon::createFromFormat('d/m/Y', $event->start);
-                $end = Carbon::createFromFormat('d/m/Y', $event->end);
-                $start_max = Carbon::createFromFormat('Y-m-d', request('start'));
-                $end_max = Carbon::createFromFormat('Y-m-d', request('end'));
+                $start = Carbon::createFromFormat(
+                    $event->allDay ? 
+                    config('uccello.format.php.date') : 
+                    config('uccello.format.php.datetime'
+                ), $event->start);
+                $end = Carbon::createFromFormat($event->allDay ? 
+                    config('uccello.format.php.date') : 
+                    config('uccello.format.php.datetime'
+                ), $event->end);
+                $start_max = Carbon::createFromFormat('Y-m-d', request('start'))->setTime(0,0);
+                $end_max = Carbon::createFromFormat('Y-m-d', request('end'))->setTime(23,59,59);
 
                 if($start<=$end_max && $end>=$start_max) {
                     $dateFilteredEvents[] = $event;
@@ -151,12 +158,14 @@ class ListController extends DefaultListController
 
             $records[] = [
                 // 'subject_html' => '<i class="material-icons primary-text left">people</i>'.$event['title'],
+                'id' => $event->webLink,
                 'subject_html' => $event->title,
                 'category_html' => !empty($event->categories) ? implode(',', $event->categories) : '',
                 'start_date_html' => Carbon::createFromFormat($format, $event->start)->format($format),
                 'end_date_html' => Carbon::createFromFormat($format, $event->end)->format($format),
                 'location_html' => $event->location,
                 'calendar_html' => $calendar->name,
+                'webLink' => $event->webLink,
                 // 'assigned_user_html' => $relatedUser ? '<a href="'.ucroute('uccello.detail', $this->domain, ucmodule('user'), [ 'id' => $relatedUser->getKey()]).'" class="primary-text">'.$relatedUser->recordLabel.'</a>' : '',
             ];
         }
